@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "buildCommand": "next build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/poll",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/leaderboard",
+      "schedule": "0 0 * * 1"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "QuickReply — YouTube Comment Manager",
+  "version": "1.0.0",
+  "description": "Manage YouTube comments with AI-powered auto-replies directly from YouTube Studio",
+  "permissions": ["activeTab", "storage", "scripting", "alarms"],
+  "host_permissions": ["https://youtube.com/*", "https://studio.youtube.com/*", "http://localhost:3000/*", "https://quick-reply.vercel.app/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [{
+    "matches": ["https://studio.youtube.com/*", "https://www.youtube.com/*"],
+    "js": ["api.js", "content.js"],
+    "css": ["content.css"],
+    "run_at": "document_idle"
+  }],
+  "web_accessible_resources": [{
+    "resources": ["icons/*", "config.js"],
+    "matches": ["<all_urls>"]
+  }],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

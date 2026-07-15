@@ -1,0 +1,558 @@
+/* ================================================================
+   QuickReply Extension Panel  --  Glass-morphism floating panel
+   ================================================================ */
+
+/* ---------- Brand Palette ---------- */
+:root {
+  --qr-navy:     #0a1628;
+  --qr-navy-80:  #0e1f3a;
+  --qr-navy-60:  rgba(10, 22, 40, 0.85);
+  --qr-navy-40:  rgba(10, 22, 40, 0.60);
+  --qr-volt:     #c8ff2e;
+  --qr-volt-dim: #a3d424;
+  --qr-mint:     #2ee8c5;
+  --qr-coral:    #ff6b6b;
+  --qr-purple:   #a78bfa;
+  --qr-white:    #f0f2f5;
+  --qr-gray-100: #e2e5ea;
+  --qr-gray-300: #9ba3b0;
+  --qr-gray-500: #5c6370;
+  --qr-bg:       rgba(10, 22, 40, 0.78);
+  --qr-glass:    rgba(255, 255, 255, 0.06);
+  --qr-border:   rgba(255, 255, 255, 0.10);
+  --qr-radius:   12px;
+  --qr-radius-sm: 8px;
+  --qr-shadow:   0 8px 32px rgba(0, 0, 0, 0.45),
+                 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------- Reset ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--qr-white);
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ---------- Panel Shell ---------- */
+#qr-panel {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 380px;
+  max-height: 580px;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--qr-radius);
+  background: var(--qr-bg);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border: 1px solid var(--qr-border);
+  box-shadow: var(--qr-shadow);
+  overflow: hidden;
+  z-index: 2147483647;
+  animation: qr-slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes qr-slideUp {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)     scale(1);   }
+}
+
+/* ── Minimized state ── */
+#qr-panel.minimized {
+  max-height: 48px;
+  min-height: 48px;
+  width: 260px;
+}
+
+#qr-panel.minimized #qr-status,
+#qr-panel.minimized #qr-tabs,
+#qr-panel.minimized #tab-feed,
+#qr-panel.minimized #tab-ai,
+#qr-panel.minimized #qr-footer {
+  display: none !important;
+}
+
+/* ================================================================
+   Header
+   ================================================================ */
+#qr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.25);
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+#qr-header:active { cursor: grabbing; }
+
+.qr-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qr-logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--qr-volt);
+  color: var(--qr-navy);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: -0.5px;
+}
+
+.qr-logo-text {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--qr-white);
+  letter-spacing: -0.3px;
+}
+
+.qr-header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.qr-header-actions button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--qr-gray-300);
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.qr-header-actions button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--qr-white);
+}
+
+/* ================================================================
+   Connection Status Bar
+   ================================================================ */
+#qr-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 11px;
+  color: var(--qr-gray-300);
+  border-bottom: 1px solid var(--qr-border);
+  flex-shrink: 0;
+}
+
+#qr-status.connected  { color: var(--qr-mint); }
+#qr-status.disconnected { color: var(--qr-coral); }
+#qr-status.connecting   { color: var(--qr-volt); }
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+#qr-status.connected .status-dot  { box-shadow: 0 0 6px var(--qr-mint); }
+#qr-status.disconnected .status-dot { box-shadow: 0 0 6px var(--qr-coral); }
+#qr-status.connecting .status-dot {
+  animation: qr-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes qr-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+
+/* ================================================================
+   Tabs
+   ================================================================ */
+#qr-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--qr-border);
+  flex-shrink: 0;
+}
+
+.qr-tab {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+  color: var(--qr-gray-300);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, box-shadow 0.15s;
+}
+
+.qr-tab:hover { color: var(--qr-white); }
+
+.qr-tab.active {
+  color: var(--qr-volt);
+  box-shadow: inset 0 -2px 0 var(--qr-volt);
+}
+
+/* ================================================================
+   Tab Content
+   ================================================================ */
+.qr-tab-content {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.qr-tab-content.active { display: flex; flex-direction: column; }
+
+/* ---------- Scrollbar ---------- */
+.qr-tab-content::-webkit-scrollbar {
+  width: 5px;
+}
+.qr-tab-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.qr-tab-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+}
+.qr-tab-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ================================================================
+   Comment List
+   ================================================================ */
+.qr-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  flex: 1;
+}
+
+/* Empty state */
+.qr-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--qr-gray-500);
+}
+
+.qr-empty-state p {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--qr-gray-300);
+}
+
+.qr-empty-state span {
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* ================================================================
+   Comment Card
+   ================================================================ */
+.qr-comment-card {
+  background: var(--qr-glass);
+  border: 1px solid var(--qr-border);
+  border-radius: var(--qr-radius-sm);
+  padding: 10px 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.qr-comment-card:hover {
+  border-color: rgba(200, 255, 46, 0.25);
+  box-shadow: 0 0 0 1px rgba(200, 255, 46, 0.08);
+}
+
+.qr-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.qr-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.qr-author {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--qr-white);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Status badge */
+.qr-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.qr-badge-matched {
+  background: rgba(200, 255, 46, 0.15);
+  color: var(--qr-volt);
+}
+
+.qr-badge-review {
+  background: rgba(167, 139, 250, 0.18);
+  color: var(--qr-purple);
+}
+
+.qr-badge-replied {
+  background: rgba(46, 232, 197, 0.15);
+  color: var(--qr-mint);
+}
+
+.qr-badge-skipped {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--qr-gray-500);
+}
+
+.qr-badge-failed {
+  background: rgba(255, 107, 107, 0.15);
+  color: var(--qr-coral);
+}
+
+/* Sentiment indicator */
+.qr-sentiment {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* Comment text */
+.qr-comment-text {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--qr-white);
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.qr-video-title {
+  font-size: 10.5px;
+  color: var(--qr-gray-500);
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qr-auto-reply {
+  background: rgba(46, 232, 197, 0.08);
+  border: 1px solid rgba(46, 232, 197, 0.15);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 11.5px;
+  color: var(--qr-mint);
+  margin-bottom: 8px;
+  line-height: 1.45;
+}
+
+.qr-auto-reply strong {
+  color: var(--qr-gray-300);
+  font-weight: 600;
+}
+
+/* ================================================================
+   Action Buttons
+   ================================================================ */
+.qr-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.qr-btn {
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.qr-btn:active { transform: scale(0.96); }
+
+.qr-btn-sm {
+  padding: 5px 10px;
+  font-size: 11px;
+}
+
+.qr-btn-primary {
+  background: var(--qr-volt);
+  color: var(--qr-navy);
+}
+
+.qr-btn-primary:hover { background: var(--qr-volt-dim); }
+
+.qr-btn-success {
+  background: var(--qr-mint);
+  color: var(--qr-navy);
+}
+
+.qr-btn-success:hover { opacity: 0.85; }
+
+.qr-btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--qr-gray-100);
+}
+
+.qr-btn-secondary:hover { background: rgba(255, 255, 255, 0.14); }
+
+.qr-btn-danger {
+  background: rgba(255, 107, 107, 0.15);
+  color: var(--qr-coral);
+}
+
+.qr-btn-danger:hover { background: rgba(255, 107, 107, 0.25); }
+
+/* Disabled state */
+.qr-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ================================================================
+   AI Tools Tab
+   ================================================================ */
+.qr-ai-section {
+  padding: 14px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qr-ai-section h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--qr-white);
+}
+
+.qr-ai-section textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px 12px;
+  border: 1px solid var(--qr-border);
+  border-radius: var(--qr-radius-sm);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--qr-white);
+  font-family: inherit;
+  font-size: 12.5px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.qr-ai-section textarea:focus {
+  border-color: var(--qr-volt);
+}
+
+.qr-ai-section textarea::placeholder {
+  color: var(--qr-gray-500);
+}
+
+.qr-ai-result {
+  background: rgba(46, 232, 197, 0.06);
+  border: 1px solid rgba(46, 232, 197, 0.15);
+  border-radius: var(--qr-radius-sm);
+  padding: 10px 12px;
+}
+
+.qr-ai-result p {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--qr-white);
+  margin-bottom: 8px;
+}
+
+.qr-ai-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ================================================================
+   Footer
+   ================================================================ */
+#qr-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-top: 1px solid var(--qr-border);
+  font-size: 11px;
+  color: var(--qr-gray-500);
+  flex-shrink: 0;
+}
+
+#btn-open-dashboard {
+  color: var(--qr-volt);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+
+#btn-open-dashboard:hover {
+  opacity: 0.8;
+}
+
+/* ================================================================
+   Loading / skeleton pulse
+   ================================================================ */
+@keyframes qr-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.qr-loading {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.10) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: qr-shimmer 1.5s infinite;
+  border-radius: 4px;
+  height: 14px;
+  margin-bottom: 6px;
+}

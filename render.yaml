@@ -1,0 +1,58 @@
+# Render Blueprint Configuration for Quick Reply
+# Deploy: https://dashboard.render.com/new?type=blueprint
+
+services:
+  - type: web
+    name: quick-reply
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: node server.js
+    healthCheckPath: /api/system/status
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # IMPORTANT: Update this to your actual Render URL after first deploy
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+
+      # Google OAuth (Required for YouTube connection)
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+      # Token Encryption
+      - key: TOKEN_ENCRYPTION_KEY
+        sync: false
+
+      # MongoDB (Required)
+      - key: MONGODB_URI
+        sync: false
+
+      # Auth Secrets
+      - key: SESSION_SECRET
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+
+      # Cron Secret
+      - key: CRON_SECRET
+        sync: false
+
+      # Optional: AI Features
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+      # Optional: Redis (for BullMQ job queue)
+      - key: REDIS_URL
+        sync: false
+
+      # Optional: Stripe Billing
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false

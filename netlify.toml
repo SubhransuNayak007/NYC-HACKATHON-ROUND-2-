@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Google OAuth (set real values in Netlify dashboard, not here)
+  GOOGLE_CLIENT_ID = ""
+  GOOGLE_CLIENT_SECRET = ""
+  NEXT_PUBLIC_APP_URL = ""
+  # SMTP for coupon emails
+  SMTP_USER = ""
+  SMTP_PASS = ""
+  # MongoDB (uncomment and set in Netlify dashboard for production)
+  # MONGODB_URI = ""
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

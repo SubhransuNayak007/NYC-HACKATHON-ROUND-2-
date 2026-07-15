@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickReply Panel</title>
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <div id="qr-panel">
+    <!-- Header -->
+    <div id="qr-header">
+      <div class="qr-logo">
+        <span class="qr-logo-mark">QR</span>
+        <span class="qr-logo-text">QuickReply</span>
+      </div>
+      <div class="qr-header-actions">
+        <button id="btn-minimize" title="Minimize">&#x2500;</button>
+        <button id="btn-close" title="Close panel">&#x2715;</button>
+      </div>
+    </div>
+
+    <!-- Connection Status -->
+    <div id="qr-status" class="disconnected">
+      <span class="status-dot"></span>
+      <span class="status-text">Connecting...</span>
+    </div>
+
+    <!-- Tabs -->
+    <div id="qr-tabs">
+      <button class="qr-tab active" data-tab="feed">&#x1F4AC; Live Feed</button>
+      <button class="qr-tab" data-tab="ai">&#x2728; AI Tools</button>
+    </div>
+
+    <!-- Feed Tab -->
+    <div id="tab-feed" class="qr-tab-content active">
+      <div id="qr-comments" class="qr-comments-list">
+        <div class="qr-empty-state">
+          <p>No comments yet</p>
+          <span>Waiting for live polling...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Tools Tab -->
+    <div id="tab-ai" class="qr-tab-content">
+      <div class="qr-ai-section">
+        <h3>Generate AI Reply</h3>
+        <textarea id="ai-comment-input" placeholder="Paste a comment to generate a reply..."></textarea>
+        <button id="btn-ai-generate" class="qr-btn qr-btn-primary">
+          &#x2728; Generate Reply
+        </button>
+        <div id="ai-result" class="qr-ai-result" style="display:none;">
+          <p id="ai-reply-text"></p>
+          <div class="qr-ai-actions">
+            <button id="btn-ai-send" class="qr-btn qr-btn-success">Send Reply</button>
+            <button id="btn-ai-copy" class="qr-btn qr-btn-secondary">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div id="qr-footer">
+      <span id="footer-stats">0 pending &middot; 0 sent today</span>
+      <a href="#" id="btn-open-dashboard" target="_blank">Open Dashboard &rarr;</a>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
+  <script src="panel.js"></script>
+</body>
+</html>
