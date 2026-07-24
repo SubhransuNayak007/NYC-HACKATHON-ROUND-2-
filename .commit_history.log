@@ -1,4 +1,4 @@
-Commit #197/700
-Timestamp: 2026-07-24T10:29:23.910Z
-Message: feat(core): setup instrumentation startup hook for background bootstrappers
+Commit #198/700
+Timestamp: 2026-07-24T11:31:42.211Z
+Message: feat(core): integrate Zustand centralized global UI and workflow store
 Subhransu Nayak · QuickReply AI
