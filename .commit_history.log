@@ -1,4 +1,4 @@
-Commit #214/700
-Timestamp: 2026-07-25T05:53:25.496Z
-Message: feat(wa): add automated reconnect circuit breaker for dropped WA sessions
+Commit #215/700
+Timestamp: 2026-07-25T07:09:32.568Z
+Message: feat(wa): implement media message parsing and image/voice note downloads
 Subhransu Nayak · QuickReply AI
