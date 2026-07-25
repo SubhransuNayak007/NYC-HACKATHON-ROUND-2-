@@ -1,4 +1,4 @@
-Commit #209/700
-Timestamp: 2026-07-24T23:57:18.732Z
-Message: feat(wa): integrate Baileys multi-device WhatsApp Web socket connection
+Commit #210/700
+Timestamp: 2026-07-25T01:21:36.944Z
+Message: feat(wa): implement live base64 QR code streaming over WebSockets
 Subhransu Nayak · QuickReply AI
