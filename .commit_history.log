@@ -1,4 +1,4 @@
-Commit #258/700
-Timestamp: 2026-07-27T07:36:02.086Z
-Message: refactor: standardize API response formats with unified error handling
+Commit #259/700
+Timestamp: 2026-07-27T09:01:50.222Z
+Message: refactor: decouple Baileys socket listeners from HTTP route controllers
 Subhransu Nayak · QuickReply AI
