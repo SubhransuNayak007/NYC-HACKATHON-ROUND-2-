@@ -1,4 +1,4 @@
-Commit #290/700
-Timestamp: 2026-07-28T20:02:27.793Z
-Message: feat(core): configure Tailwind CSS v4 design tokens and color palettes
+Commit #291/700
+Timestamp: 2026-07-28T21:10:41.991Z
+Message: feat(core): setup hybrid MongoDB Atlas adapter with local JSON fallback
 Subhransu Nayak · QuickReply AI
