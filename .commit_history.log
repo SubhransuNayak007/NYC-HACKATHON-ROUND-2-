@@ -1,4 +1,4 @@
-Commit #300/700
-Timestamp: 2026-07-29T07:36:55.117Z
-Message: feat(auth): create interactive 3D Yeti Mascot login experience
+Commit #301/700
+Timestamp: 2026-07-29T08:27:08.127Z
+Message: feat(auth): add OTP email verification workflow with rate limiting
 Subhransu Nayak · QuickReply AI
