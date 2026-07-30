@@ -1,4 +1,4 @@
-Commit #327/700
-Timestamp: 2026-07-30T14:08:15.906Z
-Message: feat(rules): add auto-reply rate limiting per channel and per user
+Commit #328/700
+Timestamp: 2026-07-30T15:16:16.721Z
+Message: feat(rules): implement video auto-discovery and comment thread sync
 Subhransu Nayak · QuickReply AI
