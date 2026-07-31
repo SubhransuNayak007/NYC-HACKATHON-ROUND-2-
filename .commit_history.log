@@ -1,4 +1,4 @@
-Commit #348/700
-Timestamp: 2026-07-31T13:51:50.328Z
-Message: perf: reduce client bundle size by lazy-loading Three.js canvases
+Commit #349/700
+Timestamp: 2026-07-31T15:11:45.945Z
+Message: perf: enable brotli compression for static asset delivery
 Subhransu Nayak · QuickReply AI
