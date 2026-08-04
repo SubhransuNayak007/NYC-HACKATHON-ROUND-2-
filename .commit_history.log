@@ -1,4 +1,4 @@
-Commit #422/700
-Timestamp: 2026-08-04T02:08:32.373Z
-Message: feat(rules): implement YouTube comment polling loop with LRU deduplication
+Commit #423/700
+Timestamp: 2026-08-04T03:07:35.752Z
+Message: feat(rules): add auto-reply rate limiting per channel and per user
 Subhransu Nayak · QuickReply AI
