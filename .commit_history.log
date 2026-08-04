@@ -1,4 +1,4 @@
-Commit #425/700
-Timestamp: 2026-08-04T05:46:59.762Z
-Message: feat(social): implement unified omnichannel social provider interface
+Commit #426/700
+Timestamp: 2026-08-04T06:35:04.391Z
+Message: feat(social): add Instagram Graph API adapter for comments and direct messages
 Subhransu Nayak · QuickReply AI
