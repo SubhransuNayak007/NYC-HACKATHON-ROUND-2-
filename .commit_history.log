@@ -1,4 +1,4 @@
-Commit #517/700
-Timestamp: 2026-08-08T14:00:52.349Z
-Message: feat(rules): add multi-action automation chains with delayed follow-ups
+Commit #518/700
+Timestamp: 2026-08-08T15:15:39.738Z
+Message: feat(rules): implement YouTube comment polling loop with LRU deduplication
 Subhransu Nayak · QuickReply AI
