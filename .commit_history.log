@@ -1,4 +1,4 @@
-Commit #522/700
-Timestamp: 2026-08-08T19:54:02.326Z
-Message: feat(social): add Instagram Graph API adapter for comments and direct messages
+Commit #523/700
+Timestamp: 2026-08-08T20:52:24.902Z
+Message: feat(social): integrate Twitter/X API v2 client and mentions stream
 Subhransu Nayak · QuickReply AI
