@@ -1,4 +1,4 @@
-Commit #563/700
-Timestamp: 2026-08-10T18:26:34.512Z
-Message: fix: fix mobile navigation drawer backdrop blur on iOS Safari
+Commit #564/700
+Timestamp: 2026-08-10T19:24:40.460Z
+Message: fix: resolve Vercel serverless environment fallback for instrumentation
 Subhransu Nayak · QuickReply AI
