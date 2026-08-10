@@ -1,4 +1,4 @@
-Commit #561/700
-Timestamp: 2026-08-10T16:20:34.916Z
-Message: fix: fix token expiration race condition during concurrent polls (iteration 17)
+Commit #562/700
+Timestamp: 2026-08-10T17:12:54.435Z
+Message: fix: prevent duplicate DM dispatches with atomic lock verification
 Subhransu Nayak · QuickReply AI
