@@ -1,4 +1,4 @@
-Commit #582/700
-Timestamp: 2026-08-11T16:12:40.808Z
-Message: feat(core): integrate Zustand centralized global UI and workflow store
+Commit #583/700
+Timestamp: 2026-08-11T17:05:57.603Z
+Message: feat(core): configure middleware session verification and edge routing guards
 Subhransu Nayak · QuickReply AI
