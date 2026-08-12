@@ -1,4 +1,4 @@
-Commit #603/700
-Timestamp: 2026-08-12T15:45:49.114Z
-Message: feat(ai): build cosine-similarity vector embeddings RAG knowledge store
+Commit #604/700
+Timestamp: 2026-08-12T16:59:17.944Z
+Message: feat(ai): implement document ingestion for PDFs, FAQs, and product catalogs
 Subhransu Nayak · QuickReply AI
