@@ -1,4 +1,4 @@
-Commit #597/700
-Timestamp: 2026-08-12T09:10:32.733Z
-Message: feat(wa): implement WhatsApp conversation history and state tracking
+Commit #598/700
+Timestamp: 2026-08-12T10:07:45.828Z
+Message: feat(wa): add automated reconnect circuit breaker for dropped WA sessions
 Subhransu Nayak · QuickReply AI
