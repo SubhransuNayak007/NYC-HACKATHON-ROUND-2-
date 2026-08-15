@@ -1,4 +1,4 @@
-Commit #658/700
-Timestamp: 2026-08-15T06:23:14.322Z
-Message: fix: prevent duplicate DM dispatches with atomic lock verification
+Commit #659/700
+Timestamp: 2026-08-15T07:19:03.788Z
+Message: fix: fix mobile navigation drawer backdrop blur on iOS Safari
 Subhransu Nayak · QuickReply AI
