@@ -1,4 +1,4 @@
-Commit #685/700
-Timestamp: 2026-08-16T13:12:08.199Z
-Message: feat(auth): add OTP email verification workflow with rate limiting
+Commit #686/700
+Timestamp: 2026-08-16T14:10:28.970Z
+Message: feat(auth): create quick-login setup and QR pairing credentials system
 Subhransu Nayak · QuickReply AI
