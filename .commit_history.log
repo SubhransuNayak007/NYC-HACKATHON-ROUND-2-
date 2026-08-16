@@ -1,4 +1,4 @@
-Commit #690/700
-Timestamp: 2026-08-16T18:51:19.204Z
-Message: feat(wa): implement live base64 QR code streaming over WebSockets
+Commit #691/700
+Timestamp: 2026-08-16T19:56:35.090Z
+Message: feat(wa): create WhatsApp phone simulator for rule testing
 Subhransu Nayak · QuickReply AI
