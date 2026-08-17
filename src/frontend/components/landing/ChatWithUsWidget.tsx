@@ -1,10 +1,25 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import { MessageSquare, X, Send, Sparkles, Bot, CheckCircle2 } from "lucide-react";
 
 export function ChatWithUsWidget() {
+  const pathname = usePathname();
+  const isAuthPage =
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/register") ||
+    pathname?.startsWith("/signup") ||
+    pathname?.startsWith("/auth") ||
+    pathname?.startsWith("/verify") ||
+    pathname?.startsWith("/forgot-password") ||
+    pathname?.startsWith("/reset-password") ||
+    pathname?.startsWith("/onboarding");
+
   const [isOpen, setIsOpen] = useState(false);
+
+  if (isAuthPage) return null;
+
   const [messages, setMessages] = useState<Array<{ sender: "ai" | "user"; text: string }>>([
     {
       sender: "ai",

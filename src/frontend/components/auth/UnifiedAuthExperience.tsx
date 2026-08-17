@@ -67,7 +67,7 @@ export function UnifiedAuthExperience({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Mode state: signup, login, verify, create-password, forgot-password, reset-password
+  // Mode state
   const paramMode = searchParams.get("mode") as AuthMode | null;
   const [mode, setMode] = useState<AuthMode>(paramMode || initialMode);
 
@@ -142,7 +142,7 @@ export function UnifiedAuthExperience({
     setMousePos({ x: 0, y: 0 });
   };
 
-  // State Switcher Helper (smooth internal transitions without URL jumps if desired)
+  // Smooth State Switcher
   const switchMode = (newMode: AuthMode) => {
     setError(null);
     setSuccessMsg(null);
@@ -1023,7 +1023,7 @@ export function UnifiedAuthExperience({
         </div>
 
         {/* ══════════════════════════════════════════════════════════════════════
-            RIGHT PANEL: Consistent, Persistent AI Showcase (Cols: 6)
+            RIGHT PANEL: Precision 3D Isometric Tile Grid & Live Workflow Engine (Cols: 6)
             (Stays completely unbroken across all authentication transitions)
             ══════════════════════════════════════════════════════════════════════ */}
         <div
@@ -1068,74 +1068,31 @@ export function UnifiedAuthExperience({
             </p>
           </div>
 
-          {/* Center 3D Isometric AI Glass Tile with Organic Floating Bounce */}
-          <div className="relative my-4 flex items-center justify-end pr-4">
+          {/* Center 3D Isometric AI Glass Tile with Organic Floating Bounce & Parallax */}
+          <div className="relative my-4 flex items-center justify-end pr-2">
             <motion.div
               animate={{
-                y: [0, -10, 0],
-                rotateX: [55 + mousePos.y * 8, 55 + mousePos.y * 8, 55 + mousePos.y * 8],
-                rotateZ: [-45 + mousePos.x * 10, -45 + mousePos.x * 10, -45 + mousePos.x * 10],
+                y: [0, -8, 0],
+                x: [0, 4, 0],
               }}
               transition={{
-                y: {
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                },
-                rotateX: { duration: 0.2, ease: "easeOut" },
-                rotateZ: { duration: 0.2, ease: "easeOut" },
+                duration: 5.5,
+                repeat: Infinity,
+                ease: "easeInOut",
               }}
-              className="relative w-80 h-56 flex items-center justify-center"
               style={{
-                perspective: 1200,
-                transformStyle: "preserve-3d",
+                transform: `perspective(1000px) rotateX(${mousePos.y * 6}deg) rotateY(${mousePos.x * -6}deg)`,
+                transition: "transform 0.15s ease-out",
               }}
+              className="relative w-[340px] h-[260px] xl:w-[380px] xl:h-[290px] flex items-center justify-center pointer-events-none drop-shadow-2xl"
             >
-              {/* Isometric 3D Grid of Frosted Glass Diamond Tiles */}
-              <div
-                className="absolute inset-0 grid grid-cols-3 gap-3 origin-center scale-105"
-                style={{
-                  transform: "perspective(1200px) rotateX(55deg) rotateZ(-45deg) translateZ(0)",
-                  transformStyle: "preserve-3d",
-                }}
-              >
-                {/* Row 1 */}
-                <div className="h-20 rounded-2xl bg-white/40 backdrop-blur-md border border-white/70 shadow-sm" />
-                <div className="h-20 rounded-2xl bg-white/50 backdrop-blur-md border border-white/80 shadow-md" />
-                <div className="h-20 rounded-2xl bg-white/40 backdrop-blur-md border border-white/70 shadow-sm" />
-
-                {/* Row 2 */}
-                <div className="h-20 rounded-2xl bg-white/50 backdrop-blur-md border border-white/80 shadow-md" />
-
-                {/* Center Elevated 3D Blue AI Star Emblem */}
-                <motion.div
-                  animate={{
-                    translateZ: [30, 42, 30],
-                    scale: [1, 1.03, 1],
-                  }}
-                  transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  className="h-20 rounded-2xl bg-gradient-to-br from-[#2563eb] to-[#1e40af] p-0.5 shadow-[0_22px_45px_rgba(37,99,235,0.5)] relative flex items-center justify-center"
-                >
-                  <div className="w-full h-full rounded-[14px] bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8] flex items-center justify-center shadow-inner relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-white/30 pointer-events-none" />
-                    {/* Glowing White 4-Point AI Star */}
-                    <svg className="w-9 h-9 fill-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]" viewBox="0 0 24 24">
-                      <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" />
-                    </svg>
-                  </div>
-                </motion.div>
-
-                <div className="h-20 rounded-2xl bg-white/50 backdrop-blur-md border border-white/80 shadow-md" />
-
-                {/* Row 3 */}
-                <div className="h-20 rounded-2xl bg-white/40 backdrop-blur-md border border-white/70 shadow-sm" />
-                <div className="h-20 rounded-2xl bg-white/50 backdrop-blur-md border border-white/80 shadow-md" />
-                <div className="h-20 rounded-2xl bg-white/40 backdrop-blur-md border border-white/70 shadow-sm" />
-              </div>
+              {/* High-Precision SVG Isometric 3D Frosted Tiles with Elevated Blue Emblem */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/auth-isometric-3d.svg"
+                alt="QuickReply Enterprise 3D AI Grid"
+                className="w-full h-full object-contain filter drop-shadow-[0_20px_40px_rgba(37,99,235,0.22)]"
+              />
             </motion.div>
           </div>
 
