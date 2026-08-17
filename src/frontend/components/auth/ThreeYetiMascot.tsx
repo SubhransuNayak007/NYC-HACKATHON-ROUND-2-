@@ -97,24 +97,24 @@ export function ThreeYetiMascot({
     // ── SCENE & CAMERA ──
     const scene = new THREE.Scene();
 
-    // 1. Bright Sunny Blue Sky Background Gradient
+    // 1. Bright Sunny Blue Sky Background Gradient (Reference Match)
     const createSkyBackground = () => {
       const cvs = document.createElement("canvas");
       cvs.width = 512;
       cvs.height = 512;
       const ctx = cvs.getContext("2d")!;
       const grad = ctx.createLinearGradient(0, 0, 0, 512);
-      grad.addColorStop(0.0, "#38bdf8"); // Vivid sky blue
-      grad.addColorStop(0.4, "#7dd3fc"); // Soft daylight
-      grad.addColorStop(0.75, "#bae6fd"); // Horizon glow
-      grad.addColorStop(1.0, "#e0f2fe"); // Bright horizon
+      grad.addColorStop(0.0, "#38bdf8"); // Vivid sunny azure sky
+      grad.addColorStop(0.42, "#7dd3fc"); // Bright sky light
+      grad.addColorStop(0.78, "#bae6fd"); // Soft horizon blend
+      grad.addColorStop(1.0, "#e0f2fe"); // Bright horizon glow
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 512, 512);
       return new THREE.CanvasTexture(cvs);
     };
     scene.background = createSkyBackground();
 
-    // 2. Camera setup (zoomed for full character & landscape visibility)
+    // 2. Camera calibrated for full character visibility
     const camera = new THREE.PerspectiveCamera(38, Math.max(0.1, width / height), 0.1, 100);
     camera.position.set(0, 0.1, 4.8);
     camera.lookAt(0, -0.05, 0);
@@ -135,15 +135,43 @@ export function ThreeYetiMascot({
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.12;
+    renderer.toneMappingExposure = 1.15;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.domElement.style.width = "100%";
     renderer.domElement.style.height = "100%";
     renderer.domElement.style.display = "block";
     container.appendChild(renderer.domElement);
 
-    // ── PROCEDURAL HIGH-RESOLUTION FUR TEXTURES ──
-    // 1. High-frequency Fur Normal Map (thousands of dense wavy fibers)
+    // ── PROCEDURAL HIGH-RESOLUTION TEXTURE GENERATION ──
+    // 1. High-density Fur Fiber Alpha Mask (for volumetric shell fur)
+    const createFurAlphaTex = () => {
+      const cvs = document.createElement("canvas");
+      cvs.width = 512;
+      cvs.height = 512;
+      const ctx = cvs.getContext("2d")!;
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Draw thousands of dense, soft fur specks and fiber clusters
+      for (let i = 0; i < 28000; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        const r = Math.random() * 1.8 + 0.6;
+        const alpha = Math.random() * 0.85 + 0.15;
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const tex = new THREE.CanvasTexture(cvs);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(6, 6);
+      return tex;
+    };
+
+    // 2. High-frequency Fur Normal Map (thousands of dense wavy fibers)
     const createFurNormal = () => {
       const cvs = document.createElement("canvas");
       cvs.width = 512;
@@ -156,12 +184,12 @@ export function ThreeYetiMascot({
           const idx = (y * 512 + x) * 4;
           const nx = x / 512;
           const ny = y / 512;
-          const fiber1 = Math.sin(nx * 180 + Math.cos(ny * 90) * 4) * 0.35;
-          const fiber2 = Math.sin(nx * 320 + ny * 160) * 0.25;
-          const curl = Math.sin(ny * 45 + fiber1 * 3) * 0.25;
+          const fiber1 = Math.sin(nx * 220 + Math.cos(ny * 110) * 4.5) * 0.35;
+          const fiber2 = Math.sin(nx * 380 + ny * 190) * 0.25;
+          const curl = Math.sin(ny * 55 + fiber1 * 3.5) * 0.25;
           const val = 0.5 + fiber1 * 0.25 + fiber2 * 0.15 + curl * 0.15;
-          data[idx] = 128 + Math.sin(val * Math.PI * 2) * 65;
-          data[idx + 1] = 128 + Math.cos(val * Math.PI * 2) * 65;
+          data[idx] = 128 + Math.sin(val * Math.PI * 2) * 70;
+          data[idx + 1] = 128 + Math.cos(val * Math.PI * 2) * 70;
           data[idx + 2] = 255;
           data[idx + 3] = 255;
         }
@@ -170,35 +198,36 @@ export function ThreeYetiMascot({
       const tex = new THREE.CanvasTexture(cvs);
       tex.wrapS = THREE.RepeatWrapping;
       tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(4, 4);
+      tex.repeat.set(5, 5);
       return tex;
     };
 
-    // 2. Soft Contact Shadow Map for Feet
+    // 3. Soft Radial Contact Shadow Texture for Feet
     const createContactShadowTex = () => {
       const cvs = document.createElement("canvas");
       cvs.width = 256;
       cvs.height = 256;
       const ctx = cvs.getContext("2d")!;
       const grad = ctx.createRadialGradient(128, 128, 10, 128, 128, 120);
-      grad.addColorStop(0, "rgba(20, 55, 20, 0.75)");
-      grad.addColorStop(0.35, "rgba(30, 75, 30, 0.45)");
-      grad.addColorStop(0.7, "rgba(40, 95, 40, 0.15)");
-      grad.addColorStop(1, "rgba(50, 100, 50, 0)");
+      grad.addColorStop(0, "rgba(15, 45, 15, 0.85)");
+      grad.addColorStop(0.35, "rgba(25, 65, 25, 0.5)");
+      grad.addColorStop(0.7, "rgba(35, 85, 35, 0.18)");
+      grad.addColorStop(1, "rgba(45, 95, 45, 0)");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 256, 256);
       return new THREE.CanvasTexture(cvs);
     };
 
+    const furAlphaTex = createFurAlphaTex();
     const furNormalTex = createFurNormal();
     const contactShadowTex = createContactShadowTex();
 
-    // ── LIGHTING: WARM SUNLIGHT + SOFT SKY AMBIENT + RIM GLOW ──
-    const hemiLight = new THREE.HemisphereLight(0xdbeafe, 0x4ade80, 1.3);
+    // ── LIGHTING: WARM SUNLIGHT + SOFT SKY AMBIENT + VELVET RIM GLOW ──
+    const hemiLight = new THREE.HemisphereLight(0xdbeafe, 0x4ade80, 1.35);
     scene.add(hemiLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfffbeb, 2.4);
-    sunLight.position.set(3.5, 5.5, 4.2);
+    const sunLight = new THREE.DirectionalLight(0xfffbeb, 2.5);
+    sunLight.position.set(3.6, 5.8, 4.2);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 1024;
     sunLight.shadow.mapSize.height = 1024;
@@ -206,16 +235,16 @@ export function ThreeYetiMascot({
     scene.add(sunLight);
 
     // Warm Sun Fill
-    const fillLight = new THREE.DirectionalLight(0xffedd5, 0.9);
-    fillLight.position.set(-3.0, 2.0, 3.0);
+    const fillLight = new THREE.DirectionalLight(0xffedd5, 0.95);
+    fillLight.position.set(-3.2, 2.2, 3.2);
     scene.add(fillLight);
 
-    // Soft Rim Light on fluffy fur edges
-    const rimLight = new THREE.DirectionalLight(0xe0f2fe, 2.8);
-    rimLight.position.set(-3.5, 4.0, -3.5);
+    // Velvet Rim Light for fluffy silhouette halo
+    const rimLight = new THREE.DirectionalLight(0xe0f2fe, 3.0);
+    rimLight.position.set(-3.6, 4.2, -3.6);
     scene.add(rimLight);
 
-    // ── ENVIRONMENT: LUSH GRASS MEADOW & DEPTH ──
+    // ── ENVIRONMENT: LUSH MEADOW TERRAIN & DEPTH ──
     const groundGeo = new THREE.PlaneGeometry(16, 14, 32, 32);
     groundGeo.rotateX(-Math.PI / 2);
     const pos = groundGeo.attributes.position;
@@ -228,7 +257,7 @@ export function ThreeYetiMascot({
     groundGeo.computeVertexNormals();
 
     const groundMat = new THREE.MeshStandardMaterial({
-      color: 0x4fa84f, // Lush natural green
+      color: 0x4fa84f, // Lush natural green meadow
       roughness: 0.88,
       metalness: 0.02,
     });
@@ -276,10 +305,10 @@ export function ThreeYetiMascot({
     // ── VOLUMETRIC PUFFY CLOUDS ──
     const cloudMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
-      roughness: 0.4,
+      roughness: 0.45,
       metalness: 0.02,
       transparent: true,
-      opacity: 0.94,
+      opacity: 0.95,
     });
 
     const createPuffyCloud = (x: number, y: number, z: number, scale: number) => {
@@ -348,34 +377,69 @@ export function ThreeYetiMascot({
       });
     }
 
-    // ── CHARACTER ROOT RIG (FITTED FOR VIEWPORT) ──
+    // ── CHARACTER ROOT RIG (CALIBRATED TO 0.70 FOR VIEWPORT) ──
     const yetiRoot = new THREE.Group();
     yetiRoot.position.set(0, 0.05, 0);
     yetiRoot.scale.setScalar(0.70);
     scene.add(yetiRoot);
 
-    // ── HIGH-FIDELITY FLUFFY MATERIALS (VELVET SHEEN & MATTE FUR) ──
-    const furMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xfcfdff, // Pure soft white with subtle cream warmth
-      roughness: 0.94, // Ultra-soft matte, zero plastic specular
+    // ── HIGH-FIDELITY FLUFFY MATERIALS (VELVET SHEEN & MULTI-LAYER FUR) ──
+    const furBaseMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xfcfdff, // Warm creamy soft white
+      roughness: 0.94, // Ultra-soft matte, zero plastic shine
       metalness: 0.0,
-      sheen: 1.0, // Microfiber velvet edge halo
-      sheenRoughness: 0.4,
-      sheenColor: new THREE.Color(0xfff6ea),
+      sheen: 1.0, // Microfiber velvet edge glow
+      sheenRoughness: 0.42,
+      sheenColor: new THREE.Color(0xfff7ea),
       normalMap: furNormalTex,
-      normalScale: new THREE.Vector2(0.5, 0.5),
+      normalScale: new THREE.Vector2(0.55, 0.55),
     });
 
+    // Helper: Creates a volumetric multi-shell fluffy mesh with soft fur fibers
+    const createFluffyMesh = (
+      geo: THREE.BufferGeometry,
+      baseMat: THREE.Material = furBaseMaterial,
+      shellLayers = 8,
+      shellExtrude = 0.045
+    ) => {
+      const g = new THREE.Group();
+      const baseMesh = new THREE.Mesh(geo, baseMat);
+      baseMesh.castShadow = true;
+      baseMesh.receiveShadow = true;
+      g.add(baseMesh);
+
+      // Volumetric concentric fur shells with alpha fibers
+      for (let s = 1; s <= shellLayers; s++) {
+        const factor = 1.0 + (s / shellLayers) * shellExtrude;
+        const shellMat = new THREE.MeshPhysicalMaterial({
+          color: 0xffffff,
+          roughness: 0.95,
+          metalness: 0.0,
+          sheen: 1.0,
+          sheenColor: new THREE.Color(0xfff8ee),
+          alphaMap: furAlphaTex,
+          transparent: true,
+          opacity: Math.max(0.15, 1.0 - (s / shellLayers) * 0.65),
+          depthWrite: false,
+        });
+
+        const shellMesh = new THREE.Mesh(geo, shellMat);
+        shellMesh.scale.setScalar(factor);
+        g.add(shellMesh);
+      }
+      return g;
+    };
+
     const skinMaterial = new THREE.MeshStandardMaterial({
-      color: 0x82bfe8, // Soft pastel sky blue face & hands
-      roughness: 0.62,
+      color: 0x80bfe8, // Soft pastel sky blue face & hands (reference match)
+      roughness: 0.65,
       metalness: 0.02,
     });
 
     const eyeMaterial = new THREE.MeshStandardMaterial({
       color: 0x06080e, // Deep glossy black
-      roughness: 0.03,
-      metalness: 0.25,
+      roughness: 0.02,
+      metalness: 0.3,
     });
 
     const glintMaterial = new THREE.MeshBasicMaterial({
@@ -408,56 +472,50 @@ export function ThreeYetiMascot({
     // Main Fluffy Torso
     const bodyGeo = new THREE.SphereGeometry(0.86, 32, 32);
     bodyGeo.scale(1.08, 1.18, 0.96);
-    const bodyMesh = new THREE.Mesh(bodyGeo, furMaterial);
-    bodyMesh.castShadow = true;
-    bodyMesh.receiveShadow = true;
+    const bodyMesh = createFluffyMesh(bodyGeo, furBaseMaterial, 8, 0.04);
     bodyGroup.add(bodyMesh);
 
     // Volumetric Belly & Chest Fluff Ruff
-    const bellyRuff = new THREE.Mesh(
-      new THREE.SphereGeometry(0.55, 24, 24),
-      furMaterial
-    );
-    bellyRuff.scale.set(1.15, 0.95, 0.6);
+    const bellyGeo = new THREE.SphereGeometry(0.55, 24, 24);
+    bellyGeo.scale(1.15, 0.95, 0.6);
+    const bellyRuff = createFluffyMesh(bellyGeo, furBaseMaterial, 6, 0.035);
     bellyRuff.position.set(0, 0.08, 0.65);
     bodyGroup.add(bellyRuff);
 
     // Fluffy Side Hip Tufts
-    const hipTuftL = new THREE.Mesh(new THREE.SphereGeometry(0.38, 16, 16), furMaterial);
-    hipTuftL.scale.set(0.9, 1.2, 0.8);
+    const hipGeoL = new THREE.SphereGeometry(0.38, 16, 16);
+    hipGeoL.scale(0.9, 1.2, 0.8);
+    const hipTuftL = createFluffyMesh(hipGeoL, furBaseMaterial, 5, 0.03);
     hipTuftL.position.set(-0.75, -0.25, 0.1);
     bodyGroup.add(hipTuftL);
 
-    const hipTuftR = new THREE.Mesh(new THREE.SphereGeometry(0.38, 16, 16), furMaterial);
-    hipTuftR.scale.set(0.9, 1.2, 0.8);
+    const hipGeoR = new THREE.SphereGeometry(0.38, 16, 16);
+    hipGeoR.scale(0.9, 1.2, 0.8);
+    const hipTuftR = createFluffyMesh(hipGeoR, furBaseMaterial, 5, 0.03);
     hipTuftR.position.set(0.75, -0.25, 0.1);
     bodyGroup.add(hipTuftR);
 
     // ── LEGS & GROUNDED FEET ──
     const legGeo = new THREE.CylinderGeometry(0.24, 0.28, 0.45, 20);
-    const leftLeg = new THREE.Mesh(legGeo, furMaterial);
+    const leftLeg = createFluffyMesh(legGeo, furBaseMaterial, 5, 0.03);
     leftLeg.position.set(-0.4, -1.15, 0.05);
     leftLeg.rotation.z = 0.06;
-    leftLeg.castShadow = true;
     yetiRoot.add(leftLeg);
 
-    const rightLeg = new THREE.Mesh(legGeo, furMaterial);
+    const rightLeg = createFluffyMesh(legGeo, furBaseMaterial, 5, 0.03);
     rightLeg.position.set(0.4, -1.15, 0.05);
     rightLeg.rotation.z = -0.06;
-    rightLeg.castShadow = true;
     yetiRoot.add(rightLeg);
 
-    // Feet (Ankles in white fur + Soft Blue Toes planted firmly)
+    // Feet (Fluffy Ankles + Soft Blue Padded Toes Planted Firmly)
     const createFoot = (x: number, isLeft: boolean) => {
       const footGroup = new THREE.Group();
       footGroup.position.set(x, -1.32, 0.15);
 
-      // Fluffy White Ankle Cuff
-      const ankle = new THREE.Mesh(
-        new THREE.SphereGeometry(0.26, 20, 20),
-        furMaterial
-      );
-      ankle.scale.set(1.1, 0.7, 1.2);
+      // Fluffy White Ankle
+      const ankleGeo = new THREE.SphereGeometry(0.26, 20, 20);
+      ankleGeo.scale(1.1, 0.7, 1.2);
+      const ankle = createFluffyMesh(ankleGeo, furBaseMaterial, 5, 0.03);
       footGroup.add(ankle);
 
       // Soft Blue Toes
@@ -476,7 +534,7 @@ export function ThreeYetiMascot({
       const shadowMat = new THREE.MeshBasicMaterial({
         map: contactShadowTex,
         transparent: true,
-        opacity: 0.65,
+        opacity: 0.75,
         depthWrite: false,
       });
       const footShadow = new THREE.Mesh(new THREE.PlaneGeometry(0.85, 0.85), shadowMat);
@@ -500,12 +558,11 @@ export function ThreeYetiMascot({
     // Main Head Sphere
     const headGeo = new THREE.SphereGeometry(0.84, 32, 32);
     headGeo.scale(1.12, 0.98, 1.02);
-    const headFur = new THREE.Mesh(headGeo, furMaterial);
-    headFur.castShadow = true;
+    const headFur = createFluffyMesh(headGeo, furBaseMaterial, 8, 0.045);
     headGroup.add(headFur);
 
-    // ── CROWN OF FLUFFY FUR TUFTS (AS IN REFERENCE ANIMATION) ──
-    const createFurTuft = (
+    // ── 9 FLUFFY FUR TUFTS (MATCHING REFERENCE HAIR SILHOUETTE) ──
+    const createOrganicHairTuft = (
       x: number,
       y: number,
       z: number,
@@ -516,29 +573,27 @@ export function ThreeYetiMascot({
       sy: number,
       sz: number
     ) => {
-      const tuft = new THREE.Mesh(
-        new THREE.SphereGeometry(0.3, 16, 16),
-        furMaterial
-      );
-      tuft.scale.set(sx, sy, sz);
+      const tuftGeo = new THREE.SphereGeometry(0.3, 16, 16);
+      tuftGeo.scale(sx, sy, sz);
+      const tuft = createFluffyMesh(tuftGeo, furBaseMaterial, 5, 0.035);
       tuft.position.set(x, y, z);
       tuft.rotation.set(rx, ry, rz);
       headGroup.add(tuft);
       return tuft;
     };
 
-    // 7 Asymmetric Organic Hair Tufts forming fluffy silhouette
-    createFurTuft(0, 0.88, 0.02, -0.1, 0, 0.05, 0.75, 1.35, 0.7); // Main center crest
-    createFurTuft(-0.25, 0.82, -0.04, -0.15, 0.1, 0.35, 0.65, 1.15, 0.6); // Left crest
-    createFurTuft(0.24, 0.8, -0.04, -0.15, -0.1, -0.32, 0.65, 1.15, 0.6); // Right crest
-    createFurTuft(-0.45, 0.65, -0.08, -0.2, 0.2, 0.55, 0.6, 0.95, 0.55); // Left lower tuft
-    createFurTuft(0.45, 0.63, -0.08, -0.2, -0.2, -0.52, 0.6, 0.95, 0.55); // Right lower tuft
-    createFurTuft(-0.12, 0.94, -0.06, -0.05, 0, 0.15, 0.55, 1.05, 0.5); // Top crown accent
-    createFurTuft(0.14, 0.92, -0.06, -0.05, 0, -0.12, 0.55, 1.05, 0.5); // Top crown accent
+    // Asymmetric organic hair tufts matching reference video
+    createOrganicHairTuft(0, 0.88, 0.02, -0.1, 0, 0.05, 0.75, 1.35, 0.7); // Main center crest
+    createOrganicHairTuft(-0.25, 0.82, -0.04, -0.15, 0.1, 0.35, 0.65, 1.15, 0.6); // Left crest
+    createOrganicHairTuft(0.24, 0.8, -0.04, -0.15, -0.1, -0.32, 0.65, 1.15, 0.6); // Right crest
+    createOrganicHairTuft(-0.45, 0.65, -0.08, -0.2, 0.2, 0.55, 0.6, 0.95, 0.55); // Left lower tuft
+    createOrganicHairTuft(0.45, 0.63, -0.08, -0.2, -0.2, -0.52, 0.6, 0.95, 0.55); // Right lower tuft
+    createOrganicHairTuft(-0.12, 0.94, -0.06, -0.05, 0, 0.15, 0.55, 1.05, 0.5); // Top crown accent
+    createOrganicHairTuft(0.14, 0.92, -0.06, -0.05, 0, -0.12, 0.55, 1.05, 0.5); // Top crown accent
 
-    // Fluffy Cheek Fur Clusters
-    createFurTuft(-0.72, -0.08, 0.3, 0.1, 0.4, 0.45, 0.7, 0.85, 0.65); // Left cheek ruff
-    createFurTuft(0.72, -0.08, 0.3, 0.1, -0.4, -0.45, 0.7, 0.85, 0.65); // Right cheek ruff
+    // Fluffy Cheek Fur Clusters Framing the Face
+    createOrganicHairTuft(-0.72, -0.08, 0.3, 0.1, 0.4, 0.45, 0.7, 0.85, 0.65); // Left cheek ruff
+    createOrganicHairTuft(0.72, -0.08, 0.3, 0.1, -0.4, -0.45, 0.7, 0.85, 0.65); // Right cheek ruff
 
     // ── ROUNDED EARS WITH INNER BLUE ──
     const earGeo = new THREE.SphereGeometry(0.26, 20, 20);
@@ -548,7 +603,7 @@ export function ThreeYetiMascot({
     leftEarGroup.position.set(-0.85, 0.35, -0.1);
     headGroup.add(leftEarGroup);
 
-    const leftEar = new THREE.Mesh(earGeo, furMaterial);
+    const leftEar = new THREE.Mesh(earGeo, furBaseMaterial);
     leftEar.rotation.z = -0.35;
     leftEarGroup.add(leftEar);
 
@@ -565,7 +620,7 @@ export function ThreeYetiMascot({
     rightEarGroup.position.set(0.85, 0.35, -0.1);
     headGroup.add(rightEarGroup);
 
-    const rightEar = new THREE.Mesh(earGeo, furMaterial);
+    const rightEar = new THREE.Mesh(earGeo, furBaseMaterial);
     rightEar.rotation.z = 0.35;
     rightEarGroup.add(rightEar);
 
@@ -606,7 +661,7 @@ export function ThreeYetiMascot({
     rightCheek.position.set(0.38, -0.15, 0.76);
     headGroup.add(rightCheek);
 
-    // Smiling Mouth
+    // Sweet Smiling Mouth
     const initialCurve = new THREE.CatmullRomCurve3([
       new THREE.Vector3(-0.24, -0.2, 0.79),
       new THREE.Vector3(-0.12, -0.26, 0.82),
@@ -676,10 +731,8 @@ export function ThreeYetiMascot({
     rightShoulderGroup.position.set(0.65, -0.1, 0);
     yetiRoot.add(rightShoulderGroup);
 
-    const rightUpperArm = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.18, 0.22, 0.55, 16),
-      furMaterial
-    );
+    const rightUpperArmGeo = new THREE.CylinderGeometry(0.18, 0.22, 0.55, 16);
+    const rightUpperArm = createFluffyMesh(rightUpperArmGeo, furBaseMaterial, 5, 0.03);
     rightUpperArm.position.set(0.08, -0.25, 0.05);
     rightUpperArm.rotation.z = -0.12;
     rightShoulderGroup.add(rightUpperArm);
@@ -688,9 +741,10 @@ export function ThreeYetiMascot({
     rightForearmGroup.position.set(0.15, -0.5, 0.08);
     rightShoulderGroup.add(rightForearmGroup);
 
-    // White fur wrist cuff
-    const rightCuff = new THREE.Mesh(new THREE.SphereGeometry(0.19, 16, 16), furMaterial);
-    rightCuff.scale.set(1.1, 0.7, 1.0);
+    // Fluffy white fur wrist cuff
+    const cuffGeo = new THREE.SphereGeometry(0.19, 16, 16);
+    cuffGeo.scale(1.1, 0.7, 1.0);
+    const rightCuff = createFluffyMesh(cuffGeo, furBaseMaterial, 4, 0.025);
     rightForearmGroup.add(rightCuff);
 
     const rightWristGroup = new THREE.Group();
@@ -734,10 +788,8 @@ export function ThreeYetiMascot({
     leftShoulderGroup.position.set(-0.65, -0.05, 0.05);
     yetiRoot.add(leftShoulderGroup);
 
-    const leftUpperArm = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.18, 0.22, 0.55, 16),
-      furMaterial
-    );
+    const leftUpperArmGeo = new THREE.CylinderGeometry(0.18, 0.22, 0.55, 16);
+    const leftUpperArm = createFluffyMesh(leftUpperArmGeo, furBaseMaterial, 5, 0.03);
     leftUpperArm.position.set(-0.15, 0.15, 0.05);
     leftUpperArm.rotation.z = 0.75;
     leftUpperArm.rotation.x = -0.1;
@@ -747,17 +799,14 @@ export function ThreeYetiMascot({
     leftForearmGroup.position.set(-0.3, 0.35, 0.12);
     leftShoulderGroup.add(leftForearmGroup);
 
-    const leftForearm = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.14, 0.17, 0.4, 16),
-      furMaterial
-    );
+    const leftForearmGeo = new THREE.CylinderGeometry(0.14, 0.17, 0.4, 16);
+    const leftForearm = createFluffyMesh(leftForearmGeo, furBaseMaterial, 5, 0.03);
     leftForearm.position.set(0, 0.1, 0);
     leftForearm.rotation.z = -0.1;
     leftForearmGroup.add(leftForearm);
 
-    // White fur wrist cuff
-    const leftCuff = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), furMaterial);
-    leftCuff.scale.set(1.1, 0.7, 1.0);
+    // Fluffy white fur wrist cuff
+    const leftCuff = createFluffyMesh(cuffGeo, furBaseMaterial, 4, 0.025);
     leftCuff.position.set(0, 0.22, 0);
     leftForearmGroup.add(leftCuff);
 
@@ -813,7 +862,7 @@ export function ThreeYetiMascot({
       g.position.set(x, 0.05, 0);
 
       // Fluffy wrist cuff
-      const cuff = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), furMaterial);
+      const cuff = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), furBaseMaterial);
       cuff.scale.set(1.0, 0.7, 0.8);
       g.add(cuff);
 
