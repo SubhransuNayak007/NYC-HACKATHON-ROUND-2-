@@ -17,7 +17,11 @@ import {
   CheckCircle2,
   ArrowLeft,
   ChevronDown,
+  Brain,
+  MessageSquare,
+  GitFork,
 } from "lucide-react";
+import { IsometricTiles3DExperience } from "./IsometricTiles3DExperience";
 
 export type AuthMode =
   | "signup"
@@ -31,36 +35,6 @@ interface UnifiedAuthExperienceProps {
   initialMode?: AuthMode;
 }
 
-// ── RIGHT-PANEL ANIMATED WORKFLOW TASKS ──
-interface WorkflowTask {
-  id: string;
-  title: string;
-  category: string;
-}
-
-const WORKFLOW_TASKS: WorkflowTask[] = [
-  {
-    id: "task-1",
-    title: "Identify code optimization opportunities and performance improvements",
-    category: "AI Code Analysis",
-  },
-  {
-    id: "task-2",
-    title: "Multi-channel comment-to-DM routing on WhatsApp & Instagram",
-    category: "Social Automation",
-  },
-  {
-    id: "task-3",
-    title: "Autonomous AI knowledge base sync and semantic vector retrieval",
-    category: "RAG Pipeline",
-  },
-  {
-    id: "task-4",
-    title: "Automated 24/7 lead qualification and intelligent CRM sync",
-    category: "Growth Agent",
-  },
-];
-
 export function UnifiedAuthExperience({
   initialMode = "signup",
 }: UnifiedAuthExperienceProps) {
@@ -73,7 +47,7 @@ export function UnifiedAuthExperience({
 
   // Form states
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState(searchParams.get("email") || "");
+  const [email, setEmail] = useState(searchParams.get("email") || "md.imranhossen.db@gmail.com");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -85,11 +59,6 @@ export function UnifiedAuthExperience({
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [resendTimer, setResendTimer] = useState(60);
-
-  // Right panel typing & animation state
-  const [activeTaskIdx, setActiveTaskIdx] = useState(0);
-  const [typedText, setTypedText] = useState("");
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   // Sync mode with URL when query changes
   useEffect(() => {
@@ -107,40 +76,6 @@ export function UnifiedAuthExperience({
       return () => clearTimeout(t);
     }
   }, [mode, resendTimer]);
-
-  // Right Panel Typing Effect
-  const currentTask = WORKFLOW_TASKS[activeTaskIdx];
-  useEffect(() => {
-    let char = 0;
-    setTypedText("");
-    const target = currentTask.title;
-
-    const interval = setInterval(() => {
-      if (char <= target.length) {
-        setTypedText(target.slice(0, char));
-        char++;
-      } else {
-        clearInterval(interval);
-        setTimeout(() => {
-          setActiveTaskIdx((prev) => (prev + 1) % WORKFLOW_TASKS.length);
-        }, 3600);
-      }
-    }, 35);
-
-    return () => clearInterval(interval);
-  }, [activeTaskIdx]);
-
-  // 3D Mouse Parallax
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setMousePos({ x, y });
-  };
-
-  const handleMouseLeave = () => {
-    setMousePos({ x: 0, y: 0 });
-  };
 
   // Smooth State Switcher
   const switchMode = (newMode: AuthMode) => {
@@ -344,19 +279,19 @@ export function UnifiedAuthExperience({
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#f0f2f5] flex items-center justify-center p-3 sm:p-6 lg:p-10 font-sans text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900">
+    <div className="min-h-screen w-full bg-[#E5E9EE] flex items-center justify-center p-3 sm:p-6 lg:p-8 font-sans text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900">
       
-      {/* ── Main Container (Dribbble Dimensions & Spacing) ── */}
-      <div className="w-full max-w-[1240px] min-h-[720px] lg:min-h-[760px] bg-white rounded-[28px] sm:rounded-[36px] border border-slate-200/90 shadow-[0_24px_70px_-15px_rgba(0,0,0,0.06),0_0_1px_1px_rgba(0,0,0,0.02)] grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+      {/* ── Outer Card (Exact Dribbble Reference Dimensions & Floating Glass Card) ── */}
+      <div className="w-full max-w-[1240px] min-h-[720px] lg:h-[780px] bg-[#F5F6F8] rounded-[32px] sm:rounded-[36px] border border-white/90 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.07)] p-4 sm:p-5 flex flex-col lg:flex-row gap-4 overflow-hidden">
         
         {/* ══════════════════════════════════════════════════════════════════════
-            LEFT PANEL: Dynamic Smooth Auth State (Cols: 6)
+            LEFT PANEL: Clean Form Zone (Exact Spacing & Sizing)
             ══════════════════════════════════════════════════════════════════════ */}
-        <div className="lg:col-span-6 xl:col-span-6 flex flex-col justify-between p-6 sm:p-10 lg:p-14 relative bg-[#fafafa]">
+        <div className="flex-1 flex flex-col justify-between p-6 sm:p-8 lg:p-10 relative">
           
-          {/* ── Top Header Navigation ── */}
-          <div className="flex items-center justify-between w-full mb-6 sm:mb-8">
-            {/* Product Logo & Enterprise Badge */}
+          {/* ── Top Header Bar ── */}
+          <div className="flex items-center justify-between w-full">
+            {/* Logo + Brand Name */}
             <Link href="/" className="flex items-center gap-3 group">
               <div className="w-9 h-9 rounded-[11px] bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] flex items-center justify-center text-white shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform">
                 <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
@@ -373,7 +308,7 @@ export function UnifiedAuthExperience({
               </div>
             </Link>
 
-            {/* Contextual Header Switcher Button */}
+            {/* Contextual Top-Right Switcher Button */}
             <div className="flex items-center text-xs text-slate-500">
               {mode === "signup" && (
                 <div className="flex items-center gap-1.5">
@@ -381,7 +316,7 @@ export function UnifiedAuthExperience({
                   <button
                     type="button"
                     onClick={() => switchMode("login")}
-                    className="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+                    className="px-3 py-1 rounded-lg border border-slate-300/80 bg-white text-slate-700 font-semibold hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-2xs cursor-pointer"
                   >
                     Login
                   </button>
@@ -394,7 +329,7 @@ export function UnifiedAuthExperience({
                   <button
                     type="button"
                     onClick={() => switchMode("signup")}
-                    className="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+                    className="px-3 py-1 rounded-lg border border-slate-300/80 bg-white text-slate-700 font-semibold hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-2xs cursor-pointer"
                   >
                     Sign up
                   </button>
@@ -404,7 +339,7 @@ export function UnifiedAuthExperience({
               {mode === "verify" && (
                 <div className="flex items-center gap-1.5">
                   <span className="text-slate-400">Check your</span>
-                  <span className="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-700 font-semibold bg-slate-50">
+                  <span className="px-3 py-1 rounded-lg border border-slate-300/80 bg-white text-slate-700 font-semibold shadow-2xs">
                     Inbox
                   </span>
                 </div>
@@ -423,8 +358,8 @@ export function UnifiedAuthExperience({
             </div>
           </div>
 
-          {/* ── Center Dynamic Form Container with Framer Motion ── */}
-          <div className="w-full max-w-[370px] mx-auto my-auto py-2">
+          {/* ── Center Dynamic Form Container with Smooth Crossfade ── */}
+          <div className="w-full max-w-[360px] mx-auto my-auto py-2">
             <AnimatePresence mode="wait">
               
               {/* ═══════════════════════════════════════════════════════════════
@@ -433,15 +368,14 @@ export function UnifiedAuthExperience({
               {mode === "signup" && (
                 <motion.div
                   key="signup"
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.22, ease: "easeOut" }}
-                  className="space-y-6"
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="space-y-5"
                 >
-                  {/* Top Avatar Icon + Title */}
-                  <div className="flex flex-col items-center text-center space-y-2.5">
-                    <div className="w-11 h-11 rounded-2xl bg-slate-100/90 border border-slate-200/80 flex items-center justify-center text-slate-600 shadow-sm">
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <div className="w-11 h-11 rounded-2xl bg-white border border-slate-200/80 flex items-center justify-center text-slate-600 shadow-2xs">
                       <User className="w-5 h-5" />
                     </div>
                     <div>
@@ -454,7 +388,6 @@ export function UnifiedAuthExperience({
                     </div>
                   </div>
 
-                  {/* Inline Error Alert */}
                   {error && (
                     <div className="p-3 rounded-xl bg-red-50/80 border border-red-200/90 text-xs text-red-600 flex items-start gap-2 animate-fadeIn">
                       <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
@@ -462,12 +395,11 @@ export function UnifiedAuthExperience({
                     </div>
                   )}
 
-                  {/* Social Auth Buttons */}
                   <div className="space-y-2">
                     <button
                       type="button"
                       onClick={handleGoogleAuth}
-                      className="w-full h-11 px-4 rounded-xl bg-slate-100/80 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2.5 border border-slate-200/60 shadow-2xs hover:shadow-xs active:scale-[0.99] transition-all cursor-pointer"
+                      className="w-full h-11 px-4 rounded-[13px] bg-[#ECEFF3] hover:bg-[#E2E6EC] text-slate-700 text-xs font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-2xs"
                     >
                       <svg className="w-4 h-4" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -481,7 +413,7 @@ export function UnifiedAuthExperience({
                     <button
                       type="button"
                       onClick={handleAppleAuth}
-                      className="w-full h-11 px-4 rounded-xl bg-slate-100/80 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2.5 border border-slate-200/60 shadow-2xs hover:shadow-xs active:scale-[0.99] transition-all cursor-pointer"
+                      className="w-full h-11 px-4 rounded-[13px] bg-[#ECEFF3] hover:bg-[#E2E6EC] text-slate-700 text-xs font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-2xs"
                     >
                       <svg className="w-4 h-4 fill-current text-slate-900" viewBox="0 0 24 24">
                         <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.93-2.85-.9.04-2 .6-2.65 1.35-.58.66-1.09 1.73-.95 2.76 1.01.08 2.05-.51 2.67-1.26z" />
@@ -490,15 +422,13 @@ export function UnifiedAuthExperience({
                     </button>
                   </div>
 
-                  {/* Subtle Divider */}
                   <div className="relative flex items-center justify-center">
-                    <div className="w-full border-t border-slate-200/70" />
-                    <span className="absolute px-3 bg-white text-[11px] text-slate-400 uppercase tracking-wider font-medium">
+                    <div className="w-full border-t border-slate-200" />
+                    <span className="absolute px-3 bg-[#F5F6F8] text-[11px] text-slate-400 uppercase tracking-wider font-medium">
                       Or
                     </span>
                   </div>
 
-                  {/* Email & Password Form */}
                   <form onSubmit={handleSignup} className="space-y-2.5">
                     <div>
                       <input
@@ -507,7 +437,7 @@ export function UnifiedAuthExperience({
                         placeholder="Full name"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        className="w-full h-11 px-3.5 rounded-[13px] border border-slate-200/90 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10 transition-all shadow-2xs"
                       />
                     </div>
 
@@ -518,7 +448,7 @@ export function UnifiedAuthExperience({
                         placeholder="Email address"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        className="w-full h-11 px-3.5 rounded-[13px] border border-slate-200/90 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10 transition-all shadow-2xs"
                       />
                     </div>
 
@@ -529,7 +459,7 @@ export function UnifiedAuthExperience({
                         placeholder="Create password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full h-11 pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        className="w-full h-11 pl-3.5 pr-10 rounded-[13px] border border-slate-200/90 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10 transition-all shadow-2xs"
                       />
                       <button
                         type="button"
@@ -543,7 +473,7 @@ export function UnifiedAuthExperience({
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full h-11 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-xs hover:shadow transition-all active:scale-[0.99] disabled:opacity-70 cursor-pointer pt-0.5"
+                      className="w-full h-11 rounded-[13px] bg-slate-950 hover:bg-black text-white text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-xs hover:shadow transition-all active:scale-[0.99] disabled:opacity-70 cursor-pointer pt-0.5"
                     >
                       {loading ? (
                         <>
@@ -556,7 +486,6 @@ export function UnifiedAuthExperience({
                     </button>
                   </form>
 
-                  {/* Legal Notice */}
                   <p className="text-[11px] text-center text-slate-400 leading-normal">
                     By continuing, you acknowledge QuickReply{" "}
                     <Link href="/privacy" className="underline hover:text-slate-600">
@@ -573,15 +502,14 @@ export function UnifiedAuthExperience({
               {mode === "login" && (
                 <motion.div
                   key="login"
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.22, ease: "easeOut" }}
-                  className="space-y-6"
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="space-y-5"
                 >
-                  {/* Top Avatar Icon + Title */}
-                  <div className="flex flex-col items-center text-center space-y-2.5">
-                    <div className="w-11 h-11 rounded-2xl bg-slate-100/90 border border-slate-200/80 flex items-center justify-center text-slate-600 shadow-sm">
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <div className="w-11 h-11 rounded-2xl bg-white border border-slate-200/80 flex items-center justify-center text-slate-600 shadow-2xs">
                       <User className="w-5 h-5" />
                     </div>
                     <div>
@@ -594,7 +522,6 @@ export function UnifiedAuthExperience({
                     </div>
                   </div>
 
-                  {/* Inline Error Alert */}
                   {error && (
                     <div className="p-3 rounded-xl bg-red-50/80 border border-red-200/90 text-xs text-red-600 flex items-start gap-2 animate-fadeIn">
                       <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
@@ -602,12 +529,11 @@ export function UnifiedAuthExperience({
                     </div>
                   )}
 
-                  {/* Social Auth Buttons */}
                   <div className="space-y-2">
                     <button
                       type="button"
                       onClick={handleGoogleAuth}
-                      className="w-full h-11 px-4 rounded-xl bg-slate-100/80 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2.5 border border-slate-200/60 shadow-2xs hover:shadow-xs active:scale-[0.99] transition-all cursor-pointer"
+                      className="w-full h-11 px-4 rounded-[13px] bg-[#ECEFF3] hover:bg-[#E2E6EC] text-slate-700 text-xs font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-2xs"
                     >
                       <svg className="w-4 h-4" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -621,7 +547,7 @@ export function UnifiedAuthExperience({
                     <button
                       type="button"
                       onClick={handleAppleAuth}
-                      className="w-full h-11 px-4 rounded-xl bg-slate-100/80 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2.5 border border-slate-200/60 shadow-2xs hover:shadow-xs active:scale-[0.99] transition-all cursor-pointer"
+                      className="w-full h-11 px-4 rounded-[13px] bg-[#ECEFF3] hover:bg-[#E2E6EC] text-slate-700 text-xs font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-2xs"
                     >
                       <svg className="w-4 h-4 fill-current text-slate-900" viewBox="0 0 24 24">
                         <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.93-2.85-.9.04-2 .6-2.65 1.35-.58.66-1.09 1.73-.95 2.76 1.01.08 2.05-.51 2.67-1.26z" />
@@ -630,16 +556,14 @@ export function UnifiedAuthExperience({
                     </button>
                   </div>
 
-                  {/* Subtle Divider */}
                   <div className="relative flex items-center justify-center">
-                    <div className="w-full border-t border-slate-200/70" />
-                    <span className="absolute px-3 bg-white text-[11px] text-slate-400 uppercase tracking-wider font-medium">
+                    <div className="w-full border-t border-slate-200" />
+                    <span className="absolute px-3 bg-[#F5F6F8] text-[11px] text-slate-400 uppercase tracking-wider font-medium">
                       Or
                     </span>
                   </div>
 
-                  {/* Email & Password Form */}
-                  <form onSubmit={handleLogin} className="space-y-3.5">
+                  <form onSubmit={handleLogin} className="space-y-3">
                     <div>
                       <input
                         type="email"
@@ -647,7 +571,7 @@ export function UnifiedAuthExperience({
                         placeholder="Email address"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        className="w-full h-11 px-3.5 rounded-[13px] border border-slate-200/90 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10 transition-all shadow-2xs"
                       />
                     </div>
 
@@ -659,7 +583,7 @@ export function UnifiedAuthExperience({
                           placeholder="Password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          className="w-full h-11 pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full h-11 pl-3.5 pr-10 rounded-[13px] border border-slate-200/90 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10 transition-all shadow-2xs"
                         />
                         <button
                           type="button"
@@ -684,7 +608,7 @@ export function UnifiedAuthExperience({
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full h-11 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-xs hover:shadow transition-all active:scale-[0.99] disabled:opacity-70 cursor-pointer"
+                      className="w-full h-11 rounded-[13px] bg-slate-950 hover:bg-black text-white text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-xs hover:shadow transition-all active:scale-[0.99] disabled:opacity-70 cursor-pointer"
                     >
                       {loading ? (
                         <>
@@ -697,7 +621,6 @@ export function UnifiedAuthExperience({
                     </button>
                   </form>
 
-                  {/* Legal Notice */}
                   <p className="text-[11px] text-center text-slate-400 leading-normal">
                     By continuing, you acknowledge QuickReply{" "}
                     <Link href="/privacy" className="underline hover:text-slate-600">
@@ -714,23 +637,23 @@ export function UnifiedAuthExperience({
               {mode === "verify" && (
                 <motion.div
                   key="verify"
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.22, ease: "easeOut" }}
-                  className="space-y-6"
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="space-y-5"
                 >
-                  <div className="flex flex-col items-center text-center space-y-2.5">
-                    <div className="w-11 h-11 rounded-2xl bg-slate-100/90 border border-slate-200/80 flex items-center justify-center text-slate-600 shadow-sm">
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <div className="w-11 h-11 rounded-2xl bg-white border border-slate-200/80 flex items-center justify-center text-slate-600 shadow-2xs">
                       <Mail className="w-5 h-5" />
                     </div>
                     <div>
                       <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
                         Check your inbox
                       </h1>
-                      <p className="text-xs text-slate-400 mt-1 max-w-[280px] mx-auto">
+                      <p className="text-xs text-slate-400 mt-1 max-w-[280px] mx-auto leading-normal">
                         Enter the verification code we just sent to{" "}
-                        <span className="font-semibold text-slate-700">{email || "your email"}</span>
+                        <span className="font-semibold text-slate-700 block truncate">{email || "your email"}</span>
                       </p>
                     </div>
                   </div>
@@ -742,9 +665,8 @@ export function UnifiedAuthExperience({
                     </div>
                   )}
 
-                  <form onSubmit={handleVerify} className="space-y-5">
-                    {/* 6 Clean Rounded OTP Input Boxes (Exact Dribbble Match) */}
-                    <div className="flex items-center justify-center gap-2 sm:gap-2.5">
+                  <form onSubmit={handleVerify} className="space-y-4">
+                    <div className="flex items-center justify-center gap-2">
                       {otp.map((digit, i) => (
                         <input
                           key={i}
@@ -758,7 +680,7 @@ export function UnifiedAuthExperience({
                           onChange={(e) => handleOtpChange(i, e.target.value)}
                           onKeyDown={(e) => handleOtpKeyDown(i, e)}
                           onPaste={handleOtpPaste}
-                          className="w-11 sm:w-12 h-12 sm:h-13 text-center text-lg font-bold rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-2xs transition-all"
+                          className="w-11 h-12 text-center text-lg font-bold rounded-xl border border-slate-200/90 bg-white text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10 shadow-2xs transition-all"
                         />
                       ))}
                     </div>
@@ -766,7 +688,7 @@ export function UnifiedAuthExperience({
                     <button
                       type="submit"
                       disabled={loading || otp.join("").length < 6}
-                      className="w-full h-11 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-xs hover:shadow transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+                      className="w-full h-11 rounded-[13px] bg-slate-950 hover:bg-black text-white text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-xs hover:shadow transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer"
                     >
                       {loading ? (
                         <>
@@ -796,8 +718,8 @@ export function UnifiedAuthExperience({
                   </form>
 
                   <div className="relative flex items-center justify-center">
-                    <div className="w-full border-t border-slate-200/70" />
-                    <span className="absolute px-3 bg-white text-[11px] text-slate-400 uppercase tracking-wider font-medium">
+                    <div className="w-full border-t border-slate-200" />
+                    <span className="absolute px-3 bg-[#F5F6F8] text-[11px] text-slate-400 uppercase tracking-wider font-medium">
                       Or
                     </span>
                   </div>
@@ -805,7 +727,7 @@ export function UnifiedAuthExperience({
                   <button
                     type="button"
                     onClick={() => switchMode("login")}
-                    className="w-full h-11 px-4 rounded-xl bg-slate-100/80 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2 border border-slate-200/60 transition-all cursor-pointer"
+                    className="w-full h-11 px-4 rounded-[13px] bg-[#ECEFF3] hover:bg-[#E2E6EC] text-slate-700 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
                   >
                     Continue with password
                   </button>
@@ -828,14 +750,14 @@ export function UnifiedAuthExperience({
               {mode === "forgot-password" && (
                 <motion.div
                   key="forgot"
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.22, ease: "easeOut" }}
-                  className="space-y-6"
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="space-y-5"
                 >
-                  <div className="flex flex-col items-center text-center space-y-2.5">
-                    <div className="w-11 h-11 rounded-2xl bg-slate-100/90 border border-slate-200/80 flex items-center justify-center text-slate-600 shadow-sm">
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <div className="w-11 h-11 rounded-2xl bg-white border border-slate-200/80 flex items-center justify-center text-slate-600 shadow-2xs">
                       <KeyRound className="w-5 h-5" />
                     </div>
                     <div>
@@ -881,14 +803,14 @@ export function UnifiedAuthExperience({
                           placeholder="Work email address"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full h-11 px-3.5 rounded-[13px] border border-slate-200/90 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10 transition-all shadow-2xs"
                         />
                       </div>
 
                       <button
                         type="submit"
                         disabled={loading}
-                        className="w-full h-11 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-xs hover:shadow transition-all active:scale-[0.99] disabled:opacity-70 cursor-pointer"
+                        className="w-full h-11 rounded-[13px] bg-slate-950 hover:bg-black text-white text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-xs hover:shadow transition-all active:scale-[0.99] disabled:opacity-70 cursor-pointer"
                       >
                         {loading ? (
                           <>
@@ -921,14 +843,14 @@ export function UnifiedAuthExperience({
               {mode === "reset-password" && (
                 <motion.div
                   key="reset"
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.22, ease: "easeOut" }}
-                  className="space-y-6"
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="space-y-5"
                 >
-                  <div className="flex flex-col items-center text-center space-y-2.5">
-                    <div className="w-11 h-11 rounded-2xl bg-slate-100/90 border border-slate-200/80 flex items-center justify-center text-slate-600 shadow-sm">
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <div className="w-11 h-11 rounded-2xl bg-white border border-slate-200/80 flex items-center justify-center text-slate-600 shadow-2xs">
                       <Lock className="w-5 h-5" />
                     </div>
                     <div>
@@ -967,7 +889,7 @@ export function UnifiedAuthExperience({
                           placeholder="New password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          className="w-full h-11 pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full h-11 pl-3.5 pr-10 rounded-[13px] border border-slate-200/90 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10 transition-all shadow-2xs"
                         />
                         <button
                           type="button"
@@ -985,14 +907,14 @@ export function UnifiedAuthExperience({
                           placeholder="Confirm new password"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
-                          className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full h-11 px-3.5 rounded-[13px] border border-slate-200/90 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10 transition-all shadow-2xs"
                         />
                       </div>
 
                       <button
                         type="submit"
                         disabled={loading}
-                        className="w-full h-11 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-xs hover:shadow transition-all active:scale-[0.99] disabled:opacity-70 cursor-pointer"
+                        className="w-full h-11 rounded-[13px] bg-slate-950 hover:bg-black text-white text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-xs hover:shadow transition-all active:scale-[0.99] disabled:opacity-70 cursor-pointer"
                       >
                         {loading ? (
                           <>
@@ -1011,8 +933,8 @@ export function UnifiedAuthExperience({
             </AnimatePresence>
           </div>
 
-          {/* ── Bottom Left Footer (Exact Dribbble Match) ── */}
-          <div className="flex items-center justify-between w-full pt-6 mt-6 border-t border-slate-200/60 text-[11px] text-slate-400 font-medium">
+          {/* ── Bottom Left Footer ── */}
+          <div className="flex items-center justify-between w-full pt-4 border-t border-slate-200/60 text-[11px] text-slate-400 font-medium">
             <span>&copy; 2026 QuickReply.ai</span>
             <div className="flex items-center gap-1.5 hover:text-slate-600 cursor-pointer transition-colors">
               <Globe className="w-3.5 h-3.5" />
@@ -1023,161 +945,126 @@ export function UnifiedAuthExperience({
         </div>
 
         {/* ══════════════════════════════════════════════════════════════════════
-            RIGHT PANEL: Precision 3D Isometric Tile Grid & Live Workflow Engine (Cols: 6)
-            (Stays completely unbroken across all authentication transitions)
+            RIGHT PANEL: Sub-Card with Pure Interactive 3D Isometric Engine & Live Workflow Reel
+            (Matches Reference Layout & Aesthetics 100%)
             ══════════════════════════════════════════════════════════════════════ */}
-        <div
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          className="hidden lg:flex lg:col-span-6 xl:col-span-6 bg-gradient-to-br from-[#d9ebff] via-[#eaf2ff] to-[#a8cffd] p-10 xl:p-14 flex-col justify-between relative overflow-hidden border-l border-slate-200/60 select-none cursor-default"
-        >
-          {/* Ambient Lighting Orbs */}
-          <motion.div
-            animate={{
-              scale: [1, 1.15, 1],
-              opacity: [0.35, 0.5, 0.35],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            className="absolute -top-16 -right-16 w-80 h-80 bg-blue-300/40 rounded-full blur-3xl pointer-events-none"
-          />
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.25, 0.45, 0.25],
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 1,
-            }}
-            className="absolute -bottom-16 -left-16 w-96 h-96 bg-indigo-300/30 rounded-full blur-3xl pointer-events-none"
-          />
-
+        <div className="hidden lg:flex flex-[1.15] bg-gradient-to-br from-[#dcebff] via-[#eaf3ff] to-[#accffc] rounded-[26px] border border-white/80 p-8 lg:p-10 flex-col justify-between relative overflow-hidden shadow-sm select-none cursor-default">
+          
           {/* Top Feature Headline & Description */}
-          <div className="relative z-10 space-y-2.5 pt-2">
-            <h2 className="text-[26px] xl:text-[30px] font-bold text-slate-900 tracking-tight leading-[1.18] max-w-[390px]">
+          <div className="relative z-20 space-y-2 max-w-[340px] pt-1">
+            <h2 className="text-[26px] xl:text-[28px] font-bold text-slate-900 tracking-tight leading-[1.16]">
               Build, Deploy &amp; Manage Enterprise AI Agents
             </h2>
-            <p className="text-xs xl:text-[13px] text-slate-600 leading-relaxed max-w-[400px]">
+            <p className="text-xs text-slate-600 leading-relaxed max-w-[320px]">
               Manage every AI agent, workflow, and business automation from one intelligent platform built for modern enterprises.
             </p>
           </div>
 
-          {/* Center 3D Isometric AI Glass Tile with Organic Floating Bounce & Parallax */}
-          <div className="relative my-4 flex items-center justify-end pr-2">
-            <motion.div
-              animate={{
-                y: [0, -8, 0],
-                x: [0, 4, 0],
-              }}
-              transition={{
-                duration: 5.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              style={{
-                transform: `perspective(1000px) rotateX(${mousePos.y * 6}deg) rotateY(${mousePos.x * -6}deg)`,
-                transition: "transform 0.15s ease-out",
-              }}
-              className="relative w-[340px] h-[260px] xl:w-[380px] xl:h-[290px] flex items-center justify-center pointer-events-none drop-shadow-2xl"
-            >
-              {/* High-Precision SVG Isometric 3D Frosted Tiles with Elevated Blue Emblem */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/auth-isometric-3d.svg"
-                alt="QuickReply Enterprise 3D AI Grid"
-                className="w-full h-full object-contain filter drop-shadow-[0_20px_40px_rgba(37,99,235,0.22)]"
-              />
-            </motion.div>
+          {/* ── Pure Interactive 3D Isometric Tiles Stage ── */}
+          <div className="absolute top-0 right-0 w-[520px] h-[440px] z-10 pointer-events-auto">
+            <IsometricTiles3DExperience />
           </div>
 
-          {/* Bottom Live Animated Workflow Execution Reel (Exact Motion from Video) */}
-          <div className="relative z-10 space-y-2.5 overflow-hidden">
-            {/* Active Running Task Card with Live Typing */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentTask.id}
-                initial={{ opacity: 0, y: 22, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -22, scale: 0.97 }}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                className="p-3.5 rounded-2xl bg-white/70 backdrop-blur-lg border border-white/80 shadow-[0_8px_24px_rgba(0,0,0,0.04)] flex items-center justify-between gap-3 text-xs"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-3.5 h-3.5 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-                  </div>
-                  <span className="font-medium text-slate-800 truncate max-w-[240px] xl:max-w-[280px]">
-                    {typedText}
-                    <span className="animate-pulse text-blue-600 font-bold">|</span>
-                  </span>
+          {/* ── Bottom Workflow Execution Cards (Exact Visual Match) ── */}
+          <div className="relative z-20 space-y-2.5">
+            
+            {/* Card 1: Autonomous AI knowledge base sync (Working...) */}
+            <div className="p-3.5 rounded-2xl bg-white/75 backdrop-blur-md border border-white/80 shadow-[0_6px_20px_rgba(0,0,0,0.03)] flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                {/* Glowing Blue Indicator */}
+                <div className="w-2.5 h-2.5 rounded-full bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.6)] shrink-0 animate-pulse" />
+                
+                {/* Brain / AI Icon Badge */}
+                <div className="w-7 h-7 rounded-xl bg-slate-100/90 border border-slate-200/60 flex items-center justify-center text-slate-700 shrink-0">
+                  <Brain className="w-4 h-4" />
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-[11px] font-semibold text-amber-600">Working...</span>
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                </div>
-              </motion.div>
-            </AnimatePresence>
 
-            {/* Done Task Card 2 */}
-            <motion.div
-              animate={{
-                y: [0, -2, 0],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 0.5,
-              }}
-              className="p-3.5 rounded-2xl bg-white/45 backdrop-blur-md border border-white/60 shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex items-center justify-between gap-3 text-xs"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-3.5 h-3.5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                </div>
-                <div className="flex flex-col gap-1 w-32 xl:w-44">
-                  <div className="h-2 rounded-full bg-slate-300/60 w-full" />
-                  <div className="h-2 rounded-full bg-slate-300/40 w-2/3" />
+                {/* Title & Animated Progress Bar */}
+                <div className="flex-1 min-w-0 space-y-1.5">
+                  <div className="font-semibold text-slate-900 text-xs truncate">
+                    Autonomous AI knowledge base sync
+                  </div>
+                  <div className="h-1.5 w-full max-w-[200px] bg-slate-200/60 rounded-full overflow-hidden">
+                    <motion.div
+                      animate={{
+                        width: ["15%", "75%", "92%", "40%"],
+                      }}
+                      transition={{
+                        duration: 6,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                      className="h-full bg-gradient-to-r from-blue-600 to-blue-500 rounded-full"
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 shrink-0">
+
+              {/* Status Badge */}
+              <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                <span className="text-[11px] font-semibold text-amber-600">Working...</span>
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+              </div>
+            </div>
+
+            {/* Card 2: Customer conversation analysis (Done) */}
+            <div className="p-3.5 rounded-2xl bg-white/60 backdrop-blur-md border border-white/70 shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                {/* Glowing Green Indicator */}
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                
+                {/* Chat Bubble Icon Badge */}
+                <div className="w-7 h-7 rounded-xl bg-slate-100/90 border border-slate-200/60 flex items-center justify-center text-slate-700 shrink-0">
+                  <MessageSquare className="w-3.5 h-3.5" />
+                </div>
+
+                {/* Title & Green Progress Bar */}
+                <div className="flex-1 min-w-0 space-y-1.5">
+                  <div className="font-semibold text-slate-900 text-xs truncate">
+                    Customer conversation analysis
+                  </div>
+                  <div className="h-1.5 w-full max-w-[200px] bg-slate-200/60 rounded-full overflow-hidden">
+                    <div className="h-full w-full bg-emerald-500 rounded-full" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Badge */}
+              <div className="flex items-center gap-1.5 shrink-0 pl-2">
                 <span className="text-[11px] font-semibold text-emerald-600">Done</span>
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
               </div>
-            </motion.div>
+            </div>
 
-            {/* Done Task Card 3 */}
-            <motion.div
-              animate={{
-                y: [0, -2, 0],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 1.0,
-              }}
-              className="p-3.5 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/50 shadow-xs flex items-center justify-between gap-3 text-xs"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-3.5 h-3.5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+            {/* Card 3: Workflow automation setup (Done) */}
+            <div className="p-3.5 rounded-2xl bg-white/45 backdrop-blur-sm border border-white/60 shadow-xs flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                {/* Glowing Green Indicator */}
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                
+                {/* Network / Hierarchy Icon Badge */}
+                <div className="w-7 h-7 rounded-xl bg-slate-100/90 border border-slate-200/60 flex items-center justify-center text-slate-700 shrink-0">
+                  <GitFork className="w-3.5 h-3.5" />
                 </div>
-                <div className="flex flex-col gap-1 w-24 xl:w-36">
-                  <div className="h-2 rounded-full bg-slate-300/50 w-full" />
+
+                {/* Title & Green Progress Bar */}
+                <div className="flex-1 min-w-0 space-y-1.5">
+                  <div className="font-semibold text-slate-900 text-xs truncate">
+                    Workflow automation setup
+                  </div>
+                  <div className="h-1.5 w-full max-w-[200px] bg-slate-200/60 rounded-full overflow-hidden">
+                    <div className="h-full w-full bg-emerald-500 rounded-full" />
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-[11px] font-semibold text-emerald-600/80">Done</span>
-                <span className="w-2 h-2 rounded-full bg-emerald-500/80" />
+
+              {/* Status Badge */}
+              <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                <span className="text-[11px] font-semibold text-emerald-600/90">Done</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500/90" />
               </div>
-            </motion.div>
+            </div>
+
           </div>
 
         </div>
