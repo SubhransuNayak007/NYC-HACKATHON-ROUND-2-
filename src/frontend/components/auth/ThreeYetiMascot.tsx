@@ -669,34 +669,35 @@ export function ThreeYetiMascot({
     // ── ARMS & SHOULDERS HIERARCHICAL RIG ──
     // 1. Right Arm (Resting at side with a natural droop)
     const rightShoulderGroup = new THREE.Group();
-    rightShoulderGroup.position.set(0.72, -0.05, 0);
+    rightShoulderGroup.position.set(0.65, -0.1, 0);
     yetiRoot.add(rightShoulderGroup);
 
     const rightUpperArm = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.18, 0.22, 0.65, 16),
+      new THREE.CylinderGeometry(0.18, 0.22, 0.55, 16),
       furMaterial
     );
-    rightUpperArm.position.set(0.12, -0.28, 0.05);
-    rightUpperArm.rotation.z = -0.2;
+    rightUpperArm.position.set(0.08, -0.25, 0.05);
+    rightUpperArm.rotation.z = -0.12;
     rightShoulderGroup.add(rightUpperArm);
 
     const rightForearmGroup = new THREE.Group();
-    rightForearmGroup.position.set(0.26, -0.62, 0.1);
+    rightForearmGroup.position.set(0.15, -0.5, 0.08);
     rightShoulderGroup.add(rightForearmGroup);
 
     // Right hand as proper paw (palm + pad + fingers)
     const rightWristGroup = new THREE.Group();
+    rightWristGroup.position.set(0, -0.18, 0);
     rightForearmGroup.add(rightWristGroup);
 
     const rightHandPalm = new THREE.Mesh(
-      new THREE.SphereGeometry(0.2, 20, 20),
+      new THREE.SphereGeometry(0.18, 20, 20),
       furMaterial
     );
     rightHandPalm.scale.set(1.1, 0.95, 0.65);
     rightWristGroup.add(rightHandPalm);
 
     const rightPad = new THREE.Mesh(
-      new THREE.SphereGeometry(0.09, 12, 12),
+      new THREE.SphereGeometry(0.08, 12, 12),
       pawPadMaterial
     );
     rightPad.scale.set(1.1, 0.9, 0.3);
@@ -704,10 +705,10 @@ export function ThreeYetiMascot({
     rightWristGroup.add(rightPad);
 
     const rightFingerDefs = [
-      { x: -0.13, y: -0.16, rotZ: -0.3 },
-      { x: -0.04, y: -0.2, rotZ: -0.05 },
-      { x: 0.05, y: -0.19, rotZ: 0.15 },
-      { x: 0.14, y: -0.14, rotZ: 0.35 },
+      { x: -0.1, y: -0.14, rotZ: 0.1 },
+      { x: -0.03, y: -0.16, rotZ: 0.05 },
+      { x: 0.04, y: -0.15, rotZ: -0.05 },
+      { x: 0.11, y: -0.12, rotZ: -0.15 },
     ];
     rightFingerDefs.forEach(({ x, y, rotZ }) => {
       const finger = new THREE.Mesh(
@@ -719,41 +720,49 @@ export function ThreeYetiMascot({
       rightWristGroup.add(finger);
     });
 
+    const rightThumb = new THREE.Mesh(
+      new THREE.CapsuleGeometry(0.05, 0.08, 8, 8),
+      furMaterial
+    );
+    rightThumb.position.set(-0.15, -0.05, 0.05);
+    rightThumb.rotation.z = 0.8;
+    rightWristGroup.add(rightThumb);
+
     // 2. Left Arm (Raised — natural friendly wave)
     const leftShoulderGroup = new THREE.Group();
-    leftShoulderGroup.position.set(-0.72, 0.05, 0);
+    leftShoulderGroup.position.set(-0.65, -0.05, 0.05);
     yetiRoot.add(leftShoulderGroup);
 
     // Upper arm raised upward and slightly outward
     const leftUpperArm = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.18, 0.22, 0.65, 16),
+      new THREE.CylinderGeometry(0.18, 0.22, 0.55, 16),
       furMaterial
     );
-    leftUpperArm.position.set(-0.18, 0.22, 0.08);
-    leftUpperArm.rotation.z = 1.15;   // raised high
-    leftUpperArm.rotation.x = -0.15;
+    leftUpperArm.position.set(-0.15, 0.15, 0.05);
+    leftUpperArm.rotation.z = 0.75;
+    leftUpperArm.rotation.x = -0.1;
     leftShoulderGroup.add(leftUpperArm);
 
     // Forearm bends slightly inward at elbow
     const leftForearmGroup = new THREE.Group();
-    leftForearmGroup.position.set(-0.42, 0.58, 0.16);
+    leftForearmGroup.position.set(-0.3, 0.35, 0.12);
     leftShoulderGroup.add(leftForearmGroup);
 
     const leftForearm = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.14, 0.17, 0.5, 16),
+      new THREE.CylinderGeometry(0.14, 0.17, 0.4, 16),
       furMaterial
     );
-    leftForearm.position.set(0, 0.18, 0);
-    leftForearm.rotation.z = -0.18;
+    leftForearm.position.set(0, 0.1, 0);
+    leftForearm.rotation.z = -0.1;
     leftForearmGroup.add(leftForearm);
 
     const leftWristGroup = new THREE.Group();
-    leftWristGroup.position.set(0.06, 0.42, 0);
+    leftWristGroup.position.set(0, 0.22, 0);
     leftForearmGroup.add(leftWristGroup);
 
     // Left Palm — open, facing forward
     const leftHandPalm = new THREE.Mesh(
-      new THREE.SphereGeometry(0.22, 20, 20),
+      new THREE.SphereGeometry(0.2, 20, 20),
       furMaterial
     );
     leftHandPalm.scale.set(1.1, 1.0, 0.62);
@@ -761,24 +770,24 @@ export function ThreeYetiMascot({
 
     // Cute Paw Pad
     const leftPad = new THREE.Mesh(
-      new THREE.SphereGeometry(0.1, 12, 12),
+      new THREE.SphereGeometry(0.09, 12, 12),
       pawPadMaterial
     );
     leftPad.scale.set(1.1, 0.9, 0.3);
-    leftPad.position.set(0, 0, 0.13);
+    leftPad.position.set(0, 0, 0.12);
     leftWristGroup.add(leftPad);
 
     // 4 Fingers fanned upward (wave pose)
     const leftFingers: THREE.Mesh[] = [];
     const fingerDefs = [
-      { x: -0.15, y: 0.2,  rotZ: 0.35 },
-      { x: -0.05, y: 0.25, rotZ: 0.1 },
-      { x:  0.06, y: 0.24, rotZ: -0.12 },
-      { x:  0.16, y: 0.18, rotZ: -0.38 },
+      { x: -0.12, y: 0.18,  rotZ: 0.3 },
+      { x: -0.04, y: 0.21, rotZ: 0.1 },
+      { x:  0.04, y: 0.20, rotZ: -0.1 },
+      { x:  0.12, y: 0.15, rotZ: -0.3 },
     ];
     fingerDefs.forEach(({ x, y, rotZ }) => {
       const finger = new THREE.Mesh(
-        new THREE.CapsuleGeometry(0.055, 0.13, 8, 8),
+        new THREE.CapsuleGeometry(0.05, 0.1, 8, 8),
         furMaterial
       );
       finger.position.set(x, y, 0.02);
@@ -789,11 +798,11 @@ export function ThreeYetiMascot({
 
     // Thumb (stubby, angled out to the side)
     const leftThumb = new THREE.Mesh(
-      new THREE.CapsuleGeometry(0.055, 0.09, 8, 8),
+      new THREE.CapsuleGeometry(0.05, 0.08, 8, 8),
       furMaterial
     );
-    leftThumb.position.set(-0.22, 0.06, 0.03);
-    leftThumb.rotation.z = 1.1;
+    leftThumb.position.set(-0.2, 0.05, 0.03);
+    leftThumb.rotation.z = 1.0;
     leftWristGroup.add(leftThumb);
     leftFingers.push(leftThumb);
 
@@ -1058,8 +1067,8 @@ export function ThreeYetiMascot({
       }
 
       // ── DUAL HARMONIC BREATHING ENGINE ──
-      const breathPrimary = Math.sin(currentTime * 1.9) * 0.036;
-      const breathSecondary = Math.sin(currentTime * 3.8 + 0.45) * 0.012;
+      const breathPrimary = Math.sin(currentTime * 1.5) * 0.01;
+      const breathSecondary = Math.sin(currentTime * 3.0 + 0.45) * 0.005;
       const breathTotal = breathPrimary + breathSecondary;
 
       // ── UPDATE SPRINGS ──
@@ -1124,23 +1133,30 @@ export function ThreeYetiMascot({
       const curShyY = springShyPawsY.update(dt);
       const curShySc = springShyPawsScale.update(dt);
 
+      // Ears lag behind head rotation
+      springLeftEarWiggle.setTarget(-curHeadY * 0.3);
+      springRightEarWiggle.setTarget(-curHeadY * 0.3);
+
       const curLeftEarWiggle = springLeftEarWiggle.update(dt);
       const springRightEarWiggleVal = springRightEarWiggle.update(dt);
 
       // ── APPLY PHYSICS TO HEAD & RIG ──
       headGroup.rotation.y = curHeadY;
-      headGroup.rotation.x = curHeadX;
+      headGroup.rotation.x = curHeadX + breathTotal * 0.8;
       headGroup.rotation.z = curHeadZ;
 
-      leftEarGroup.rotation.z = curLeftEarWiggle + Math.sin(currentTime * 2.0) * 0.03;
-      rightEarGroup.rotation.z = springRightEarWiggleVal - Math.sin(currentTime * 2.0) * 0.03;
+      leftEarGroup.rotation.z = curLeftEarWiggle + Math.sin(currentTime * 2.0) * 0.02;
+      rightEarGroup.rotation.z = springRightEarWiggleVal - Math.sin(currentTime * 2.0) * 0.02;
 
       // Apply Breathing & Position
-      yetiRoot.position.set(curBodyX, 0.05 + curBodyY + curJumpY + breathTotal * 0.35, curBodyZ);
+      yetiRoot.scale.y = 0.70 * (1.0 + breathTotal);
+      yetiRoot.rotation.z = Math.sin(currentTime * 1.2) * 0.01;
+
+      yetiRoot.position.set(curBodyX, 0.05 + curBodyY + curJumpY + breathTotal * 0.1, curBodyZ);
       bodyMesh.scale.set(
-        1.05 + breathTotal * 0.5,
-        1.15 + breathTotal * 0.35,
-        0.95 + breathTotal * 0.6
+        1.05 + breathTotal * 0.2,
+        1.15 + breathTotal * 0.1,
+        0.95 + breathTotal * 0.2
       );
 
       // ── APPLY EYE SACCADES & EYELIDS ──
@@ -1199,19 +1215,19 @@ export function ThreeYetiMascot({
         rightShoulderGroup.visible = true;
 
         if (currentMode === "idle" || currentMode === "email_focused") {
-          const wavePhase = currentTime * 3.4;
-          leftUpperArm.rotation.z = 0.85 + Math.sin(currentTime * 1.8) * 0.05;
-          leftForearmGroup.rotation.z = Math.sin(wavePhase) * 0.32;
-          leftForearmGroup.rotation.y = Math.cos(wavePhase * 0.8) * 0.15;
+          const wavePhase = currentTime * 2.5;
+          leftUpperArm.rotation.z = 1.15 + Math.sin(currentTime * 1.5) * 0.02;
+          leftForearmGroup.rotation.z = 0;
+          leftForearmGroup.rotation.y = 0;
 
-          leftWristGroup.rotation.z = Math.sin(wavePhase - 0.45) * 0.28;
+          leftWristGroup.rotation.z = Math.sin(wavePhase) * 0.15;
 
           leftFingers.forEach((finger, i) => {
-            finger.rotation.x = Math.sin(wavePhase - 0.65 + i * 0.1) * 0.14;
+            finger.rotation.x = Math.sin(wavePhase - 0.5 + i * 0.1) * 0.05;
           });
 
-          rightUpperArm.rotation.z = -0.3 + Math.sin(currentTime * 1.9) * 0.04;
-          rightForearmGroup.rotation.z = Math.sin(currentTime * 1.9 + 0.5) * 0.05;
+          rightUpperArm.rotation.z = -0.2 + Math.sin(currentTime * 1.5) * 0.02;
+          rightForearmGroup.rotation.z = 0;
         } else if (currentMode === "submitting" || currentMode === "success") {
           const cheerPhase = currentTime * 7.5;
           leftUpperArm.rotation.z = 1.1 + Math.sin(cheerPhase) * 0.2;
