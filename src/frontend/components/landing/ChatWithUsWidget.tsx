@@ -2,10 +2,20 @@
 
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
-import { MessageSquare, X, Send, Sparkles, Bot, CheckCircle2 } from "lucide-react";
+import { MessageSquare, X, Send, Bot } from "lucide-react";
 
 export function ChatWithUsWidget() {
   const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Array<{ sender: "ai" | "user"; text: string }>>([
+    {
+      sender: "ai",
+      text: "Hi there! 👋 I'm your QuickReply assistant. Ask me anything about our automated replies, multi-channel scheduling, pricing, or catalog integrations!",
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+
   const isAuthPage =
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/register") ||
@@ -16,18 +26,8 @@ export function ChatWithUsWidget() {
     pathname?.startsWith("/reset-password") ||
     pathname?.startsWith("/onboarding");
 
-  const [isOpen, setIsOpen] = useState(false);
-
+  // Conditional early return AFTER all hooks have executed unconditionally
   if (isAuthPage) return null;
-
-  const [messages, setMessages] = useState<Array<{ sender: "ai" | "user"; text: string }>>([
-    {
-      sender: "ai",
-      text: "Hi there! 👋 I'm your QuickReply assistant. Ask me anything about our automated replies, multi-channel scheduling, pricing, or catalog integrations!",
-    },
-  ]);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
 
   const handleSend = async (textToSend?: string) => {
     const text = textToSend || input;
