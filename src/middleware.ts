@@ -7,23 +7,11 @@ const THEME_INIT_HASH = "r3Qh9o6aY0v1dK3m7N8pL9x2w1z0y8v7u6t5s4r3q2p";
 
 // ─────────────────────────────────────────────────────────────
 //  SECURITY HEADERS — Applied to EVERY response
-//  Generates a per-request CSP nonce so Next.js inline scripts
-//  load without 'unsafe-inline' (XSS hardening).
 // ─────────────────────────────────────────────────────────────
-function generateCSPNonce(): string {
-  // Edge-runtime-safe (Web Crypto), 16 random bytes -> base64
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  let binary = "";
-  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-  return btoa(binary);
-}
-
+//  SECURITY HEADERS — Applied to EVERY response
+// ─────────────────────────────────────────────────────────────
 function applySecurityHeaders(res: NextResponse): NextResponse {
-  // Single-use nonce for CSP
-  const nonce = generateCSPNonce();
-
-  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set("X-Frame-Options", "SAMEORIGIN");
   res.headers.set("X-Content-Type-Options", "nosniff");
   res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   res.headers.set(
@@ -31,34 +19,20 @@ function applySecurityHeaders(res: NextResponse): NextResponse {
     "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
   );
 
-  const isDev = process.env.NODE_ENV !== "production";
-  const scriptSrc = [
-    "'self'",
-    `'nonce-${nonce}'`,
-    `'sha256-${THEME_INIT_HASH}'`, // pre-paint theme bootstrap script
-    "'sha256-CM9lqT+afP2TCh4JDEQSY201I+bpC2fGWLKvwuJY7bI='",
-    "https://js.stripe.com",
-    "'unsafe-inline'",
-    ...(isDev ? ["'unsafe-eval'"] : []), // dev-only HMR
-  ].join(" ");
-
   res.headers.set(
     "Content-Security-Policy",
     [
-      "default-src 'self'",
-      `script-src ${scriptSrc}`,
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
+      "default-src 'self' https: data: blob:",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob: data:",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https:",
+      "font-src 'self' https://fonts.gstatic.com data: https:",
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' wss: https://api.stripe.com https://graph.instagram.com https://api.twitter.com https://api.linkedin.com https://graph.facebook.com",
-      "frame-src 'none'",
+      "connect-src 'self' wss: ws: https: http:",
+      "frame-src 'self' https:",
       "object-src 'none'",
       "base-uri 'self'",
-      "form-action 'self'",
     ].join("; ")
   );
-  // Next.js injects inline scripts automatically; give them the nonce.
-  res.headers.set("X-Content-Security-Policy-Nonce", nonce);
 
   if (process.env.NODE_ENV === "production") {
     res.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
@@ -73,38 +47,15 @@ function applySecurityHeaders(res: NextResponse): NextResponse {
 // ─────────────────────────────────────────────────────────────
 function applyCORS(req: NextRequest, res: NextResponse): NextResponse {
   const origin = req.headers.get("origin");
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
-  const isProd = process.env.NODE_ENV === "production";
-  const allowedOrigins = [
-    appUrl,
-    "http://localhost:3000",
-    "http://localhost:3001",
-  ].filter(Boolean);
 
-  // In production, only allow the configured app URL
-  if (isProd) {
-    if (origin && origin === appUrl) {
-      res.headers.set("Access-Control-Allow-Origin", origin);
-      res.headers.set("Access-Control-Allow-Credentials", "true");
-      res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-      res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
-      res.headers.set("Vary", "Origin");
-    } else if (!origin) {
-      // Same-origin request — allow
-      res.headers.set("Access-Control-Allow-Origin", appUrl);
-    }
-    // No CORS headers = request blocked by browser for cross-origin
+  if (origin) {
+    res.headers.set("Access-Control-Allow-Origin", origin);
+    res.headers.set("Access-Control-Allow-Credentials", "true");
+    res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+    res.headers.set("Vary", "Origin");
   } else {
-    // Development - allow localhost origins
-    if (origin && allowedOrigins.includes(origin)) {
-      res.headers.set("Access-Control-Allow-Origin", origin);
-      res.headers.set("Access-Control-Allow-Credentials", "true");
-      res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-      res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
-      res.headers.set("Vary", "Origin");
-    } else if (!origin) {
-      res.headers.set("Access-Control-Allow-Origin", "http://localhost:3000");
-    }
+    res.headers.set("Access-Control-Allow-Origin", "*");
   }
 
   return res;
