@@ -1,8 +1,12 @@
 "use client";
 
-import React from "react";
-import { EnterpriseLoginForm } from "@/frontend/components/auth/EnterpriseLoginForm";
+import React, { Suspense } from "react";
+import { UnifiedAuthExperience } from "@/frontend/components/auth/UnifiedAuthExperience";
 
 export default function AuthPage() {
-  return <EnterpriseLoginForm />;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#f0f2f5]" />}>
+      <UnifiedAuthExperience initialMode="login" />
+    </Suspense>
+  );
 }

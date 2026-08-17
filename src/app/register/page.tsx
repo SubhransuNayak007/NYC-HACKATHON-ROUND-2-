@@ -1,8 +1,12 @@
 "use client";
 
-import React from "react";
-import { EnterpriseRegisterForm } from "@/frontend/components/auth/EnterpriseRegisterForm";
+import React, { Suspense } from "react";
+import { UnifiedAuthExperience } from "@/frontend/components/auth/UnifiedAuthExperience";
 
 export default function RegisterPage() {
-  return <EnterpriseRegisterForm />;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#f0f2f5]" />}>
+      <UnifiedAuthExperience initialMode="signup" />
+    </Suspense>
+  );
 }

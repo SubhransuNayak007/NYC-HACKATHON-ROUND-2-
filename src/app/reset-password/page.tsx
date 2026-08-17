@@ -1,8 +1,12 @@
 "use client";
 
-import React from "react";
-import { EnterpriseResetPasswordForm } from "@/frontend/components/auth/EnterpriseResetPasswordForm";
+import React, { Suspense } from "react";
+import { UnifiedAuthExperience } from "@/frontend/components/auth/UnifiedAuthExperience";
 
 export default function ResetPasswordPage() {
-  return <EnterpriseResetPasswordForm />;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#f0f2f5]" />}>
+      <UnifiedAuthExperience initialMode="reset-password" />
+    </Suspense>
+  );
 }

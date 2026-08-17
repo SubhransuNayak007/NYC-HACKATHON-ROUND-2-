@@ -1,12 +1,12 @@
 "use client";
 
 import React, { Suspense } from "react";
-import { EnterpriseVerifyForm } from "@/frontend/components/auth/EnterpriseVerifyForm";
+import { UnifiedAuthExperience } from "@/frontend/components/auth/UnifiedAuthExperience";
 
 export default function VerifyPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-[#f0f2f5]" />}>
-      <EnterpriseVerifyForm />
+      <UnifiedAuthExperience initialMode="verify" />
     </Suspense>
   );
 }
