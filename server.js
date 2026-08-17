@@ -33,11 +33,30 @@ async function main() {
 
   // Initialize Socket.io server
   try {
-    const { initSocketServer } = require("./src/backend/socket");
-    initSocketServer(server);
-    console.log("[Server] Socket.io initialized");
+    const { Server: SocketIOServer } = require("socket.io");
+    const io = new SocketIOServer(server, {
+      path: "/api/socketio",
+      addTrailingSlash: false,
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+        credentials: true,
+      },
+      transports: ["websocket", "polling"],
+      pingInterval: 25000,
+      pingTimeout: 20000,
+    });
+
+    global._quickreply_io = io;
+    io.on("connection", (socket) => {
+      console.log(`[Socket.io] Client connected: ${socket.id}`);
+      socket.on("disconnect", () => {
+        console.log(`[Socket.io] Client disconnected: ${socket.id}`);
+      });
+    });
+    console.log("[Server] ✅ Socket.io WebSocket server initialized successfully");
   } catch (err) {
-    console.warn("[Server] Socket.io init failed (non-critical):", err.message);
+    console.warn("[Server] ⚠️ Socket.io init failed (non-critical):", err.message);
   }
 
   server.listen(port, hostname, () => {
