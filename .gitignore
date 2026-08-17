@@ -1,58 +1,73 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Testing & Coverage
+coverage/
+*.lcov
 
-# testing
-/coverage
+# Next.js & Build Outputs
+.next/
+out/
+build/
+dist/
 
-# next.js
-/.next/
-/out/
+# Environment Variables & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+*.env
+!.env.example
 
-# production
-/build
+# Vercel & Netlify
+.vercel/
+.netlify/
 
-# misc
+# TypeScript & Cache
+*.tsbuildinfo
+next-env.d.ts
+.turbo
+
+# OS & Logs
 .DS_Store
 *.pem
-
-# debug
+*.key
+*.cert
+*.crt
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# WhatsApp & Session Storage
+.whatsapp_sessions/
+whatsapp_auth/
+baileys_auth_info/
+auth_info_baileys/
+session_data/
 
-# vercel
-.vercel
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# AI Agent logs & Scratch
+scratch/
+.agents/
+.gemini/
+.tempmediaStorage/
+.user_uploaded/
+.commit_history.log
 
-# local databases containing active credentials
+# Google & Cloud Keys
+client_secret_*.json
+service_account*.json
+credentials*.json
 /src/data/*.json
 
-# Local Netlify folder
-.netlify
-
-# IDE
-.idea/
-
-# google credentials
-client_secret_*.json
-.vercel
-.whatsapp_sessions
-scratch
-.agents
-.gemini
