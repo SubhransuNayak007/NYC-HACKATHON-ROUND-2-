@@ -183,6 +183,8 @@ const PUBLIC_PATHS = [
   "/login", "/signup", "/register", "/auth", "/",
   "/about", "/product", "/pricing", "/demo", "/request-demo",
   "/features", "/faq", "/blog", "/contact", "/integrations",
+  "/api/health",
+  "/api/system/status",
   "/api/auth/google",
   "/api/auth/login",
   "/api/auth/register",
@@ -197,8 +199,6 @@ const PUBLIC_PATHS = [
   "/api/social/whatsapp/webhook", // WhatsApp webhooks (verified internally)
   "/api/socketio",
   "/api/extension",
-  // "/dashboard",                 // REQUIRES AUTH - removed from public
-  // "/onboarding",                // REQUIRES AUTH - removed from public
 ];
 
 const STATIC_PATHS = ["/_next", "/favicon.ico", "/robots.txt", "/sitemap.xml", "/assets"];
