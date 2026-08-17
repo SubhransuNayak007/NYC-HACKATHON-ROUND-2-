@@ -1,12 +1,8 @@
 "use client";
 
 import React from "react";
-import OnboardingFlow from "@/frontend/components/OnboardingFlow";
+import { EnterpriseOnboardingForm } from "@/frontend/components/auth/EnterpriseOnboardingForm";
 
 export default function OnboardingPage() {
-  return (
-    <div className="min-h-screen" style={{ background: "#070A12" }}>
-      <OnboardingFlow />
-    </div>
-  );
+  return <EnterpriseOnboardingForm />;
 }

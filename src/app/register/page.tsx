@@ -1,11 +1,8 @@
-import { MySamparkRegister } from "@/frontend/components/auth/MySamparkRegister";
-import type { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Create Account · QuickReply",
-  description: "Turn every comment and DM into a customer — automatically with QuickReply.",
-};
+import React from "react";
+import { EnterpriseRegisterForm } from "@/frontend/components/auth/EnterpriseRegisterForm";
 
 export default function RegisterPage() {
-  return <MySamparkRegister />;
+  return <EnterpriseRegisterForm />;
 }
