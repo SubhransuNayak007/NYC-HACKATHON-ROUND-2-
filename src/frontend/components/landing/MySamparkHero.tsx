@@ -143,7 +143,7 @@ export function MySamparkHero() {
             <AnimatePresence mode="wait">
               <motion.span
                 key={wordIndex}
-                initial={{ y: 28, opacity: 0, scale: 0.92 }}
+                initial={false}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 exit={{ y: -28, opacity: 0, scale: 0.92 }}
                 transition={{

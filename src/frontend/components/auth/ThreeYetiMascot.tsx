@@ -116,22 +116,31 @@ export function ThreeYetiMascot({
     scene.background = createSkyBackground();
 
     // 2. CAMERA CALIBRATION (ZOOMED OUT FOR FULL BODY VISIBILITY)
-    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+    const camera = new THREE.PerspectiveCamera(40, Math.max(0.1, width / height), 0.1, 100);
     camera.position.set(0, 0.12, 4.9);
     camera.lookAt(0, -0.05, 0);
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: false,
-      powerPreference: "high-performance",
-    });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: false,
+        powerPreference: "high-performance",
+      });
+    } catch {
+      return;
+    }
+
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.08;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100%";
+    renderer.domElement.style.display = "block";
     container.appendChild(renderer.domElement);
 
     // ── PROCEDURAL TEXTURE GENERATION ──
@@ -565,25 +574,15 @@ export function ThreeYetiMascot({
     mouthGroup.position.set(0, 0, 0);
     headGroup.add(mouthGroup);
 
-    let mouthMesh: THREE.Mesh | null = null;
-
-    const buildMouthGeometry = (
-      smileCornerLift: number,
-      mouthWidth: number,
-      dipAmount: number
-    ) => {
-      const curve = new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-mouthWidth, -0.22 + smileCornerLift, 0.78),
-        new THREE.Vector3(-mouthWidth * 0.45, -0.26 - dipAmount, 0.81),
-        new THREE.Vector3(0, -0.27 - dipAmount * 1.1, 0.83),
-        new THREE.Vector3(mouthWidth * 0.45, -0.26 - dipAmount, 0.81),
-        new THREE.Vector3(mouthWidth, -0.22 + smileCornerLift, 0.78),
-      ]);
-      return new THREE.TubeGeometry(curve, 24, 0.026, 8, false);
-    };
-
-    const initialMouthGeo = buildMouthGeometry(0.015, 0.25, 0.01);
-    mouthMesh = new THREE.Mesh(initialMouthGeo, mouthMat);
+    const initialCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-0.25, -0.21, 0.78),
+      new THREE.Vector3(-0.12, -0.27, 0.81),
+      new THREE.Vector3(0, -0.28, 0.83),
+      new THREE.Vector3(0.12, -0.27, 0.81),
+      new THREE.Vector3(0.25, -0.21, 0.78),
+    ]);
+    const mouthGeo = new THREE.TubeGeometry(initialCurve, 24, 0.026, 8, false);
+    const mouthMesh = new THREE.Mesh(mouthGeo, mouthMat);
     mouthGroup.add(mouthMesh);
 
     // Cute Little Fang Teeth
@@ -1112,10 +1111,14 @@ export function ThreeYetiMascot({
       leftCheek.scale.set(1.2 * curBlushSc, 0.7 * curBlushSc, 0.3 * curBlushSc);
       rightCheek.scale.set(1.2 * curBlushSc, 0.7 * curBlushSc, 0.3 * curBlushSc);
 
-      // ── DYNAMIC MOUTH MORPH UPDATE ──
+      // ── DYNAMIC MOUTH MORPH (TRANSFORM BASED, ZERO GC STALL) ──
       if (mouthMesh) {
-        mouthMesh.geometry.dispose();
-        mouthMesh.geometry = buildMouthGeometry(curSmileCorners, curSmileWidth, 0.01);
+        mouthMesh.position.y = curSmileCorners * 0.4;
+        mouthMesh.scale.set(
+          Math.max(0.7, curSmileWidth / 0.25),
+          1.0 + curSmileCorners * 2.5,
+          1.0
+        );
       }
 
       tooth1.position.y = -0.21 + curSmileCorners * 0.5;
@@ -1208,21 +1211,30 @@ export function ThreeYetiMascot({
 
     animate();
 
-    // ── RESIZE HANDLER ──
+    // ── RESIZE OBSERVER & HANDLER ──
     const handleResize = () => {
       if (!container) return;
-      const newWidth = container.clientWidth;
-      const newHeight = container.clientHeight;
+      const newWidth = container.clientWidth || 440;
+      const newHeight = container.clientHeight || 540;
+      if (newWidth <= 0 || newHeight <= 0) return;
       camera.aspect = newWidth / newHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(newWidth, newHeight);
     };
+
+    handleResize();
+
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+    resizeObserver.observe(container);
 
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("resize", handleResize);
+      resizeObserver.disconnect();
       if (blinkTimeout) clearTimeout(blinkTimeout);
       if (secondaryBlinkTimeout) clearTimeout(secondaryBlinkTimeout);
       cancelAnimationFrame(animationFrameId);
