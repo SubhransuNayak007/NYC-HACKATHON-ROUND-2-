@@ -135,15 +135,7 @@ export default function LoginPage() {
         {/* ── RIGHT COLUMN: High-Contrast Modern Login Form ── */}
         <div className="lg:col-span-6 flex flex-col justify-center px-4 sm:px-8 lg:px-10 py-6 sm:py-8">
           
-          {/* Top Brand Badge */}
-          <div className="flex flex-col items-center text-center mb-6">
-            <div className="w-11 h-11 rounded-2xl bg-[#EE7D60]/10 border border-[#EE7D60]/25 flex items-center justify-center mb-2.5 shadow-2xs">
-              <span className="w-4 h-4 rounded-full bg-[#EE7D60] animate-pulse" />
-            </div>
-            <span className="text-[11px] font-mono font-black tracking-widest text-slate-500 uppercase">
-              QUICKREPLY.AI
-            </span>
-          </div>
+
 
           {/* Heading & Subtitle */}
           <div className="text-center mb-6">

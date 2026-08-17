@@ -667,58 +667,96 @@ export function ThreeYetiMascot({
     eyeSocketR.add(rightEyelid);
 
     // ── ARMS & SHOULDERS HIERARCHICAL RIG ──
-    // 1. Right Arm (Resting with natural sway)
+    // 1. Right Arm (Resting at side with a natural droop)
     const rightShoulderGroup = new THREE.Group();
-    rightShoulderGroup.position.set(0.72, -0.15, 0);
+    rightShoulderGroup.position.set(0.72, -0.05, 0);
     yetiRoot.add(rightShoulderGroup);
 
     const rightUpperArm = new THREE.Mesh(
       new THREE.CylinderGeometry(0.18, 0.22, 0.65, 16),
       furMaterial
     );
-    rightUpperArm.position.set(0.18, -0.25, 0.05);
-    rightUpperArm.rotation.z = -0.3;
+    rightUpperArm.position.set(0.12, -0.28, 0.05);
+    rightUpperArm.rotation.z = -0.2;
     rightShoulderGroup.add(rightUpperArm);
 
     const rightForearmGroup = new THREE.Group();
-    rightForearmGroup.position.set(0.32, -0.55, 0.1);
+    rightForearmGroup.position.set(0.26, -0.62, 0.1);
     rightShoulderGroup.add(rightForearmGroup);
 
-    const rightHand = new THREE.Mesh(
-      new THREE.SphereGeometry(0.2, 16, 16),
-      furMaterial
-    );
-    rightForearmGroup.add(rightHand);
-
+    // Right hand as proper paw (palm + pad + fingers)
     const rightWristGroup = new THREE.Group();
     rightForearmGroup.add(rightWristGroup);
 
-    // 2. Left Arm (Articulated Waving Hand Hierarchy)
+    const rightHandPalm = new THREE.Mesh(
+      new THREE.SphereGeometry(0.2, 20, 20),
+      furMaterial
+    );
+    rightHandPalm.scale.set(1.1, 0.95, 0.65);
+    rightWristGroup.add(rightHandPalm);
+
+    const rightPad = new THREE.Mesh(
+      new THREE.SphereGeometry(0.09, 12, 12),
+      pawPadMaterial
+    );
+    rightPad.scale.set(1.1, 0.9, 0.3);
+    rightPad.position.set(0, 0, 0.11);
+    rightWristGroup.add(rightPad);
+
+    const rightFingerDefs = [
+      { x: -0.13, y: -0.16, rotZ: -0.3 },
+      { x: -0.04, y: -0.2, rotZ: -0.05 },
+      { x: 0.05, y: -0.19, rotZ: 0.15 },
+      { x: 0.14, y: -0.14, rotZ: 0.35 },
+    ];
+    rightFingerDefs.forEach(({ x, y, rotZ }) => {
+      const finger = new THREE.Mesh(
+        new THREE.CapsuleGeometry(0.05, 0.1, 8, 8),
+        furMaterial
+      );
+      finger.position.set(x, y, 0.02);
+      finger.rotation.z = rotZ;
+      rightWristGroup.add(finger);
+    });
+
+    // 2. Left Arm (Raised — natural friendly wave)
     const leftShoulderGroup = new THREE.Group();
-    leftShoulderGroup.position.set(-0.72, -0.15, 0);
+    leftShoulderGroup.position.set(-0.72, 0.05, 0);
     yetiRoot.add(leftShoulderGroup);
 
+    // Upper arm raised upward and slightly outward
     const leftUpperArm = new THREE.Mesh(
       new THREE.CylinderGeometry(0.18, 0.22, 0.65, 16),
       furMaterial
     );
-    leftUpperArm.position.set(-0.25, 0.15, 0.1);
-    leftUpperArm.rotation.z = 0.85;
+    leftUpperArm.position.set(-0.18, 0.22, 0.08);
+    leftUpperArm.rotation.z = 1.15;   // raised high
+    leftUpperArm.rotation.x = -0.15;
     leftShoulderGroup.add(leftUpperArm);
 
+    // Forearm bends slightly inward at elbow
     const leftForearmGroup = new THREE.Group();
-    leftForearmGroup.position.set(-0.52, 0.45, 0.18);
+    leftForearmGroup.position.set(-0.42, 0.58, 0.16);
     leftShoulderGroup.add(leftForearmGroup);
 
-    const leftWristGroup = new THREE.Group();
-    leftForearmGroup.add(leftWristGroup);
-
-    // Left Palm
-    const leftHandPalm = new THREE.Mesh(
-      new THREE.SphereGeometry(0.22, 16, 16),
+    const leftForearm = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.14, 0.17, 0.5, 16),
       furMaterial
     );
-    leftHandPalm.scale.set(1.1, 1.0, 0.6);
+    leftForearm.position.set(0, 0.18, 0);
+    leftForearm.rotation.z = -0.18;
+    leftForearmGroup.add(leftForearm);
+
+    const leftWristGroup = new THREE.Group();
+    leftWristGroup.position.set(0.06, 0.42, 0);
+    leftForearmGroup.add(leftWristGroup);
+
+    // Left Palm — open, facing forward
+    const leftHandPalm = new THREE.Mesh(
+      new THREE.SphereGeometry(0.22, 20, 20),
+      furMaterial
+    );
+    leftHandPalm.scale.set(1.1, 1.0, 0.62);
     leftWristGroup.add(leftHandPalm);
 
     // Cute Paw Pad
@@ -727,21 +765,20 @@ export function ThreeYetiMascot({
       pawPadMaterial
     );
     leftPad.scale.set(1.1, 0.9, 0.3);
-    leftPad.position.set(0, 0, 0.12);
+    leftPad.position.set(0, 0, 0.13);
     leftWristGroup.add(leftPad);
 
-    // 4 Articulated Fingers
+    // 4 Fingers fanned upward (wave pose)
     const leftFingers: THREE.Mesh[] = [];
     const fingerDefs = [
-      { x: -0.14, y: 0.18, rotZ: 0.3 },
-      { x: -0.05, y: 0.22, rotZ: 0.05 },
-      { x: 0.06, y: 0.21, rotZ: -0.15 },
-      { x: 0.15, y: 0.15, rotZ: -0.35 },
+      { x: -0.15, y: 0.2,  rotZ: 0.35 },
+      { x: -0.05, y: 0.25, rotZ: 0.1 },
+      { x:  0.06, y: 0.24, rotZ: -0.12 },
+      { x:  0.16, y: 0.18, rotZ: -0.38 },
     ];
-
     fingerDefs.forEach(({ x, y, rotZ }) => {
       const finger = new THREE.Mesh(
-        new THREE.CapsuleGeometry(0.055, 0.12, 8, 8),
+        new THREE.CapsuleGeometry(0.055, 0.13, 8, 8),
         furMaterial
       );
       finger.position.set(x, y, 0.02);
@@ -749,6 +786,16 @@ export function ThreeYetiMascot({
       leftWristGroup.add(finger);
       leftFingers.push(finger);
     });
+
+    // Thumb (stubby, angled out to the side)
+    const leftThumb = new THREE.Mesh(
+      new THREE.CapsuleGeometry(0.055, 0.09, 8, 8),
+      furMaterial
+    );
+    leftThumb.position.set(-0.22, 0.06, 0.03);
+    leftThumb.rotation.z = 1.1;
+    leftWristGroup.add(leftThumb);
+    leftFingers.push(leftThumb);
 
     // ── SHY / PASSWORD EYE COVERING PAWS OVERLAY ──
     const shyPawsGroup = new THREE.Group();
@@ -1253,13 +1300,8 @@ export function ThreeYetiMascot({
         className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
       />
 
-      {/* ── Overlay Tag at Top Left ── */}
-      <div className="relative z-10 p-5 sm:p-6 flex items-center gap-2 pointer-events-none">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-white/80 text-[11px] font-bold text-slate-900 shadow-xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Interactive 3D Mascot</span>
-        </div>
-      </div>
+      {/* ── Top Spacer (badge removed) ── */}
+      <div className="relative z-10 p-5 sm:p-6" />
 
       {/* ── Bottom Tracked Headline: EXPLORE. LEARN. GROW. ── */}
       <div className="relative z-10 p-5 sm:p-7 pointer-events-none bg-gradient-to-t from-black/25 via-black/10 to-transparent">
