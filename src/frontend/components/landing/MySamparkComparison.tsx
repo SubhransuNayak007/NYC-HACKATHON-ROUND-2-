@@ -53,38 +53,20 @@ export function MySamparkComparison() {
     <section className="py-24 bg-[#F5F6F0]" id="comparison">
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={appleSpring}
-            className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold text-[#161616] bg-white border border-black/5 shadow-2xs mb-4"
-          >
+          <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold text-[#161616] bg-white border border-black/5 shadow-2xs mb-4">
             Why us
-          </motion.div>
-          <motion.h2
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={heavyCardSpring}
-            className="text-3xl sm:text-5xl md:text-6xl font-black text-[#161616] tracking-tight uppercase leading-tight"
-          >
+          </div>
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-[#161616] tracking-tight uppercase leading-tight">
             NOT EVERY &quot;AUTO REPLY&quot; <br />
             ACTUALLY{" "}
             <span className="inline-flex items-center px-4 py-1 rounded-full bg-[#EE7D60] text-white">
               ANSWERS.
             </span>
-          </motion.h2>
+          </h2>
         </div>
 
         {/* Comparison Table with Spring Entrance & High-Contrast Typography */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={heavyCardSpring}
-          className="rounded-[32px] border border-black/10 bg-white shadow-xl overflow-hidden"
-        >
+        <div className="rounded-[32px] border border-black/10 bg-white shadow-xl overflow-hidden">
           <div className="overflow-x-auto no-scrollbar">
             <div className="min-w-[680px]">
               <div className="grid grid-cols-12 bg-[#FAF8F5] p-5 sm:p-7 border-b border-black/5 text-xs sm:text-sm font-black">
@@ -124,7 +106,7 @@ export function MySamparkComparison() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

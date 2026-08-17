@@ -44,28 +44,16 @@ export function MySamparkFAQ() {
       <div className="max-w-[1140px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={appleSpring}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-[#161616] bg-white border border-black/5 shadow-2xs mb-4"
-          >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-[#161616] bg-white border border-black/5 shadow-2xs mb-4">
             <HelpCircle className="w-3.5 h-3.5 text-[#EE7D60]" />
             <span>FAQs</span>
-          </motion.div>
-          <motion.h2
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={heavyCardSpring}
-            className="text-3xl sm:text-5xl md:text-6xl font-black text-[#161616] tracking-tight uppercase leading-tight"
-          >
+          </div>
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-[#161616] tracking-tight uppercase leading-tight">
             FREQUENTLY ASKED <br className="hidden sm:inline" />
             <span className="inline-flex items-center px-4 py-1 rounded-full bg-[#EE7D60] text-white">
               QUESTIONS.
             </span>
-          </motion.h2>
+          </h2>
           <p className="mt-3 text-sm text-slate-600 font-medium">
             The short answers. Everything you need to know to get started.
           </p>
@@ -76,14 +64,8 @@ export function MySamparkFAQ() {
           {FAQ_ITEMS.map((item, idx) => {
             const isOpen = openIndex === idx;
             return (
-              <motion.div
+              <div
                 key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ ...heavyCardSpring, delay: idx * 0.04 }}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.99 }}
                 className={`rounded-[28px] bg-white border transition-all duration-200 p-7 sm:p-8 cursor-pointer select-none ${
                   isOpen
                     ? "border-black/15 shadow-md ring-2 ring-black/5"
@@ -123,7 +105,7 @@ export function MySamparkFAQ() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </motion.div>
+              </div>
             );
           })}
         </div>

@@ -79,54 +79,25 @@ export function MySamparkFourSteps() {
     <section className="py-24 sm:py-32 bg-[#F5F6F0] relative overflow-hidden" id="how-it-works">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={appleSpring}
-            className="inline-block px-4 py-1.5 rounded-full text-xs font-bold text-[#161616] bg-white border border-black/10 shadow-2xs mb-4"
-          >
-            HOW IT WORKS
-          </motion.div>
-
-          <motion.h2
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={heavyCardSpring}
-            className="text-3xl sm:text-5xl md:text-6xl font-black text-[#161616] tracking-tight uppercase leading-tight"
-          >
-            FOUR STEPS FROM <br className="hidden sm:inline" />
-            COMMENT TO{" "}
-            <span className="inline-flex items-center px-4 sm:px-6 py-0.5 sm:py-1 rounded-full bg-[#FDD871] text-[#161616] align-baseline">
-              CUSTOMER.
+         {/* Top Tag */}
+        <div className="text-center mb-16 max-w-3xl mx-auto">
+          <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold text-[#161616] bg-white border border-black/5 shadow-2xs mb-4">
+            How it works
+          </div>
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-[#161616] tracking-tight uppercase leading-tight">
+            FROM COMMENT TO SALE <br />
+            IN{" "}
+            <span className="inline-flex items-center px-4 sm:px-6 py-0.5 sm:py-1 rounded-full bg-[#E0D8FD] text-[#161616]">
+              FOUR STEPS.
             </span>
-          </motion.h2>
-
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ ...heavyCardSpring, delay: 0.1 }}
-            className="mt-4 text-base sm:text-lg text-slate-600 font-medium"
-          >
-            About five minutes to set up. No calls, no onboarding fees.
-          </motion.p>
+          </h2>
         </div>
 
-        {/* 4 Asymmetrical Folder Tab Cards Grid */}
+        {/* 4 Interactive Folder Tabs Grid with Asymmetrical Top Cutouts */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-6 items-stretch">
           
           {/* FOLDER TAB 1: S/1 (Pick a post) */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ ...heavyCardSpring, delay: 0 }}
-            className="flex flex-col group cursor-pointer"
-          >
+          <div className="flex flex-col group cursor-pointer">
             {/* Asymmetrical Top Tab */}
             <div className="flex items-end">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-t-2xl bg-[#FBF380] border-t border-x border-black/10 font-mono font-black text-xs text-[#161616] -mb-[1px] z-10 shadow-2xs">
@@ -206,16 +177,10 @@ export function MySamparkFourSteps() {
                 <span className="text-emerald-600 font-mono">Ready 🟢</span>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* FOLDER TAB 2: S/2 (Set your triggers) */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ ...heavyCardSpring, delay: 0.1 }}
-            className="flex flex-col group cursor-pointer"
-          >
+          <div className="flex flex-col group cursor-pointer">
             {/* Asymmetrical Top Tab */}
             <div className="flex items-end">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-t-2xl bg-[#7FE8E3] border-t border-x border-black/10 font-mono font-black text-xs text-[#161616] -mb-[1px] z-10 shadow-2xs">
@@ -278,16 +243,10 @@ export function MySamparkFourSteps() {
                 <span className="text-blue-600 font-mono">40+ Languages</span>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* FOLDER TAB 3: S/3 (Reply, then DM) */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ ...heavyCardSpring, delay: 0.2 }}
-            className="flex flex-col group cursor-pointer"
-          >
+          <div className="flex flex-col group cursor-pointer">
             {/* Asymmetrical Top Tab */}
             <div className="flex items-end">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-t-2xl bg-[#52DAC6] border-t border-x border-black/10 font-mono font-black text-xs text-[#161616] -mb-[1px] z-10 shadow-2xs">
@@ -350,16 +309,10 @@ export function MySamparkFourSteps() {
                 <span className="text-emerald-600 font-mono">⚡ 1.2 sec</span>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* FOLDER TAB 4: S/4 (Customer checks out) */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ ...heavyCardSpring, delay: 0.3 }}
-            className="flex flex-col group cursor-pointer"
-          >
+          <div className="flex flex-col group cursor-pointer">
             {/* Asymmetrical Top Tab */}
             <div className="flex items-end">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-t-2xl bg-[#E0D8FD] border-t border-x border-black/10 font-mono font-black text-xs text-[#161616] -mb-[1px] z-10 shadow-2xs">
@@ -419,7 +372,7 @@ export function MySamparkFourSteps() {
                 <span className="text-purple-700 font-mono">3.8x Lift 🚀</span>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

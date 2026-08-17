@@ -202,35 +202,17 @@ function StackingCardItem({ card, index, totalCards }: StackingCardProps) {
           </div>
 
           {/* Title */}
-          <motion.h3
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ ...heavyCardSpring, delay: 0.05 }}
-            className="text-3xl sm:text-4xl lg:text-[42px] font-black text-[#161616] leading-[1.15] tracking-tight"
-          >
+          <h3 className="text-3xl sm:text-4xl lg:text-[42px] font-black text-[#161616] leading-[1.15] tracking-tight">
             {card.title}
-          </motion.h3>
+          </h3>
 
           {/* Description */}
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ ...heavyCardSpring, delay: 0.1 }}
-            className="text-sm sm:text-base text-[#161616]/85 leading-relaxed font-medium"
-          >
+          <p className="text-sm sm:text-base text-[#161616]/85 leading-relaxed font-medium">
             {card.description}
-          </motion.p>
+          </p>
 
           {/* Feature Checkmark Pills */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ ...heavyCardSpring, delay: 0.15 }}
-            className="flex flex-wrap gap-2 pt-1"
-          >
+          <div className="flex flex-wrap gap-2 pt-1">
             {card.pills.map((pill) => (
               <span
                 key={pill}
@@ -240,7 +222,7 @@ function StackingCardItem({ card, index, totalCards }: StackingCardProps) {
                 <span>{pill}</span>
               </span>
             ))}
-          </motion.div>
+          </div>
 
           {/* Pill CTA Button with Rolling Flip Animation */}
           <div className="pt-2">
@@ -255,15 +237,9 @@ function StackingCardItem({ card, index, totalCards }: StackingCardProps) {
 
         {/* Right Column: Interactive Mockup Graphics */}
         <div className="lg:col-span-7 relative z-10 flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 20 }}
-            whileInView={{ opacity: 1, scale: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ ...heavyCardSpring, delay: 0.1 }}
-            className="w-full flex justify-center"
-          >
+          <div className="w-full flex justify-center">
             {card.mockup}
-          </motion.div>
+          </div>
         </div>
       </motion.div>
     </div>
@@ -272,48 +248,30 @@ function StackingCardItem({ card, index, totalCards }: StackingCardProps) {
 
 export function MySamparkEverythingItDoes() {
   return (
-    <section className="py-24 sm:py-32 bg-[#F5F6F0] relative overflow-hidden" id="features">
+    <section className="py-20 sm:py-28 bg-[#F5F6F0] relative overflow-hidden" id="features">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center space-y-4 mb-16 sm:mb-24 max-w-4xl mx-auto">
+        <div className="text-center space-y-4 mb-14 sm:mb-20 max-w-4xl mx-auto">
           
           {/* Top Pill Tag */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={appleSpring}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-black/10 text-xs font-bold text-[#161616] shadow-2xs"
-          >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-black/10 text-xs font-bold text-[#161616] shadow-2xs">
             <Sparkles className="w-3.5 h-3.5 text-[#EE7D60]" />
             <span>THE COMPLETE OMNICHANNEL SUITE</span>
-          </motion.div>
+          </div>
 
           {/* Headline: EVERYTHING IT [DOES.] with DOES. in amber pill #FDD871 */}
-          <motion.h2
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={heavyCardSpring}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-[#161616] tracking-tight uppercase leading-tight"
-          >
+          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-[#161616] tracking-tight uppercase leading-tight">
             EVERYTHING IT{" "}
             <span className="inline-flex items-center px-4 sm:px-6 py-0.5 sm:py-1 rounded-full bg-[#FDD871] text-[#161616] align-baseline">
               DOES.
             </span>
-          </motion.h2>
+          </h2>
 
           {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ ...heavyCardSpring, delay: 0.1 }}
-            className="text-base sm:text-xl text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto"
-          >
+          <p className="text-base sm:text-xl text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
             Seven pieces of one system — from the first comment to the post that brings in the next one.
-          </motion.p>
+          </p>
         </div>
 
         {/* 7 Stacking Cards Stream */}

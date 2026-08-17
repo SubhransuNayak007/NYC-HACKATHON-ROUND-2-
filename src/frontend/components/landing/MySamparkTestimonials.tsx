@@ -68,29 +68,17 @@ export function MySamparkTestimonials() {
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={appleSpring}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-[#161616] bg-white border border-black/5 shadow-2xs mb-4"
-          >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-[#161616] bg-white border border-black/5 shadow-2xs mb-4">
             <Sparkles className="w-3.5 h-3.5 text-[#EE7D60]" />
             <span>Reviews</span>
-          </motion.div>
-          <motion.h2
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={heavyCardSpring}
-            className="text-3xl sm:text-5xl md:text-6xl font-black text-[#161616] tracking-tight uppercase leading-tight"
-          >
+          </div>
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-[#161616] tracking-tight uppercase leading-tight">
             WHAT BUSINESSES <br />
             ACTUALLY{" "}
             <span className="inline-flex items-center px-4 py-1 rounded-full bg-[#EE7D60] text-white">
               SAY.
             </span>
-          </motion.h2>
+          </h2>
           <p className="mt-3 text-sm text-slate-600 font-medium max-w-md mx-auto">
             Real feedback from verified DTC founders, independent brands, and multi-channel retailers.
           </p>
@@ -99,14 +87,8 @@ export function MySamparkTestimonials() {
         {/* 2x3 Grid with Spring Ingress */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {REVIEWS.map((r, idx) => (
-            <motion.div
+            <div
               key={idx}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ ...heavyCardSpring, delay: (idx % 3) * 0.08 }}
-              whileHover={{ y: -5, scale: 1.01 }}
-              whileTap={{ scale: 0.985 }}
               className="p-8 rounded-[28px] bg-white border border-black/5 shadow-xs flex flex-col justify-between cursor-pointer select-none transition-all hover:shadow-md relative overflow-hidden group"
             >
               <div>
@@ -147,7 +129,7 @@ export function MySamparkTestimonials() {
                   <div className="text-[10px] text-slate-400 truncate">{r.category}</div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

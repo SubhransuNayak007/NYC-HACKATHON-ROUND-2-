@@ -236,26 +236,14 @@ export function SlidingCardsMarquee() {
     <section className="py-24 overflow-hidden bg-[#F5F6F0] border-t border-black/5 relative">
       {/* Editorial Header */}
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 text-center mb-16 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={appleSpring}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-black/5 text-xs font-semibold text-[#161616] shadow-2xs mb-4"
-        >
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-black/5 text-xs font-semibold text-[#161616] shadow-2xs mb-4">
           <Sparkles className="w-3.5 h-3.5 text-[#EE7D60] fill-current" />
           <span>AUTONOMOUS WORKFLOW SUITE</span>
-        </motion.div>
-        <motion.h2
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={heavyCardSpring}
-          className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-[#161616] uppercase leading-none"
-        >
+        </div>
+        <h2 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-[#161616] uppercase leading-none">
           Everything your commerce business needs. <br className="hidden sm:inline" />
           Running 24/7 on autopilot.
-        </motion.h2>
+        </h2>
         <p className="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto font-medium">
           Explore real-time workflows powered by QuickReply&apos;s Neural Knowledge Base &amp; Autonomous Multi-Channel Engine.
         </p>

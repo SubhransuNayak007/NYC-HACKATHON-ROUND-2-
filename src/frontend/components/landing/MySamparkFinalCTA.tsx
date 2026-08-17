@@ -10,13 +10,7 @@ export function MySamparkFinalCTA() {
   return (
     <section className="py-24 bg-[#F5F6F0] border-t border-black/5 relative overflow-hidden">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={heavyCardSpring}
-          className="rounded-[40px] border border-black/10 bg-white p-8 sm:p-16 lg:p-20 text-center shadow-xl relative overflow-hidden select-none"
-        >
+        <div className="rounded-[40px] border border-black/10 bg-white p-8 sm:p-16 lg:p-20 text-center shadow-xl relative overflow-hidden select-none">
           {/* Subtle Ambient Background Gradients */}
           <div className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 bg-[#EE7D60]/10 rounded-full blur-3xl" />
           <div className="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 bg-[#FAEE6A]/20 rounded-full blur-3xl" />
@@ -147,7 +141,7 @@ export function MySamparkFinalCTA() {
               15-minute setup
             </span>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

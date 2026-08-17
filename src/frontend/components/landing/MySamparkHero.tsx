@@ -81,10 +81,10 @@ function HeroTiltCard({
   return (
     <motion.div
       ref={cardRef}
-      initial={{ opacity: 0, y: 35, rotate: effectiveRotate }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      initial={{ opacity: 1, y: 0, rotate: effectiveRotate }}
       animate={{
+        opacity: 1,
+        y: 0,
         rotate: effectiveRotate,
         scale: isHovered ? 1.04 : 1,
         rotateX: isHovered ? tilt.rotateX : 0,
@@ -96,7 +96,6 @@ function HeroTiltCard({
         stiffness: 260,
         damping: 22,
         mass: 0.8,
-        delay: isHovered ? 0 : staggerDelay,
       }}
       onPointerMove={handlePointerMove}
       onPointerEnter={handlePointerEnter}
@@ -133,26 +132,26 @@ export function MySamparkHero() {
   }, []);
 
   return (
-    <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden bg-[#F5F6F0]">
+    <section className="relative pt-20 pb-12 md:pt-24 md:pb-16 overflow-hidden bg-[#F5F6F0]">
       <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
         
         {/* 1. Massive Editorial Headline with Rotating Keyword in Coral/Amber Pill */}
-        <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-[80px] font-black text-[#161616] tracking-[-0.03em] leading-[1.1] sm:leading-[1.06] max-w-5xl mx-auto mb-6 uppercase select-none">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-[70px] font-black text-[#161616] tracking-[-0.03em] leading-[1.12] max-w-5xl mx-auto mb-4 uppercase select-none">
           INTELLIGENT AUTO-REPLIES <br className="hidden sm:block" />
           FOR EVERY{" "}
-          <span className="inline-flex items-center justify-center min-w-[170px] sm:min-w-[260px] lg:min-w-[320px] h-[48px] sm:h-[68px] lg:h-[78px] px-5 sm:px-8 py-1 sm:py-2 rounded-full bg-[#EE7D60] text-white shadow-md align-middle overflow-hidden -rotate-1 hover:rotate-0 transition-transform duration-300">
+          <span className="inline-flex items-center justify-center min-w-[160px] sm:min-w-[240px] lg:min-w-[290px] h-[46px] sm:h-[62px] lg:h-[70px] px-4 sm:px-7 py-1 rounded-full bg-[#EE7D60] text-white shadow-md align-middle overflow-hidden -rotate-1 hover:rotate-0 transition-transform duration-300">
             <AnimatePresence mode="wait">
               <motion.span
                 key={wordIndex}
-                initial={{ y: 32, opacity: 0, scale: 0.92 }}
+                initial={{ y: 28, opacity: 0, scale: 0.92 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
-                exit={{ y: -32, opacity: 0, scale: 0.92 }}
+                exit={{ y: -28, opacity: 0, scale: 0.92 }}
                 transition={{
                   type: "spring",
                   stiffness: 400,
                   damping: 28,
                 }}
-                className="inline-block tracking-tight text-white font-black"
+                className="inline-block tracking-tight text-white font-black text-2xl sm:text-4xl lg:text-5xl"
               >
                 {ROTATING_WORDS[wordIndex]}
               </motion.span>
@@ -161,13 +160,13 @@ export function MySamparkHero() {
         </h1>
 
         {/* 2. Subtitle with Exact Live Copy */}
-        <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed mb-8 font-medium">
+        <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed mb-6 font-medium">
           QuickReply answers every comment and DM with the real price from your own catalog — then schedules your posts
           across every platform and keeps the whole conversation in one inbox.
         </p>
 
         {/* 3. Dual Pill CTA Buttons with Signature 3D Rolling Flip Animations */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-16">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-10">
           <FlipButton
             href="/register"
             text="Start free"

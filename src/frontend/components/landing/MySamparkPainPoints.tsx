@@ -10,26 +10,14 @@ export function MySamparkPainPoints() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Top Tag / Pill Badge: "Sound familiar?" */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={appleSpring}
-          className="inline-block mb-10 sm:mb-12"
-        >
+        <div className="inline-block mb-10 sm:mb-12">
           <span className="inline-flex items-center px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold text-[#161616] bg-white border border-black/10 shadow-sm select-none tracking-tight">
             Sound familiar?
           </span>
-        </motion.div>
+        </div>
 
         {/* Editorial Narrative Statements with Inline Avatars and Colored Highlight Pills */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={heavyCardSpring}
-          className="space-y-8 sm:space-y-10 text-2xl sm:text-3xl md:text-[38px] lg:text-[42px] font-extrabold text-[#161616] leading-[1.4] sm:leading-[1.35] tracking-tight"
-        >
+        <div className="space-y-8 sm:space-y-10 text-2xl sm:text-3xl md:text-[38px] lg:text-[42px] font-extrabold text-[#161616] leading-[1.4] sm:leading-[1.35] tracking-tight">
           {/* Statement 1: "asleep" */}
           <p className="leading-snug sm:leading-[1.35]">
             Someone asks the price at 11pm and you&apos;re{" "}
@@ -125,7 +113,7 @@ export function MySamparkPainPoints() {
             </motion.span>{" "}
             and buy from someone else.
           </p>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

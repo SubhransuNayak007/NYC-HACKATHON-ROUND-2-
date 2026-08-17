@@ -21,29 +21,17 @@ export function MySamparkProofGrid() {
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header with "By the numbers" Pill */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={appleSpring}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-[#161616] bg-white border border-black/5 shadow-2xs mb-4"
-          >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-[#161616] bg-white border border-black/5 shadow-2xs mb-4">
             <Sparkles className="w-3.5 h-3.5 text-[#EE7D60]" />
             <span>By the numbers</span>
-          </motion.div>
-          <motion.h2
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={heavyCardSpring}
-            className="text-3xl sm:text-5xl md:text-6xl font-black text-[#161616] tracking-tight uppercase leading-tight"
-          >
+          </div>
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-[#161616] tracking-tight uppercase leading-tight">
             PROVEN BY <br />
             COMMERCE{" "}
             <span className="inline-flex items-center px-4 py-1 rounded-full bg-[#EE7D60] text-white">
               LEADERS.
             </span>
-          </motion.h2>
+          </h2>
           <p className="mt-3 text-sm text-slate-600 font-medium max-w-lg mx-auto">
             Everything your brand needs to capture high-intent buyers the exact second they interact.
           </p>
@@ -52,13 +40,7 @@ export function MySamparkProofGrid() {
         {/* Main Grid: Left Lifestyle Visual + Right 3 Stacked Metric Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Left Column: High-Quality Warm Lifestyle Entrepreneur Portrait */}
-          <motion.div
-            initial={{ opacity: 0, x: -25 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={heavyCardSpring}
-            className="lg:col-span-5 relative rounded-[32px] overflow-hidden shadow-xl bg-zinc-950 group select-none min-h-[500px] flex flex-col justify-between"
-          >
+          <div className="lg:col-span-5 relative rounded-[32px] overflow-hidden shadow-xl bg-zinc-950 group select-none min-h-[500px] flex flex-col justify-between">
             {/* High Quality Warm Lifestyle Photograph of Young Entrepreneur in front of Inventory */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -97,7 +79,7 @@ export function MySamparkProofGrid() {
                 <span>Syncs with live Shopify, WooCommerce &amp; custom catalogs</span>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Right Column: 3 Stacked Rich Metric Cards */}
           <div className="lg:col-span-7 flex flex-col justify-between gap-5">
