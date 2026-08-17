@@ -307,7 +307,7 @@ export function MySamparkFooter() {
             <Link href="/about" className="hover:text-white transition-colors">
               Security &amp; Compliance
             </Link>
-            <Link href="/status" className="hover:text-white transition-colors flex items-center gap-1.5">
+            <Link href="/dashboard/status" className="hover:text-white transition-colors flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400" />
               <span>Systems Normal</span>
             </Link>
