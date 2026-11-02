@@ -16,9 +16,9 @@ import { getDB, saveDB } from "@/database/db";
 
 export class PlanApprovalManager {
   /**
-   * Approve a plan version and create an immutable approval record
+   * Approve a plan version and create an immutable approval record with SHA-256 signature
    */
-  static async approvePlan(params: {
+  public static async approvePlan(params: {
     plan: AutomationPlan;
     userId: string;
     tenantId: string;
@@ -34,10 +34,24 @@ export class PlanApprovalManager {
       updatedAt: now,
     };
 
-    // Generate cryptographic hash signature of the frozen plan snapshot
+    // Generate cryptographic SHA-256 hash signature of the frozen plan snapshot
+    const canonicalPayload = JSON.stringify({
+      id: approvedPlan.id,
+      version: approvedPlan.version,
+      tenantId,
+      trigger: approvedPlan.trigger,
+      steps: approvedPlan.steps,
+      dataMappings: approvedPlan.dataMappings,
+      connectors: approvedPlan.connectors,
+      recipients: approvedPlan.recipients,
+      safety: approvedPlan.safety,
+      approvedBy: userId,
+      approvedAt: now,
+    });
+
     const hash = crypto
       .createHash("sha256")
-      .update(JSON.stringify(approvedPlan) + userId + now)
+      .update(canonicalPayload)
       .digest("hex");
 
     const approvalRecord: PlanApprovalRecord = {
@@ -58,7 +72,7 @@ export class PlanApprovalManager {
       if (!db.automationPlans) db.automationPlans = [];
 
       db.planApprovals.push(approvalRecord);
-      const existingPlanIdx = db.automationPlans.findIndex((p) => p.id === plan.id);
+      const existingPlanIdx = db.automationPlans.findIndex((p: any) => p.id === plan.id);
       if (existingPlanIdx >= 0) {
         db.automationPlans[existingPlanIdx] = approvedPlan;
       } else {
@@ -73,14 +87,17 @@ export class PlanApprovalManager {
   }
 
   /**
-   * Modify an existing plan based on user requests (e.g. changing notification destination)
+   * Modify an existing plan based on user requests (e.g. changing destination or parameters)
+   * while non-destructively preserving untouched steps and configurations.
    */
-  static modifyPlan(params: {
+  public static modifyPlan(params: {
     existingPlan: AutomationPlan;
     modifications: {
       newDestination?: string;
       newRecipient?: string;
       customMessage?: string;
+      newFolder?: string;
+      newSheetTab?: string;
     };
   }): AutomationPlan {
     const { existingPlan, modifications } = params;
@@ -93,6 +110,21 @@ export class PlanApprovalManager {
     updated.approvedBy = undefined;
     updated.updatedAt = now;
 
+    if (modifications.newFolder) {
+      const driveStep = updated.steps.find((s) => s.appId === "google_drive");
+      if (driveStep) {
+        driveStep.parameters.folderId = modifications.newFolder;
+        driveStep.label = `Upload Invoice PDF to Drive Folder (${modifications.newFolder})`;
+      }
+    }
+
+    if (modifications.newSheetTab) {
+      const sheetStep = updated.steps.find((s) => s.appId === "google_sheets");
+      if (sheetStep) {
+        sheetStep.parameters.sheetTab = modifications.newSheetTab;
+      }
+    }
+
     if (modifications.newDestination) {
       const dest = modifications.newDestination.toLowerCase();
       updated.title = `${updated.trigger.label} → ${dest.toUpperCase()}`;
@@ -100,11 +132,26 @@ export class PlanApprovalManager {
       // Update action connector
       if (updated.connectors.length > 0) {
         updated.connectors[0].connectorId = dest;
-        updated.connectors[0].name = dest === "telegram" ? "Telegram Bot" : dest === "whatsapp" ? "WhatsApp Business" : dest;
+        updated.connectors[0].name =
+          dest === "telegram"
+            ? "Telegram Bot"
+            : dest === "whatsapp"
+            ? "WhatsApp Business"
+            : dest === "slack"
+            ? "Slack"
+            : dest;
       }
 
-      // Update action step
-      const actionStep = updated.steps.find((s) => s.id !== "step_trigger" && s.id !== "step_ai_format");
+      // Update action step (target the notification / destination step, preserving storage/processing steps)
+      const actionStep = updated.steps.find(
+        (s) =>
+          s.sideEffect === "EXTERNAL_COMMUNICATION" ||
+          s.id.includes("telegram") ||
+          s.id.includes("whatsapp") ||
+          s.id.includes("slack") ||
+          s.id.includes("notify")
+      ) || updated.steps[updated.steps.length - 1];
+
       if (actionStep) {
         actionStep.appId = dest;
         actionStep.label = `Deliver ${dest.toUpperCase()} Notification`;
@@ -112,6 +159,8 @@ export class PlanApprovalManager {
           actionStep.parameters = { chatId: modifications.newRecipient || "@MyAlerts", text: "New alert" };
         } else if (dest === "whatsapp") {
           actionStep.parameters = { to: modifications.newRecipient || "+919876543210", message: "New alert" };
+        } else if (dest === "slack") {
+          actionStep.parameters = { channel: modifications.newRecipient || "#alerts", text: "New alert" };
         }
       }
 

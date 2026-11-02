@@ -478,4 +478,206 @@ export class WorkflowPatchEngine {
       throw new Error(`Cycle detected in workflow graph: topological sort could not visit all ${nodes.length} nodes`);
     }
   }
+
+  /**
+   * Parse conversational, natural language graph modification instructions
+   * into minimal, non-destructive AST GraphPatchOperation[]
+   */
+  public static parseConversationalPatch(
+    instruction: string,
+    currentWorkflow: any
+  ): GraphPatchOperation[] {
+    const text = instruction.toLowerCase().trim();
+    const ops: GraphPatchOperation[] = [];
+    const nodes: any[] = currentWorkflow.nodes || [];
+
+    // 1. Branch / Condition Insertion
+    // e.g. "Add high priority check after lead classification", "Insert condition amount > 50000"
+    if (
+      text.includes("condition") ||
+      text.includes("branch") ||
+      text.includes("split") ||
+      text.includes("high priority") ||
+      text.includes("urgent") ||
+      text.includes("filter")
+    ) {
+      // Find anchor node to split after
+      let anchorNode = nodes.find(
+        (n) =>
+          n.type === "aiNode" ||
+          n.appId === "ai_extractor" ||
+          n.id.includes("classify") ||
+          n.id.includes("ai")
+      );
+      if (!anchorNode && nodes.length > 0) {
+        anchorNode = nodes[0]; // fallback to trigger
+      }
+
+      let expression = "$json.urgency === 'HIGH'";
+      if (text.includes("amount") || text.includes("50000") || text.includes("high value")) {
+        expression = "$json.amount > 50000";
+      } else if (text.includes("deal") || text.includes("10000")) {
+        expression = "$json.dealValue > 10000";
+      }
+
+      const condId = `cond_${Date.now()}`;
+      const vipNodeId = `vip_${Date.now()}`;
+
+      // VIP Action Node (True branch)
+      let vipService = "slack";
+      let vipLabel = "High-Priority Slack Alert";
+      let vipParams: Record<string, any> = { channel: "#high-priority-leads", message: "Urgent lead!" };
+
+      if (text.includes("telegram")) {
+        vipService = "telegram";
+        vipLabel = "Telegram Urgent Alert";
+        vipParams = { chatId: "@VIPAlerts", text: "🚨 High-Priority Lead Detected!" };
+      }
+
+      ops.push({
+        op: "INSERT_BRANCH",
+        splitAfterNodeId: anchorNode ? anchorNode.id : nodes[0]?.id || "trigger_1",
+        conditionNode: {
+          id: condId,
+          type: "conditionNode",
+          name: "High Urgency Check",
+          label: "High Urgency Check",
+          expression,
+        },
+        vipActionNode: {
+          id: vipNodeId,
+          type: "actionNode",
+          appId: vipService,
+          service: vipService,
+          name: vipLabel,
+          label: vipLabel,
+          parameters: vipParams,
+        },
+      });
+
+      return ops;
+    }
+
+    // 2. Remove Node
+    // e.g. "Remove the Telegram step", "Delete slack node"
+    if (text.startsWith("remove") || text.startsWith("delete")) {
+      for (const node of nodes) {
+        const idMatch = text.includes(node.id.toLowerCase());
+        const serviceMatch =
+          (node.service && text.includes(node.service.toLowerCase())) ||
+          (node.appId && text.includes(node.appId.toLowerCase()));
+        const labelMatch = node.label && text.includes(node.label.toLowerCase());
+
+        if (idMatch || serviceMatch || labelMatch) {
+          ops.push({
+            op: "REMOVE_NODE",
+            nodeId: node.id,
+            reconnectStrategy: "bridge",
+          });
+          return ops;
+        }
+      }
+    }
+
+    // 3. Update Parameters
+    // e.g. "Change Slack channel to #leads-alerts", "Update chatId to @MyFinance"
+    if (text.includes("change") || text.includes("update") || text.includes("set")) {
+      // Channel update
+      const channelMatch = instruction.match(/#([a-zA-Z0-9_\-]+)/);
+      if (channelMatch) {
+        const slackNode = nodes.find(
+          (n) => n.service === "slack" || n.appId === "slack" || n.id.includes("slack")
+        );
+        if (slackNode) {
+          ops.push({
+            op: "UPDATE_PARAMETERS",
+            nodeId: slackNode.id,
+            parameters: { channel: `#${channelMatch[1]}` },
+          });
+          return ops;
+        }
+      }
+
+      // Telegram chat ID update
+      const chatMatch = instruction.match(/@([a-zA-Z0-9_]+)/);
+      if (chatMatch) {
+        const tgNode = nodes.find(
+          (n) => n.service === "telegram" || n.appId === "telegram" || n.id.includes("telegram")
+        );
+        if (tgNode) {
+          ops.push({
+            op: "UPDATE_PARAMETERS",
+            nodeId: tgNode.id,
+            parameters: { chatId: `@${chatMatch[1]}` },
+          });
+          return ops;
+        }
+      }
+
+      // Query or folder update
+      const folderMatch = instruction.match(/(?:folder|directory)\s+['"]?([a-zA-Z0-9_\-\/ ]+)['"]?/i);
+      if (folderMatch) {
+        const driveNode = nodes.find(
+          (n) => n.service === "google_drive" || n.appId === "google_drive" || n.id.includes("drive")
+        );
+        if (driveNode) {
+          ops.push({
+            op: "UPDATE_PARAMETERS",
+            nodeId: driveNode.id,
+            parameters: { folderId: folderMatch[1].trim() },
+          });
+          return ops;
+        }
+      }
+    }
+
+    // 4. Insert Node
+    // e.g. "Add Slack notification after Drive upload"
+    if (text.includes("add") || text.includes("insert")) {
+      let targetService = "slack";
+      let targetType = "actionNode";
+      let label = "Slack Notification";
+      let params: Record<string, any> = { channel: "#general", message: "Step completed" };
+
+      if (text.includes("telegram")) {
+        targetService = "telegram";
+        label = "Telegram Notification";
+        params = { chatId: "@MyAlerts", text: "Notification" };
+      } else if (text.includes("drive")) {
+        targetService = "google_drive";
+        label = "Upload to Drive";
+        params = { folderId: "Invoices" };
+      } else if (text.includes("ai") || text.includes("classifier")) {
+        targetService = "ai_extractor";
+        targetType = "aiNode";
+        label = "AI Intent Classifier";
+        params = { task: "classify" };
+      }
+
+      // Relative node anchor
+      const lastNode = nodes.length > 0 ? nodes[nodes.length - 1] : undefined;
+      const newNodeId = `node_${targetService}_${Date.now()}`;
+
+      ops.push({
+        op: "INSERT_NODE",
+        node: {
+          id: newNodeId,
+          type: targetType,
+          service: targetService,
+          appId: targetService,
+          label,
+          parameters: params,
+        },
+        position: {
+          relativeToNodeId: lastNode?.id,
+          placement: "after",
+        },
+      });
+
+      return ops;
+    }
+
+    // Default fallback: parameter update or no-op
+    return ops;
+  }
 }

@@ -54,11 +54,6 @@ export function StudioMockupIllustration({
       ref={containerRef}
       className="relative w-full max-w-[480px] h-[370px] flex items-center justify-center select-none transform-gpu"
     >
-      {/* ── Background Soft Pastel Concentric Rings & Geometry ── */}
-      <div className="absolute top-0 left-0 w-64 h-64 rounded-full border border-pink-200/40 pointer-events-none -z-10" />
-      <div className="absolute top-2 right-8 w-16 h-16 rounded-full bg-gradient-to-br from-[#FFAAA6]/50 to-[#FF8E88]/40 pointer-events-none shadow-sm -z-10" />
-      <div className="absolute bottom-2 left-8 w-10 h-10 rounded-full bg-gradient-to-br from-[#FFD3B6]/50 to-[#FFB7B2]/40 pointer-events-none -z-10" />
-
       {/* ── 3D Hardware Accelerated Tilt Stage ── */}
       <div
         ref={tiltRef}

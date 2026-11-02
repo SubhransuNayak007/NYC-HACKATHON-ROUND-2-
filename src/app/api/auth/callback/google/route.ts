@@ -3,6 +3,7 @@ import { getDB, saveDB, logActivity, encryptToken } from "@/database/db";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 import { generateTokenPair, generateHMACToken } from "@/backend/auth";
+import { CredentialVault } from "@/backend/credentials/CredentialVault";
 
 // Generate unique username (copied from db.ts for use in this route)
 function generateUniqueUsername(baseName: string): string {
@@ -13,6 +14,7 @@ function generateUniqueUsername(baseName: string): string {
 
 function clearNonceCookie(res: NextResponse): void {
   res.cookies.set("oauth_nonce", "", { path: "/", maxAge: 0 });
+  res.cookies.set("oauth_code_verifier", "", { path: "/", maxAge: 0 });
 }
 
 // Cookie configuration helper for consistent session cookies
@@ -118,17 +120,23 @@ export async function GET(req: NextRequest) {
       return errorResponse;
     }
 
-    // 1. Exchange Auth Code for Access & Refresh Tokens
+    // 1. Exchange Auth Code for Access & Refresh Tokens (with PKCE if available)
+    const codeVerifier = cookieStore.get("oauth_code_verifier")?.value;
+    const tokenBodyParams: Record<string, string> = {
+      code,
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirectUri,
+      grant_type: "authorization_code"
+    };
+    if (codeVerifier) {
+      tokenBodyParams.code_verifier = codeVerifier;
+    }
+
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        code,
-        client_id: clientId,
-        client_secret: clientSecret,
-        redirect_uri: redirectUri,
-        grant_type: "authorization_code"
-      })
+      body: new URLSearchParams(tokenBodyParams)
     });
 
     if (!tokenRes.ok) {
@@ -196,6 +204,75 @@ export async function GET(req: NextRequest) {
       await setSessionCookies(loginResponse, email);
       clearNonceCookie(loginResponse);
       return loginResponse;
+    }
+
+    // Google Suite Connector authorization flow
+    if (actualState.startsWith("connect:")) {
+      // Format: connect:tenantId:workspaceId:services:dest
+      const parts = actualState.split(":");
+      const stateTenantId = decodeURIComponent(parts[1] || "") || email;
+      const stateWorkspaceId = decodeURIComponent(parts[2] || "") || "ws_default";
+      const stateServices = decodeURIComponent(parts[3] || "all");
+      const dest = parts[4] || "dashboard";
+
+      const grantedScopes = tokenData.scope ? tokenData.scope.split(" ") : [];
+
+      // Store multi-account Google credential in CredentialVault with envelope encryption & Workspace AAD
+      const stored = await CredentialVault.storeCredential({
+        tenantId: stateTenantId,
+        workspaceId: stateWorkspaceId,
+        appId: "google",
+        authType: "oauth2",
+        accountLabel: email,
+        secretPayload: {
+          accessToken: access_token,
+          refreshToken: refresh_token,
+          email,
+          name: profileName,
+          scopes: grantedScopes,
+          clientId,
+          clientSecret,
+          expiresAt: Date.now() + (tokenData.expires_in || 3600) * 1000,
+        },
+        scopes: grantedScopes,
+        expiresAt: Date.now() + (tokenData.expires_in || 3600) * 1000,
+      });
+
+      await saveDB(db, email);
+      await logActivity(db.userSession.name, `Connected Google Suite account (${email}) with services: ${stateServices}`);
+
+      const successResponse = NextResponse.redirect(
+        `${origin}/${dest}?success=google_connected&account=${encodeURIComponent(email)}&credId=${stored.id}`
+      );
+      await setSessionCookies(successResponse, email);
+      clearNonceCookie(successResponse);
+      return successResponse;
+    }
+
+    // Always ensure Google credential is stored in vault for default workspace
+    try {
+      const grantedScopes = tokenData.scope ? tokenData.scope.split(" ") : [];
+      await CredentialVault.storeCredential({
+        tenantId: email,
+        workspaceId: "ws_default",
+        appId: "google",
+        authType: "oauth2",
+        accountLabel: email,
+        secretPayload: {
+          accessToken: access_token,
+          refreshToken: refresh_token,
+          email,
+          name: profileName,
+          scopes: grantedScopes,
+          clientId,
+          clientSecret,
+          expiresAt: Date.now() + (tokenData.expires_in || 3600) * 1000,
+        },
+        scopes: grantedScopes,
+        expiresAt: Date.now() + (tokenData.expires_in || 3600) * 1000,
+      });
+    } catch (vaultErr) {
+      console.warn("[OAuth Callback] Non-fatal CredentialVault store error:", vaultErr);
     }
 
     // 3. Fetch Channel Metadata from YouTube API (channel connection flow)

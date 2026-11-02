@@ -395,6 +395,8 @@ import { SlackConnector } from "./connectors/SlackConnector";
 import { HubSpotConnector } from "./connectors/HubSpotConnector";
 import { CanvaConnector } from "./connectors/CanvaConnector";
 import { GoogleDriveConnector } from "./connectors/GoogleDriveConnector";
+import { GoogleDocsConnector } from "./connectors/GoogleDocsConnector";
+import { GoogleCalendarConnector } from "./connectors/GoogleCalendarConnector";
 import { OpenAiConnector } from "./connectors/OpenAiConnector";
 import { AnthropicConnector } from "./connectors/AnthropicConnector";
 import { WhatsAppConnector } from "./connectors/WhatsAppConnector";
@@ -411,6 +413,8 @@ nodeRegistry.register(SlackConnector);
 nodeRegistry.register(HubSpotConnector);
 nodeRegistry.register(CanvaConnector);
 nodeRegistry.register(GoogleDriveConnector);
+nodeRegistry.register(GoogleDocsConnector);
+nodeRegistry.register(GoogleCalendarConnector);
 nodeRegistry.register(OpenAiConnector);
 nodeRegistry.register(AnthropicConnector);
 nodeRegistry.register(WhatsAppConnector);
@@ -428,6 +432,8 @@ export {
   HubSpotConnector,
   CanvaConnector,
   GoogleDriveConnector,
+  GoogleDocsConnector,
+  GoogleCalendarConnector,
   OpenAiConnector,
   AnthropicConnector,
   WhatsAppConnector,

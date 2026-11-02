@@ -38,12 +38,29 @@ export const useUIStore = create<UIState>((set) => ({
   commandPaletteOpen: false,
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
   toast: null,
-  showToast: (message, type = "success") => {
-    set({ toast: { message, type } });
+  showToast: (message: any, type = "success") => {
+    let formattedMessage = "Notification";
+    if (typeof message === "string") {
+      formattedMessage = message;
+    } else if (message && typeof message === "object") {
+      if ("message" in message && typeof message.message === "string") {
+        formattedMessage = message.message;
+      } else if ("error" in message && typeof message.error === "string") {
+        formattedMessage = message.error;
+      } else if ("checkedCount" in message || "repliedCount" in message) {
+        formattedMessage = `YouTube poll: ${message.checkedCount || 0} checked, ${message.repliedCount || 0} replied`;
+      } else {
+        formattedMessage = JSON.stringify(message);
+      }
+    } else if (message != null) {
+      formattedMessage = String(message);
+    }
+
+    set({ toast: { message: formattedMessage, type } });
     // Auto-dismiss toast
     setTimeout(() => {
       set((state) => {
-        if (state.toast?.message === message) {
+        if (state.toast?.message === formattedMessage) {
           return { toast: null };
         }
         return {};

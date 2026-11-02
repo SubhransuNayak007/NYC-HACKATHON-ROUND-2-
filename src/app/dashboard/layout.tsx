@@ -138,7 +138,13 @@ export default function DashboardLayout({
               </div>
             )}
 
-            <span className="flex-1 text-left leading-snug">{toast.message}</span>
+            <span className="flex-1 text-left leading-snug">
+              {typeof toast.message === "string"
+                ? toast.message
+                : typeof toast.message === "object" && toast.message !== null
+                ? JSON.stringify(toast.message)
+                : String(toast.message ?? "")}
+            </span>
 
             <button
               onClick={hideToast}

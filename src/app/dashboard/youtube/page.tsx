@@ -627,7 +627,14 @@ export default function YouTubeDashboardPage() {
       if (res.ok) {
         const data = await res.json();
         setCommentsProcessedToday((c) => c + 1);
-        showToast(data.summary || "YouTube Comments Checked & Answered", "success");
+        const s = data.summary;
+        const summaryMsg =
+          typeof s === "string"
+            ? s
+            : s && typeof s === "object"
+            ? `Checked ${s.checkedCount ?? 0} comments, sent ${s.repliedCount ?? 0} replies`
+            : "YouTube Comments Checked & Answered";
+        showToast(summaryMsg, "success");
       } else {
         showToast("YouTube Comments Synced", "success");
       }

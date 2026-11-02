@@ -14,6 +14,7 @@ import {
   TenantGuard,
   BackoffCalculator,
   WorkflowDefinitionV3,
+  NodeType,
   WorkflowNode,
   WorkflowEdge,
   ExecutionCheckpoint,

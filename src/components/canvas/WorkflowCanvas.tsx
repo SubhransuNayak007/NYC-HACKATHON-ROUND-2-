@@ -53,6 +53,8 @@ export interface WorkflowCanvasProps {
   initialWorkflow?: WorkflowDefinitionV3;
   onWorkflowChange?: (workflow: WorkflowDefinitionV3) => void;
   executionStatus?: Record<string, { status: ExecutionNodeStatus; durationMs?: number; error?: string }>;
+  executionStreamUrl?: string;
+  activeExecutionId?: string;
   isExecuting?: boolean;
   onRunTest?: () => void;
 }
@@ -171,6 +173,8 @@ export function WorkflowCanvasInner({
   initialWorkflow,
   onWorkflowChange,
   executionStatus,
+  executionStreamUrl,
+  activeExecutionId,
   isExecuting = false,
   onRunTest,
 }: WorkflowCanvasProps) {
@@ -193,6 +197,58 @@ export function WorkflowCanvasInner({
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
+
+  // Live SSE stream execution status
+  const [liveStreamStatus, setLiveStreamStatus] = useState<
+    Record<string, { status: ExecutionNodeStatus; durationMs?: number; error?: string }>
+  >({});
+
+  // Merge executionStatus prop with live SSE stream status
+  const combinedExecutionStatus = React.useMemo(() => {
+    return {
+      ...(executionStatus || {}),
+      ...liveStreamStatus,
+    };
+  }, [executionStatus, liveStreamStatus]);
+
+  // Subscribe to SSE event stream if streamUrl or activeExecutionId is provided
+  useEffect(() => {
+    const streamUrl =
+      executionStreamUrl ||
+      (activeExecutionId ? `/api/workflows/executions/${activeExecutionId}/stream` : null);
+    if (!streamUrl || typeof window === "undefined" || !window.EventSource) return;
+
+    const eventSource = new EventSource(streamUrl);
+
+    eventSource.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+        const { eventType, nodeId, durationMs, error } = payload;
+        if (!nodeId) return;
+
+        let status: ExecutionNodeStatus = "IDLE";
+        if (eventType === "node.started" || eventType === "node_started") status = "RUNNING";
+        else if (eventType === "node.completed" || eventType === "node_completed") status = "SUCCESS";
+        else if (eventType === "node.failed" || eventType === "node_failed") status = "FAILED";
+        else return;
+
+        setLiveStreamStatus((prev) => ({
+          ...prev,
+          [nodeId]: { status, durationMs, error },
+        }));
+      } catch (err) {
+        console.error("Execution stream parse error", err);
+      }
+    };
+
+    eventSource.onerror = () => {
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [executionStreamUrl, activeExecutionId]);
 
   // Undo / Redo history stack
   const historyRef = useRef<{
@@ -233,11 +289,12 @@ export function WorkflowCanvasInner({
 
   // Sync execution status into node states
   useEffect(() => {
-    if (!executionStatus) return;
+    const hasStatus = Object.keys(combinedExecutionStatus).length > 0;
+    if (!hasStatus) return;
 
     setNodes((currentNodes) =>
       currentNodes.map((node) => {
-        const update = executionStatus[node.id];
+        const update = combinedExecutionStatus[node.id];
         if (update) {
           return {
             ...node,
@@ -256,12 +313,20 @@ export function WorkflowCanvasInner({
     // Also update edge animated particle status during execution
     setEdges((currentEdges) =>
       currentEdges.map((edge) => {
-        const sourceStatus = executionStatus[edge.source]?.status;
-        if (sourceStatus === "RUNNING") {
+        const sourceStatus = combinedExecutionStatus[edge.source]?.status;
+        const targetStatus = combinedExecutionStatus[edge.target]?.status;
+
+        if (sourceStatus === "RUNNING" || targetStatus === "RUNNING") {
           return {
             ...edge,
             animated: true,
             style: { stroke: "#F97316", strokeWidth: 3 },
+          };
+        } else if (sourceStatus === "SUCCESS" && targetStatus === "SUCCESS") {
+          return {
+            ...edge,
+            animated: false,
+            style: { stroke: "#10B981", strokeWidth: 2 },
           };
         } else if (sourceStatus === "SUCCESS") {
           return {
@@ -269,7 +334,7 @@ export function WorkflowCanvasInner({
             animated: false,
             style: { stroke: "#10B981", strokeWidth: 2 },
           };
-        } else if (sourceStatus === "FAILED") {
+        } else if (sourceStatus === "FAILED" || targetStatus === "FAILED") {
           return {
             ...edge,
             animated: false,
@@ -279,7 +344,7 @@ export function WorkflowCanvasInner({
         return edge;
       })
     );
-  }, [executionStatus]);
+  }, [combinedExecutionStatus]);
 
   // Record history snapshot before mutations
   const pushHistorySnapshot = useCallback(() => {

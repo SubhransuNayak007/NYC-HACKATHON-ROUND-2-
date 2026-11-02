@@ -12,6 +12,7 @@ import {
   SecureCredentialVault,
   CryptographicAuditLog,
   WorkflowDefinitionV3,
+  NodeType,
   WorkflowNode,
   WorkflowEdge,
   ExecutionCheckpoint,

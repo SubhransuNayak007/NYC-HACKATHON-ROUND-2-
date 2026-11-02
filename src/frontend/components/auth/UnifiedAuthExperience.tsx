@@ -346,20 +346,12 @@ export function UnifiedAuthExperience({
   };
 
   return (
-    <div className="min-h-[100dvh] w-full bg-[#FAF8F5] flex items-center justify-center p-4 sm:p-8 lg:p-12 font-sans text-[#161616] antialiased relative overflow-hidden selection:bg-[#EE7D60]/20 selection:text-[#EE7D60]">
+    <div className="min-h-[100dvh] w-full bg-[#FAF8F5] dark:bg-[#0B0F19] flex items-center justify-center p-4 sm:p-8 lg:p-12 font-sans text-[#161616] dark:text-[#F1F5F9] antialiased relative overflow-hidden selection:bg-[#EE7D60]/20 selection:text-[#EE7D60]">
       
-      {/* ── Background Geometric Float Elements (Warm Editorial QuickReply Palette) ── */}
-      <div className="absolute top-10 left-16 w-3.5 h-3.5 bg-[#EE7D60] rounded-full pointer-events-none shadow-xs" />
-      <div className="absolute top-14 left-24 w-4 h-4 rounded-full border-2 border-[#EE7D60]/30 pointer-events-none" />
-      <div className="absolute top-8 right-16 text-3xl pointer-events-none select-none drop-shadow-xs">⚡</div>
-      <div className="absolute bottom-12 right-28 w-6 h-6 rounded-full bg-[#FFE4D6] pointer-events-none shadow-xs" />
-      <div className="absolute bottom-6 left-8 w-2.5 h-2.5 bg-[#161616] rounded-full pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-3.5 h-3.5 bg-[#EE7D60] rounded-full pointer-events-none" />
-
       {/* ══════════════════════════════════════════════════════════════════════
-          MAIN WHITE CANVAS CARD
+          MAIN CANVAS CARD
           ══════════════════════════════════════════════════════════════════════ */}
-      <div className="w-full max-w-[480px] lg:max-w-[1120px] min-h-auto lg:min-h-[640px] bg-white text-[#161616] rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] shadow-2xl p-5 sm:p-10 lg:p-14 flex flex-col lg:flex-row items-center justify-between relative z-20 gap-8 lg:gap-14 border border-black/5 transform-gpu my-auto">
+      <div className="w-full max-w-[480px] lg:max-w-[1120px] min-h-auto lg:min-h-[640px] bg-white dark:bg-[#161B26] text-[#161616] dark:text-[#F1F5F9] rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] shadow-2xl p-5 sm:p-10 lg:p-14 flex flex-col lg:flex-row items-center justify-between relative z-20 gap-8 lg:gap-14 border border-black/5 dark:border-white/10 transform-gpu my-auto">
         
         {/* ══════════════════════════════════════════════════════════════════════
             LEFT COLUMN: The World's Most Powerful Reply Tool + 3D Studio Mockup (Desktop Only)
@@ -368,13 +360,11 @@ export function UnifiedAuthExperience({
           
           {/* Top Brand Headline */}
           <div className="relative space-y-3 z-10">
-            <div className="absolute -top-8 -left-6 w-44 h-44 rounded-full border border-black/5 pointer-events-none -z-10" />
-
-            <h1 className="relative z-10 text-[32px] sm:text-[38px] xl:text-[42px] font-black text-[#161616] leading-[1.14] tracking-tight">
+            <h1 className="relative z-10 text-[32px] sm:text-[38px] xl:text-[42px] font-black text-[#161616] dark:text-white leading-[1.14] tracking-tight">
               The World&apos;s Most <br />
               Powerful Autonomous Reply Engine.
             </h1>
-            <p className="text-xs sm:text-[13px] text-slate-600 font-medium leading-relaxed max-w-[340px]">
+            <p className="text-xs sm:text-[13px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-[340px]">
               Scale your customer conversations with the fastest multi-channel AI platform.
             </p>
           </div>

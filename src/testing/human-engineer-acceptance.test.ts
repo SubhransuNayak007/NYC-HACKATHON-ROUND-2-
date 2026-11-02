@@ -296,7 +296,7 @@ async function runTests() {
     });
 
     assert(check2.allowed === false, "Test 10.2: Identical duplicate event suppressed by idempotency policy");
-    assert(check2.reason?.includes("Duplicate event suppressed"), "Test 10.3: Explicit duplicate suppression reason logged");
+    assert(Boolean(check2.reason?.includes("Duplicate event suppressed")), "Test 10.3: Explicit duplicate suppression reason logged");
   }
 
   // ─────────────────────────────────────────────────────────────────────────

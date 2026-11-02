@@ -492,17 +492,17 @@ export function MySamparkHeader() {
       `}</style>
 
       <header
-        className={`fixed inset-x-0 top-0 pointer-events-none transition-all duration-200 ${
+        className={`fixed inset-x-0 top-0 pointer-events-none transition-all duration-300 ${
           scrolled
-            ? "bg-[#F5F6F0]/85 backdrop-blur-md border-b border-black/[0.04] shadow-xs pb-1"
-            : "bg-transparent"
+            ? "bg-[#F5F6F0]/95 backdrop-blur-xl border-b border-black/[0.06] shadow-xs pb-2.5"
+            : "bg-transparent pb-1"
         }`}
         style={{ zIndex: 9980 }}
       >
         <div className="max-w-[1360px] mx-auto px-4 sm:px-8">
-          <div className="flex items-start justify-between md:grid md:grid-cols-[1fr_auto_1fr] md:items-start gap-2">
+          <div className="flex items-center justify-between md:grid md:grid-cols-[1fr_auto_1fr] md:items-center gap-2 pt-2 sm:pt-2.5">
             {/* Left: QuickReply Brand Logo */}
-            <div className="pointer-events-auto flex items-center justify-start pt-3 sm:pt-4">
+            <div className="pointer-events-auto flex items-center justify-start">
               <MySamparkLogo size="sm" />
             </div>
 
@@ -512,7 +512,7 @@ export function MySamparkHeader() {
             </div>
 
             {/* Right: Quick Action Buttons matching mysampark.com */}
-            <div className="pointer-events-auto hidden md:flex items-center justify-end gap-2 sm:gap-3 pt-3 sm:pt-4">
+            <div className="pointer-events-auto hidden md:flex items-center justify-end gap-2 sm:gap-3">
               <Link href="/features/automation" className="inline-flex">
                 <motion.button
                   whileHover={{ scale: 1.03 }}

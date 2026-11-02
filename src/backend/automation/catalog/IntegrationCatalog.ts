@@ -112,6 +112,42 @@ IntegrationCatalog.register({
       },
       n8nNodeMapping: { nodeType: "n8n-nodes-base.gmail", typeVersion: 2, resource: "message", operation: "send" },
     },
+    {
+      id: "get_attachment",
+      name: "Get Email Attachment",
+      description: "Download binary attachment payload (fileData base64, fileName, mimeType, fileSize) from a Gmail message.",
+      sideEffect: "SAFE_READ",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        messageId: { type: "string", label: "Message ID", required: true },
+        attachmentId: { type: "string", label: "Attachment ID", required: false },
+      },
+      outputSchema: {
+        fileData: { type: "string" },
+        fileName: { type: "string" },
+        mimeType: { type: "string" },
+        fileSize: { type: "number" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.gmail", typeVersion: 2, resource: "messageAttachment", operation: "get" },
+    },
+    {
+      id: "download_attachment",
+      name: "Download Attachment",
+      description: "Download binary attachment payload (fileData base64, fileName, mimeType, fileSize) from an email message.",
+      sideEffect: "SAFE_READ",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        messageId: { type: "string", label: "Message ID", required: true },
+        attachmentId: { type: "string", label: "Attachment ID", required: false },
+      },
+      outputSchema: {
+        fileData: { type: "string" },
+        fileName: { type: "string" },
+        mimeType: { type: "string" },
+        fileSize: { type: "number" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.gmail", typeVersion: 2, resource: "messageAttachment", operation: "get" },
+    },
   ],
 });
 
@@ -160,6 +196,302 @@ IntegrationCatalog.register({
         rows: { type: "array" },
       },
       n8nNodeMapping: { nodeType: "n8n-nodes-base.googleSheets", typeVersion: 2, resource: "sheet", operation: "read" },
+    },
+  ],
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2b. Google Workspace — Google Drive
+// ─────────────────────────────────────────────────────────────────────────────
+IntegrationCatalog.register({
+  appId: "google_drive",
+  name: "Google Drive",
+  category: "productivity",
+  description: "Upload files, discover folders, create directories, manage permissions, and retrieve sharing links in Google Drive.",
+  iconName: "HardDrive",
+  authType: "oauth2",
+  requiredScopes: [
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive.readonly",
+  ],
+  docsUrl: "https://developers.google.com/drive/api",
+  triggers: [],
+  actions: [
+    {
+      id: "upload_file",
+      name: "Upload File",
+      description: "Upload a file or document to a specific Google Drive folder.",
+      sideEffect: "REVERSIBLE",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        fileName: { type: "string", label: "File Name", required: true },
+        folderId: { type: "string", label: "Target Folder ID", default: "root", required: false },
+        fileData: { type: "string", label: "Base64 File Data", required: false },
+        fileUrl: { type: "string", label: "Source File URL", required: false },
+        mimeType: { type: "string", label: "MIME Type", default: "application/pdf", required: false },
+      },
+      outputSchema: {
+        id: { type: "string" },
+        name: { type: "string" },
+        webViewLink: { type: "string" },
+        webContentLink: { type: "string" },
+        folderId: { type: "string" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.googleDrive", typeVersion: 2, resource: "file", operation: "upload" },
+    },
+    {
+      id: "discover_folders",
+      name: "Discover Folders",
+      description: "Query Google Drive for folders matching search criteria or parent folder.",
+      sideEffect: "SAFE_READ",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        folderName: { type: "string", label: "Folder Name / Query", required: false },
+        parentFolderId: { type: "string", label: "Parent Folder ID", default: "root", required: false },
+        maxResults: { type: "number", label: "Max Results", default: 20, required: false },
+      },
+      outputSchema: {
+        folders: { type: "array" },
+        totalFound: { type: "number" },
+        firstFolderId: { type: "string" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.googleDrive", typeVersion: 2, resource: "folder", operation: "search" },
+    },
+    {
+      id: "create_folder",
+      name: "Create Folder",
+      description: "Create a new folder in Google Drive.",
+      sideEffect: "REVERSIBLE",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        folderName: { type: "string", label: "Folder Name", required: true },
+        parentFolderId: { type: "string", label: "Parent Folder ID", default: "root", required: false },
+      },
+      outputSchema: {
+        id: { type: "string" },
+        name: { type: "string" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.googleDrive", typeVersion: 2, resource: "folder", operation: "create" },
+    },
+    {
+      id: "get_download_link",
+      name: "Get Download Link",
+      description: "Retrieve web view link and direct download URL for a file in Google Drive.",
+      sideEffect: "SAFE_READ",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        fileId: { type: "string", label: "File ID", required: true },
+      },
+      outputSchema: {
+        id: { type: "string" },
+        webViewLink: { type: "string" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.googleDrive", typeVersion: 2, resource: "file", operation: "get" },
+    },
+    {
+      id: "folder_permissions",
+      name: "Set Permissions",
+      description: "Update access permissions on a Google Drive file or folder.",
+      sideEffect: "REVERSIBLE",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        fileId: { type: "string", label: "File / Folder ID", required: true },
+        role: { type: "string", label: "Role (reader, writer)", default: "reader", required: false },
+        type: { type: "string", label: "Grantee Type (anyone, user)", default: "anyone", required: false },
+      },
+      outputSchema: {
+        id: { type: "string" },
+        role: { type: "string" },
+      },
+    },
+  ],
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2c. Google Workspace — Google Docs
+// ─────────────────────────────────────────────────────────────────────────────
+IntegrationCatalog.register({
+  appId: "google_docs",
+  name: "Google Docs",
+  category: "productivity",
+  description: "Create documents, read contents, insert paragraphs, and replace text in Google Docs.",
+  iconName: "FileText",
+  authType: "oauth2",
+  requiredScopes: [
+    "https://www.googleapis.com/auth/documents",
+    "https://www.googleapis.com/auth/drive.file",
+  ],
+  docsUrl: "https://developers.google.com/docs/api",
+  triggers: [],
+  actions: [
+    {
+      id: "create_document",
+      name: "Create Document",
+      description: "Create a new blank Google Document with a title.",
+      sideEffect: "REVERSIBLE",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        title: { type: "string", label: "Document Title", required: true },
+      },
+      outputSchema: {
+        documentId: { type: "string" },
+        title: { type: "string" },
+        revisionId: { type: "string" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.googleDocs", typeVersion: 1, resource: "document", operation: "create" },
+    },
+    {
+      id: "read_document",
+      name: "Read Document",
+      description: "Retrieve document structure and extract plain text content from a Google Document.",
+      sideEffect: "SAFE_READ",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        documentId: { type: "string", label: "Document ID", required: true },
+      },
+      outputSchema: {
+        documentId: { type: "string" },
+        title: { type: "string" },
+        content: { type: "string" },
+        revisionId: { type: "string" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.googleDocs", typeVersion: 1, resource: "document", operation: "get" },
+    },
+    {
+      id: "insert_text",
+      name: "Insert Text",
+      description: "Insert text at a specific index location in the Google Document.",
+      sideEffect: "REVERSIBLE",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        documentId: { type: "string", label: "Document ID", required: true },
+        text: { type: "string", label: "Text to Insert", required: true },
+        index: { type: "number", label: "Character Index Offset", default: 1, required: false },
+      },
+      outputSchema: {
+        documentId: { type: "string" },
+        insertedLength: { type: "number" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.googleDocs", typeVersion: 1, resource: "document", operation: "insert" },
+    },
+    {
+      id: "replace_text",
+      name: "Replace Text",
+      description: "Replace all occurrences of a search text string with replacement text in a Google Document.",
+      sideEffect: "REVERSIBLE",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        documentId: { type: "string", label: "Document ID", required: true },
+        searchText: { type: "string", label: "Search Text", required: true },
+        replaceText: { type: "string", label: "Replacement Text", required: true },
+        matchCase: { type: "boolean", label: "Match Case", default: true, required: false },
+      },
+      outputSchema: {
+        documentId: { type: "string" },
+        occurrencesChanged: { type: "number" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.googleDocs", typeVersion: 1, resource: "document", operation: "replace" },
+    },
+  ],
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2d. Google Workspace — Google Calendar
+// ─────────────────────────────────────────────────────────────────────────────
+IntegrationCatalog.register({
+  appId: "google_calendar",
+  name: "Google Calendar",
+  category: "productivity",
+  description: "Schedule, search, modify, and delete meetings and events in Google Calendar.",
+  iconName: "Calendar",
+  authType: "oauth2",
+  requiredScopes: [
+    "https://www.googleapis.com/auth/calendar.events",
+    "https://www.googleapis.com/auth/calendar.readonly",
+  ],
+  docsUrl: "https://developers.google.com/calendar/api",
+  triggers: [],
+  actions: [
+    {
+      id: "create_event",
+      name: "Create Calendar Event",
+      description: "Create and schedule a new calendar event or meeting.",
+      sideEffect: "REVERSIBLE",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        calendarId: { type: "string", label: "Calendar ID", default: "primary", required: false },
+        summary: { type: "string", label: "Event Title", required: true },
+        startTime: { type: "string", label: "Start Time (ISO 8601)", required: true },
+        endTime: { type: "string", label: "End Time (ISO 8601)", required: true },
+        description: { type: "string", label: "Description", required: false },
+        location: { type: "string", label: "Location", required: false },
+        attendees: { type: "string", label: "Attendees (emails)", required: false },
+      },
+      outputSchema: {
+        id: { type: "string" },
+        summary: { type: "string" },
+        status: { type: "string" },
+        htmlLink: { type: "string" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.googleCalendar", typeVersion: 1, resource: "event", operation: "create" },
+    },
+    {
+      id: "list_events",
+      name: "List Calendar Events",
+      description: "Retrieve events from Google Calendar matching date filters or search terms.",
+      sideEffect: "SAFE_READ",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        calendarId: { type: "string", label: "Calendar ID", default: "primary", required: false },
+        timeMin: { type: "string", label: "Min Start Time (ISO 8601)", required: false },
+        timeMax: { type: "string", label: "Max End Time (ISO 8601)", required: false },
+        query: { type: "string", label: "Search Query", required: false },
+        maxResults: { type: "number", label: "Max Results", default: 10, required: false },
+      },
+      outputSchema: {
+        events: { type: "array" },
+        totalFound: { type: "number" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.googleCalendar", typeVersion: 1, resource: "event", operation: "getAll" },
+    },
+    {
+      id: "update_event",
+      name: "Update Calendar Event",
+      description: "Update title, timing, or details of an existing Google Calendar event.",
+      sideEffect: "REVERSIBLE",
+      requiresApprovalByDefault: false,
+      inputSchema: {
+        calendarId: { type: "string", label: "Calendar ID", default: "primary", required: false },
+        eventId: { type: "string", label: "Event ID", required: true },
+        summary: { type: "string", label: "New Title", required: false },
+        startTime: { type: "string", label: "New Start Time (ISO 8601)", required: false },
+        endTime: { type: "string", label: "New End Time (ISO 8601)", required: false },
+        description: { type: "string", label: "New Description", required: false },
+        location: { type: "string", label: "New Location", required: false },
+      },
+      outputSchema: {
+        id: { type: "string" },
+        summary: { type: "string" },
+        updated: { type: "string" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.googleCalendar", typeVersion: 1, resource: "event", operation: "update" },
+    },
+    {
+      id: "delete_event",
+      name: "Delete Calendar Event",
+      description: "Cancel or remove a scheduled event from Google Calendar.",
+      sideEffect: "DESTRUCTIVE",
+      requiresApprovalByDefault: true,
+      inputSchema: {
+        calendarId: { type: "string", label: "Calendar ID", default: "primary", required: false },
+        eventId: { type: "string", label: "Event ID to Delete", required: true },
+      },
+      outputSchema: {
+        id: { type: "string" },
+        deleted: { type: "boolean" },
+        status: { type: "string" },
+      },
+      n8nNodeMapping: { nodeType: "n8n-nodes-base.googleCalendar", typeVersion: 1, resource: "event", operation: "delete" },
     },
   ],
 });

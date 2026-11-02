@@ -256,9 +256,9 @@ export function BidirectionalWorkflowTrack({
         </motion.div>
       </div>
 
-      {/* Left and Right Fade Gradients: subtle width on desktop only, completely hidden on mobile */}
-      <div className="hidden md:block pointer-events-none absolute inset-y-0 left-0 w-12 lg:w-20 bg-gradient-to-r from-[#FAF8F5] to-transparent z-10" />
-      <div className="hidden md:block pointer-events-none absolute inset-y-0 right-0 w-12 lg:w-20 bg-gradient-to-l from-[#FAF8F5] to-transparent z-10" />
+      {/* Left and Right Edge Fade: delicate feathering that never masks card content */}
+      <div className="hidden lg:block pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[#FAF8F5]/80 to-transparent z-10" />
+      <div className="hidden lg:block pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#FAF8F5]/80 to-transparent z-10" />
     </section>
   );
 }

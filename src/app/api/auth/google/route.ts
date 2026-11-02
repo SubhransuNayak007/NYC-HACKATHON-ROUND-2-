@@ -1,18 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { OAuthLifecycleManager } from "@/backend/credentials/OAuthLifecycleManager";
+import { buildGoogleAuthUrl, resolveGoogleScopes, GOOGLE_SERVICE_SCOPES } from "./googleOAuthHelper";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const isLogin = searchParams.get("login") === "true";
   const stateVal = searchParams.get("state") || "dashboard";
-
-  const finalState = isLogin ? `login:${stateVal}` : stateVal;
+  const services = searchParams.get("services") || searchParams.get("service");
+  const tenantId = searchParams.get("tenantId") || "";
+  const workspaceId = searchParams.get("workspaceId") || "";
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
 
   if (!clientId) {
     return NextResponse.json({
-      error: "YouTube integration is temporarily unavailable. Please contact support."
+      error: "Google integration is temporarily unavailable. Missing GOOGLE_CLIENT_ID.",
     }, { status: 503 });
   }
 
@@ -21,40 +24,73 @@ export async function GET(req: NextRequest) {
   const origin = `${protocol}://${host}`;
   const redirectUri = `${origin}/api/auth/callback/google`;
 
-  const scopes = isLogin
-    ? ["openid", "email", "profile"]
-    : [
-        "openid",
-        "email",
-        "profile",
-        "https://www.googleapis.com/auth/youtube.force-ssl",
-        "https://www.googleapis.com/auth/youtube.readonly",
-        "https://www.googleapis.com/auth/yt-analytics.readonly",
-        "https://www.googleapis.com/auth/yt-analytics-monetary.readonly",
-      ];
+  // Determine requested scopes based on mode
+  let scopes: string[];
+  if (isLogin) {
+    scopes = [...GOOGLE_SERVICE_SCOPES.base];
+  } else if (services) {
+    scopes = resolveGoogleScopes(services);
+  } else {
+    // Default legacy scopes including YouTube if no specific services requested
+    scopes = [
+      ...GOOGLE_SERVICE_SCOPES.base,
+      ...GOOGLE_SERVICE_SCOPES.youtube,
+      ...GOOGLE_SERVICE_SCOPES.drive,
+      ...GOOGLE_SERVICE_SCOPES.sheets,
+    ];
+  }
 
-  // Generate a cryptographic nonce and store it in a signed cookie for CSRF protection
+  // Generate PKCE pair
+  const pkce = OAuthLifecycleManager.generatePKCE();
+
+  // Generate cryptographic nonce for CSRF validation
   const nonce = crypto.randomBytes(32).toString("hex");
-  const stateWithNonce = `${finalState}|${nonce}`;
 
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-    `client_id=${encodeURIComponent(clientId)}&` +
-    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-    `response_type=code&` +
-    `scope=${encodeURIComponent(scopes.join(" "))}&` +
-    `access_type=offline&` +
-    `state=${encodeURIComponent(stateWithNonce)}&` +
-    `prompt=consent`;
+  // Construct structured state preserving destination and workspace context
+  // Format: actualState|nonce (where actualState can contain workspace metadata)
+  let actualState: string;
+  if (isLogin) {
+    actualState = `login:${stateVal}`;
+  } else if (workspaceId || services) {
+    // Workspace-bound connector authorization
+    actualState = `connect:${encodeURIComponent(tenantId)}:${encodeURIComponent(workspaceId)}:${encodeURIComponent(services || "all")}:${stateVal}`;
+  } else {
+    actualState = stateVal;
+  }
+
+  const stateWithNonce = `${actualState}|${nonce}`;
+
+  // Build authorization URL with incremental authorization and multi-account selection
+  const authUrl = buildGoogleAuthUrl({
+    clientId,
+    redirectUri,
+    state: stateWithNonce,
+    scopes,
+    codeChallenge: pkce.codeChallenge,
+    codeChallengeMethod: "S256",
+    includeGrantedScopes: true,
+    prompt: "consent select_account",
+    accessType: "offline",
+  });
 
   const response = NextResponse.redirect(authUrl);
 
-  // Store the nonce in a cookie so we can verify it on callback
+  // Store CSRF nonce cookie
   response.cookies.set("oauth_nonce", nonce, {
     path: "/",
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 600 // 10 minutes expiry
+    maxAge: 600, // 10 minutes expiry
+  });
+
+  // Store PKCE code_verifier cookie for callback token exchange
+  response.cookies.set("oauth_code_verifier", pkce.codeVerifier, {
+    path: "/",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 600,
   });
 
   return response;

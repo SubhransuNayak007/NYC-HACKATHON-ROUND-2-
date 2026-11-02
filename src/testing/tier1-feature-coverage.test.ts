@@ -15,6 +15,7 @@ import {
   SSRFGuard,
   TenantGuard,
   WorkflowDefinitionV3,
+  NodeType,
   WorkflowNode,
   WorkflowEdge,
   ExecutionCheckpoint,
