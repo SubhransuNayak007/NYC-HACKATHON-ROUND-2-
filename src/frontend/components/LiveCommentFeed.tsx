@@ -19,6 +19,7 @@ import {
   WifiOff,
   Sparkles,
   Loader2,
+  Radio,
 } from "lucide-react";
 
 interface Comment {
@@ -407,15 +408,16 @@ export default function LiveCommentFeed() {
         ) : comments.length === 0 ? (
           <div className="card-premium glass-card p-12 text-center">
             <div className="h-14 w-14 rounded-2xl bg-surface-100 flex items-center justify-center mx-auto mb-3">
-              <Youtube className="h-6 w-6 text-ink-400" />
+              <Radio className="h-6 w-6 text-navy-500" />
             </div>
-            <h4 className="font-display text-sm font-bold text-ink-700">No comments yet</h4>
-            <p className="text-xs text-ink-400 mt-1 max-w-[320px] mx-auto leading-relaxed">
-              The 24/7 background worker is polling every 30 seconds. Comments will appear here automatically once your connected YouTube channel receives new comments.
+            <h4 className="font-display text-sm font-bold text-ink-800">No Comments in Queue</h4>
+            <p className="text-xs text-ink-500 mt-1 max-w-[380px] mx-auto leading-relaxed">
+              The 24/7 autonomous worker is actively monitoring your connected channels. Incoming comments and direct messages will stream here in real time.
             </p>
-            <p className="text-[10px] text-ink-400 mt-3 max-w-[320px] mx-auto">
-              Make sure your channel is connected via Google OAuth in Settings → Platforms, and that you have FAQs in the Knowledge Base for auto-replies.
-            </p>
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[11px] font-semibold text-emerald-700">Autonomous Pipeline Online</span>
+            </div>
           </div>
         ) : (
           <AnimatePresence mode="popLayout">

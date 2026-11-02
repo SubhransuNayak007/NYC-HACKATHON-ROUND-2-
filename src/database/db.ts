@@ -4,6 +4,13 @@ import crypto from "crypto";
 import dns from "dns";
 import { MongoClient } from "mongodb";
 import { cookies } from "next/headers";
+import type {
+  AutomationConversation,
+  AutomationPlan,
+  PlanApprovalRecord,
+  ActivationApprovalRecord,
+  WorkflowSpec,
+} from "@/backend/automation/types";
 
 try {
   dns.setServers(["8.8.8.8", "1.1.1.1"]);
@@ -19,8 +26,11 @@ function getTokenEncryptionKey(): Buffer {
   if (key && key.length === 64) {
     return Buffer.from(key, "hex");
   }
-  const seed = process.env.NEXTAUTH_SECRET || process.env.APP_SECRET || "quickreply_native_social_integration_key_32bytes";
-  return crypto.createHash("sha256").update(seed).digest();
+  const seed = process.env.TOKEN_ENCRYPTION_KEY || process.env.JWT_SECRET || process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET || process.env.APP_SECRET;
+  if (!seed && process.env.NODE_ENV === "production") {
+    console.error("[Security] CRITICAL: TOKEN_ENCRYPTION_KEY or SESSION_SECRET must be configured in production.");
+  }
+  return crypto.createHash("sha256").update(seed || "quickreply_dev_encryption_seed_non_prod_only").digest();
 }
 
 export function encryptToken(plaintext: string): string {
@@ -57,9 +67,11 @@ export function decryptToken(encryptedText: string): string {
   }
 }
 
-// Cached connection promises for MongoDB serverless execution
-let mongoClient: MongoClient | null = null;
-let mongoClientPromise: Promise<MongoClient> | null = null;
+// High-Performance Singleton MongoDB Connection Pool across Next.js Lambdas & Hot-Reloads
+declare global {
+  // eslint-disable-next-line no-var
+  var _mongoClientPromise: Promise<MongoClient> | undefined;
+}
 
 export async function getMongoClient(): Promise<MongoClient> {
   const uri = process.env.MONGODB_URI;
@@ -67,19 +79,25 @@ export async function getMongoClient(): Promise<MongoClient> {
     throw new Error("MONGODB_URI environment variable is not defined");
   }
 
-  if (mongoClientPromise) {
-    return mongoClientPromise;
+  if (globalThis._mongoClientPromise) {
+    return globalThis._mongoClientPromise;
   }
 
-  mongoClient = new MongoClient(uri, {
-    serverSelectionTimeoutMS: 2000,
-    connectTimeoutMS: 2000,
+  const client = new MongoClient(uri, {
+    maxPoolSize: 50,
+    minPoolSize: 5,
+    maxIdleTimeMS: 30000,
+    waitQueueTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 3000,
+    connectTimeoutMS: 3000,
   });
-  mongoClientPromise = mongoClient.connect().catch((err) => {
-    mongoClientPromise = null;
+
+  globalThis._mongoClientPromise = client.connect().catch((err) => {
+    globalThis._mongoClientPromise = undefined;
     throw err;
   });
-  return mongoClientPromise;
+
+  return globalThis._mongoClientPromise;
 }
 
 export interface WorkspaceMember {
@@ -161,6 +179,8 @@ export interface VideoQueueEntry {
   repliedCount: number;         // Total replies posted
   priority: number;             // 1=hottest (newest), 4=coldest (oldest)
   error?: string | null;        // Last error message
+  isAutomated?: boolean;
+  isRAGAutomated?: boolean;
 }
 
 export type SystemEventType =
@@ -564,15 +584,15 @@ export interface UserSession {
   email: string;
   name: string;
   username: string;        // Unique username for the account
-  tier: "free" | "premium" | "pro";
+  tier: "free" | "starter" | "growth" | "pro" | "business" | "premium";
   repliesToday: number;
   lastResetDate: string;
   quickLogin?: {
-    secretCodeHash: string;      // Bcrypt-hashed 6-digit secret code
-    secretCodePlain: string;     // Plain text (shown once during setup, then cleared)
-    totpSecret: string;          // TOTP secret for Google Authenticator
-    totpEnabled: boolean;        // Whether user has completed TOTP setup
-    quickLoginEnabled: boolean;  // Master toggle
+    secretCodeHash?: string;      // Bcrypt-hashed 6-digit secret code
+    secretCodePlain?: string;     // Plain text (shown once during setup, then cleared)
+    totpSecret?: string;          // TOTP secret for Google Authenticator
+    totpEnabled?: boolean;        // Whether user has completed TOTP setup
+    quickLoginEnabled?: boolean;  // Master toggle
   };
 }
 
@@ -603,6 +623,135 @@ export interface Coupon {
   usedBy?: string;
 }
 
+// ============================================================
+// Credit System & Immutable Ledger — Data Models
+// ============================================================
+
+export type CreditTransactionType =
+  | "PURCHASE"
+  | "SUBSCRIPTION_GRANT"
+  | "BONUS"
+  | "SIGNUP_BONUS"
+  | "USAGE"
+  | "REFUND"
+  | "RESERVATION"
+  | "RESERVATION_RELEASE"
+  | "ADMIN_ADJUSTMENT"
+  | "EXPIRATION";
+
+export type CreditReferenceType =
+  | "REPLY_KEYWORD"
+  | "REPLY_RULE"
+  | "REPLY_AI"
+  | "REPLY_RAG"
+  | "STRIPE_CHECKOUT"
+  | "RAZORPAY_PAYMENT"
+  | "SUBSCRIPTION_MONTHLY"
+  | "SIGNUP_BONUS"
+  | "ADMIN";
+
+export interface CreditAccount {
+  id: string;
+  tenantId: string;
+  balance: number;
+  reservedBalance: number;
+  lifetimeGranted: number;
+  lifetimeUsed: number;
+  version: number;
+  updatedAt: string;
+}
+
+export interface CreditLedgerEntry {
+  id: string;
+  tenantId: string;
+  type: CreditTransactionType;
+  amount: number;
+  balanceAfter: number;
+  referenceType: CreditReferenceType;
+  referenceId?: string;
+  idempotencyKey: string;
+  metadata?: Record<string, any>;
+  createdAt: string;
+}
+
+export interface CreditReservation {
+  id: string;
+  tenantId: string;
+  amount: number;
+  referenceId: string;
+  idempotencyKey: string;
+  status: "PENDING" | "COMMITTED" | "RELEASED";
+  createdAt: string;
+  expiresAt: string;
+}
+
+// ============================================================
+// Billing, Subscriptions & Webhooks — Data Models
+// ============================================================
+
+export type SubscriptionStatus =
+  | "TRIALING"
+  | "ACTIVE"
+  | "PAST_DUE"
+  | "PAUSED"
+  | "CANCELED"
+  | "INCOMPLETE"
+  | "EXPIRED";
+
+export interface SubscriptionRecord {
+  id: string;
+  tenantId: string;
+  provider: "stripe" | "razorpay";
+  subscriptionId: string;
+  customerId: string;
+  tier: "free" | "starter" | "growth" | "pro" | "business" | "premium";
+  status: SubscriptionStatus;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  cancelAtPeriodEnd: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaymentTransactionRecord {
+  id: string;
+  tenantId: string;
+  provider: "stripe" | "razorpay";
+  transactionId: string;
+  orderId?: string;
+  amount: number;
+  currency: string;
+  status: "pending" | "succeeded" | "failed" | "refunded";
+  tier?: string;
+  creditsGranted?: number;
+  idempotencyKey: string;
+  createdAt: string;
+}
+
+export interface WebhookEventRecord {
+  id: string;
+  provider: "stripe" | "razorpay" | "whatsapp" | "meta";
+  eventId: string;
+  eventType: string;
+  processedAt: string;
+  status: "processed" | "failed" | "ignored";
+  idempotencyKey: string;
+  error?: string;
+}
+
+export interface N8nConnectionRecord {
+  id: string;
+  tenantId: string;
+  name?: string;
+  instanceUrl: string;
+  encryptedApiKey: string;
+  status: "connected" | "error" | "unverified";
+  lastTestedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  isDefault?: boolean;
+}
+
 export interface DBData {
   workspace: Workspace;
   channels: Channel[];
@@ -614,6 +763,14 @@ export interface DBData {
   userSession?: UserSession;
   passwordHash?: string;  // scrypt-hashed password for email/password auth
   coupons?: Coupon[];
+  // Credit Ledger & Accounts
+  creditAccount?: CreditAccount;
+  creditLedger?: CreditLedgerEntry[];
+  creditReservations?: CreditReservation[];
+  // Subscriptions & Payment Transactions
+  subscriptions?: SubscriptionRecord[];
+  paymentTransactions?: PaymentTransactionRecord[];
+  webhookEvents?: WebhookEventRecord[];
   // Analytics & Insights
   topCommenters?: TopCommenter[];
   engagementHourly?: EngagementHourly[];
@@ -623,6 +780,12 @@ export interface DBData {
   automationChains?: AutomationChain[];
   followUpSequences?: FollowUpSequence[];
   webhookTriggers?: WebhookTrigger[];
+  workflowSpecs?: WorkflowSpec[];
+  workflowDeployments?: any[];
+  automationConversations?: AutomationConversation[];
+  automationPlans?: AutomationPlan[];
+  planApprovals?: PlanApprovalRecord[];
+  activationApprovals?: ActivationApprovalRecord[];
   // Team Collaboration
   teamMembers?: TeamMember[];
   commentAssignments?: CommentAssignment[];
@@ -657,7 +820,11 @@ export interface DBData {
   pipelineTraces?: PipelineTrace[];
   // Leaderboard rewards
   leaderboardRewards?: LeaderboardReward[];
-  // WhatsApp Business Automation Engine
+  // WhatsApp Business Automation Engine (Official Meta Cloud API)
+  waConnections?: WhatsAppConnection[];
+  waTemplates?: WhatsAppTemplate[];
+  waCampaigns?: WhatsAppCampaign[];
+  waAutomations?: WhatsAppAutomation[];
   waConversations?: WAConversation[];
   waMessages?: WAMessage[];
   waCustomers?: WACustomer[];
@@ -668,6 +835,60 @@ export interface DBData {
   waAnalyticsEvents?: WAAnalyticsEvent[];
   mcpTools?: MCPTool[];
   waQuickReplies?: WAQuickReply[];
+  // Autonomous Business OS Collections
+  workflows?: any[];
+  credentialsVault?: any[];
+  n8nConnections?: N8nConnectionRecord[];
+  aiConversations?: any[];
+  aiMessages?: any[];
+  approvalRequests?: any[];
+  auditLogs?: any[];
+  crmCustomers?: any[];
+  idempotencyRecords?: any[];
+  workflowExecutions?: any[];
+  settings?: any;
+  automationRules?: any[];
+  giveawayCampaigns?: any[];
+  giveawayWinners?: any[];
+  // Video-Aware RAG Comment Intelligence & Selective Reply Engine
+  videoContentProfiles?: any[];
+  videoRAGConfigs?: any[];
+  commentDecisionTraces?: any[];
+  // LinkedIn Enterprise Platform (Official REST API v202401+)
+  linkedinConnections?: LinkedInConnection[];
+  linkedinOrganizations?: LinkedInOrganization[];
+  linkedinPosts?: LinkedInPost[];
+  linkedinSocialActions?: LinkedInSocialAction[];
+  linkedinAnalyticsEvents?: LinkedInAnalyticsEvent[];
+  linkedinAIGenerationRecords?: LinkedInAIGenerationRecord[];
+  linkedinAutomations?: LinkedInAutomation[];
+  // Instagram 24/7 Autonomous Enterprise Operations (Official Meta Graph API v19.0+)
+  instagramAccounts?: InstagramAccount[];
+  instagramConnections?: InstagramConnection[];
+  instagramPosts?: InstagramPost[];
+  instagramComments?: InstagramComment[];
+  instagramConversations?: InstagramConversation[];
+  instagramMessages?: InstagramMessage[];
+  instagramAutomations?: InstagramAutomation[];
+  instagramExecutions?: InstagramAutomationExecution[];
+  instagramScheduledJobs?: InstagramScheduledJob[];
+  instagramEvents?: InstagramEvent[];
+  instagramContacts?: InstagramContact[];
+  // Telegram 24/7 Autonomous Enterprise Operations (Official Telegram Bot API v7.0-10.2+)
+  telegramConnections?: TelegramConnection[];
+  telegramChats?: TelegramChat[];
+  telegramContacts?: TelegramContact[];
+  telegramConversations?: TelegramConversation[];
+  telegramMessages?: TelegramMessage[];
+  telegramAutomations?: TelegramAutomation[];
+  telegramExecutions?: TelegramAutomationExecution[];
+  telegramScheduledJobs?: TelegramScheduledJob[];
+  telegramEvents?: TelegramEvent[];
+  telegramPayments?: TelegramPayment[];
+  telegramCampaigns?: TelegramCampaign[];
+  telegramMiniApps?: TelegramMiniApp[];
+  telegramVoiceOfCustomer?: TelegramVoiceOfCustomer[];
+  telegramSupportTickets?: TelegramSupportTicket[];
   // Business Intelligence & Autonomous Agent Operating Layer
   agiLearnedComments?: LearnedComment[];
   audienceKnowledge?: AudienceKnowledge;
@@ -1183,10 +1404,136 @@ export type WAAnalyticsEventType =
   | "product_lookup"
   | "knowledge_retrieval";
 
+export type WhatsAppConnectionStatus =
+  | "NOT_CONNECTED"
+  | "CONNECTING"
+  | "META_AUTH_REQUIRED"
+  | "ONBOARDING"
+  | "WABA_SELECTED"
+  | "PHONE_NUMBER_REGISTERING"
+  | "PHONE_NUMBER_CONNECTED"
+  | "WEBHOOK_PENDING"
+  | "READY"
+  | "DEGRADED"
+  | "REAUTH_REQUIRED"
+  | "DISCONNECTED"
+  | "ERROR";
+
+export type WhatsAppQualityRating = "GREEN" | "YELLOW" | "RED" | "NA";
+export type WhatsAppMessagingLimit = "TIER_50" | "TIER_250" | "TIER_1K" | "TIER_10K" | "TIER_100K" | "TIER_UNLIMITED";
+
+export interface WhatsAppConnection {
+  id: string;
+  tenantId: string;
+  wabaId: string;
+  phoneNumberId: string;
+  businessPortfolioId?: string;
+  displayPhoneNumber: string;
+  verifiedName?: string;
+  status: WhatsAppConnectionStatus;
+  qualityRating: WhatsAppQualityRating;
+  messagingLimit: WhatsAppMessagingLimit;
+  country?: string;
+  timezone?: string;
+  encryptedCredentialRef?: string;
+  webhookStatus: "healthy" | "pending" | "failing" | "unverified";
+  lastSyncAt: string;
+  lastWebhookAt?: string;
+  lastError?: {
+    code: string;
+    message: string;
+    timestamp: string;
+    resolution?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type WhatsAppTemplateStatus = "APPROVED" | "PENDING" | "REJECTED" | "PAUSED" | "DISABLED";
+export type WhatsAppTemplateCategory = "MARKETING" | "UTILITY" | "AUTHENTICATION";
+
+export interface WhatsAppTemplate {
+  id: string;
+  tenantId?: string;
+  providerTemplateId?: string;
+  name: string;
+  language: string;
+  category: WhatsAppTemplateCategory;
+  status: WhatsAppTemplateStatus;
+  components: {
+    type: "HEADER" | "BODY" | "FOOTER" | "BUTTONS";
+    format?: "TEXT" | "IMAGE" | "DOCUMENT" | "VIDEO";
+    text?: string;
+    example?: Record<string, any>;
+    buttons?: Array<{ type: string; text: string; url?: string; phone_number?: string }>;
+  }[];
+  quality?: string;
+  lastSyncedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface WhatsAppCampaign {
+  id: string;
+  tenantId: string;
+  name: string;
+  templateId: string;
+  templateName?: string;
+  targetAudience: string;
+  recipientCount: number;
+  scheduledTime: string;
+  status: "scheduled" | "processing" | "completed" | "paused" | "cancelled" | "failed";
+  rateLimitPerMinute: number;
+  metrics: {
+    sent: number;
+    delivered: number;
+    read: number;
+    replied: number;
+    failed: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WhatsAppAutomation {
+  id: string;
+  tenantId: string;
+  name: string;
+  isActive: boolean;
+  trigger: "keyword" | "intent" | "new_contact" | "customer_replied" | "post_delivery" | "cart_abandoned";
+  conditions: Array<{
+    type: "contains" | "equals" | "regex" | "intent" | "sentiment" | "vip_only" | "outside_hours";
+    value: string;
+  }>;
+  actions: Array<{
+    type: "send_reply" | "send_template" | "escalate" | "add_tag" | "update_lead_score";
+    payload?: string;
+    templateId?: string;
+  }>;
+  priority: number;
+  cooldownMs: number;
+  executionCount: number;
+  lastExecutedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WhatsAppWebhookEvent {
+  id: string;
+  tenantId: string;
+  providerEventId: string;
+  eventType: string;
+  payloadHash: string;
+  status: "processed" | "ignored_duplicate" | "failed";
+  receivedAt: string;
+  processedAt?: string;
+  error?: string;
+}
+
 export interface WAConversation {
   id: string;
   waConversationId?: string;     // WhatsApp's native conversation ID
-  channelPhone: string;          // Our WhatsApp Business number
+  channelPhone?: string;         // Our WhatsApp Business number
   customerPhone: string;         // Customer's phone (E.164 format)
   customerId?: string;           // Link to WACustomer.id
   status: WAConversationStatus;
@@ -1199,8 +1546,8 @@ export interface WAConversation {
   unreadCount: number;
   lastMessageAt: string;         // ISO string
   lastMessagePreview: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   resolvedAt?: string;
   summary?: string;              // AI-generated conversation summary
   intentHistory: string[];       // Last 5 detected intents
@@ -1240,6 +1587,7 @@ export interface WACustomer {
   name?: string;
   email?: string;
   avatar?: string;
+  avatarUrl?: string;
   tags: string[];
   notes?: string;
   totalConversations: number;
@@ -1261,8 +1609,8 @@ export interface WACustomer {
   };
   optedOut: boolean;
   isVip?: boolean;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   isDemo?: boolean;
 }
 
@@ -1396,6 +1744,810 @@ export interface WAQuickReply {
   createdAt: string;
 }
 
+// ============================================================
+// LinkedIn Enterprise Community Management — Data Models
+// ============================================================
+
+export type LinkedInConnectionStatus =
+  | "NOT_CONNECTED"
+  | "AUTHORIZING"
+  | "CONNECTED"
+  | "DEGRADED"
+  | "TOKEN_EXPIRED"
+  | "REAUTH_REQUIRED"
+  | "REVOKED"
+  | "PERMISSION_CHANGED"
+  | "RATE_LIMITED"
+  | "PROVIDER_ERROR"
+  | "DISCONNECTED";
+
+export interface LinkedInConnection {
+  id: string;
+  tenantId: string;
+  workspaceId: string;
+  provider: "linkedin_official_rest";
+  status: LinkedInConnectionStatus;
+  memberId: string;
+  memberUrn: string;
+  memberName?: string;
+  memberEmail?: string;
+  memberAvatarUrl?: string;
+  organizationIds: string[];
+  authorizedScopes: string[];
+  accessTokenEncrypted?: string;
+  refreshTokenEncrypted?: string;
+  tokenExpiresAt?: string;
+  lastRefreshAt?: string;
+  apiVersion: string;
+  lastSuccessfulRequestAt?: string;
+  lastFailedRequestAt?: string;
+  errorCode?: string;
+  errorMessage?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LinkedInOrganization {
+  id: string;
+  tenantId: string;
+  connectionId: string;
+  organizationId: string;
+  organizationUrn: string;
+  name: string;
+  vanityName?: string;
+  logoUrl?: string;
+  description?: string;
+  role: "ADMINISTRATOR" | "DIRECT_SPONSORED_CONTENT_POSTER" | "CONTENT_ADMIN" | "CURATOR" | "ANALYST" | string;
+  permissions: string[];
+  followerCount?: number;
+  status: "ACTIVE" | "REVOKED" | "UNVERIFIED";
+  lastSyncedAt: string;
+}
+
+export type LinkedInPostStatus =
+  | "DRAFT"
+  | "APPROVAL_PENDING"
+  | "APPROVED"
+  | "SCHEDULED"
+  | "QUEUED"
+  | "PUBLISHING"
+  | "PUBLISHED"
+  | "FAILED"
+  | "RETRYING"
+  | "FAILED_FINAL";
+
+export type LinkedInPostVisibility = "PUBLIC" | "CONNECTIONS" | "LOGGED_IN";
+
+export interface LinkedInPost {
+  id: string;
+  tenantId: string;
+  workspaceId: string;
+  connectionId: string;
+  organizationId?: string; // Optional if posting as Member Profile
+  providerPostUrn?: string; // e.g. "urn:li:share:123" or "urn:li:ugcPost:123"
+  authorUrn: string; // e.g. "urn:li:organization:12345" or "urn:li:person:67890"
+  authorName?: string;
+  content: string;
+  media?: {
+    type: "image" | "video" | "document" | "article" | "none";
+    assetUrn?: string;
+    url?: string;
+    title?: string;
+    description?: string;
+    thumbnailUrl?: string;
+  };
+  article?: {
+    sourceUrl: string;
+    title?: string;
+    description?: string;
+    thumbnailUrl?: string;
+  };
+  visibility: LinkedInPostVisibility;
+  status: LinkedInPostStatus;
+  idempotencyKey: string;
+  scheduledAt?: string;
+  publishedAt?: string;
+  providerCreatedAt?: string;
+  likes: number;
+  comments: number;
+  reactions: number;
+  shares: number;
+  impressions: number;
+  approvalRequired?: boolean;
+  approvedBy?: string;
+  approvedAt?: string;
+  rejectedReason?: string;
+  lastError?: {
+    code: string;
+    message: string;
+    timestamp: string;
+  };
+  isAutomationActive?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LinkedInSocialAction {
+  id: string;
+  tenantId: string;
+  postId: string;
+  providerActionUrn: string;
+  type: "COMMENT" | "REACTION" | "LIKE";
+  actorUrn: string;
+  actorName?: string;
+  actorHeadline?: string;
+  actorAvatarUrl?: string;
+  content?: string;
+  sentiment?: "positive" | "neutral" | "negative";
+  priority?: "low" | "medium" | "high" | "urgent";
+  moderationFlag?: "none" | "safe" | "spam" | "harassment" | "legal_threat" | "competitor";
+  aiSuggestedReply?: string;
+  replyUrn?: string;
+  replyContent?: string;
+  repliedAt?: string;
+  createdAt: string;
+}
+
+export interface LinkedInAnalyticsEvent {
+  id: string;
+  tenantId: string;
+  organizationId?: string;
+  postId?: string;
+  metric: "impressions" | "clicks" | "reactions" | "comments" | "shares" | "engagement_rate" | "follower_growth";
+  value: number;
+  capturedAt: string;
+  source: "official_api" | "webhook" | "calculated";
+}
+
+export interface LinkedInAIGenerationRecord {
+  id: string;
+  tenantId: string;
+  connectionId?: string;
+  postId?: string;
+  promptHash: string;
+  formatType: string;
+  tone: string;
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+  generatedText: string;
+  qualityScore: number;
+  approved: boolean;
+  published: boolean;
+  createdAt: string;
+}
+
+export interface LinkedInAutomation {
+  id: string;
+  tenantId: string;
+  name: string;
+  isActive: boolean;
+  trigger: "cadence_schedule" | "topic_trend" | "new_blog_detected" | "youtube_video_uploaded" | "comment_threshold";
+  scheduleCron?: string;
+  topic?: string;
+  tone?: string;
+  formatType?: string;
+  targetAuthorUrn?: string;
+  requiresApproval: boolean;
+  cooldownMs: number;
+  executionCount: number;
+  lastExecutedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ============================================================
+// Instagram 24/7 Autonomous Enterprise Operations — Data Models
+// ============================================================
+
+export type InstagramConnectionStatus =
+  | "NOT_CONNECTED"
+  | "CONNECTING"
+  | "READY"
+  | "CONNECTED"
+  | "DEGRADED"
+  | "REAUTH_REQUIRED"
+  | "REVOKED"
+  | "RATE_LIMITED"
+  | "PROVIDER_ERROR"
+  | "DISCONNECTED";
+
+export type InstagramAccountType = "BUSINESS" | "CREATOR" | "PERSONAL" | "UNKNOWN";
+
+export interface InstagramAccount {
+  id: string;
+  tenantId: string;
+  workspaceId?: string;
+  providerAccountId?: string; // IG User ID / Page ID
+  username: string;
+  name?: string;
+  displayName?: string;
+  profileUrl?: string;
+  profileImage?: string;
+  profilePictureUrl?: string;
+  accountType?: InstagramAccountType;
+  status: "ACTIVE" | "DEGRADED" | "DISCONNECTED";
+  capabilities?: string[];
+  followersCount: number;
+  followingCount?: number;
+  mediaCount?: number;
+  connectedAt?: string;
+  lastSyncedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface InstagramConnection {
+  id: string;
+  tenantId: string;
+  workspaceId?: string;
+  accountId?: string;
+  instagramAccountId?: string;
+  facebookPageId?: string;
+  accountType?: InstagramAccountType;
+  username?: string;
+  name?: string;
+  profilePictureUrl?: string;
+  encryptedCredentialRef?: string;
+  encryptedAccessToken?: string;
+  tokenExpiresAt?: string;
+  status: InstagramConnectionStatus;
+  expiresAt?: string;
+  scopes?: string[];
+  webhookStatus?: string;
+  lastWebhookAt?: string;
+  lastSuccessfulCallAt?: string;
+  lastFailureAt?: string;
+  lastSyncedAt?: string;
+  errorCode?: string;
+  errorMessage?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type InstagramPostMediaType = "IMAGE" | "VIDEO" | "REELS" | "CAROUSEL" | "STORIES";
+export type InstagramPostStatus = "DRAFT" | "CONTAINER_CREATED" | "PUBLISHING" | "PUBLISHED" | "FAILED" | "SCHEDULED";
+
+export interface InstagramPost {
+  id: string;
+  tenantId: string;
+  workspaceId: string;
+  accountId: string;
+  providerMediaId?: string;
+  containerId?: string;
+  type: InstagramPostMediaType;
+  caption: string;
+  mediaUrl?: string;
+  thumbnailUrl?: string;
+  carouselItems?: Array<{ type: "IMAGE" | "VIDEO"; url: string }>;
+  status: InstagramPostStatus;
+  publishedAt?: string;
+  scheduledAt?: string;
+  permalink?: string;
+  likeCount: number;
+  commentCount: number;
+  shareCount: number;
+  saveCount: number;
+  reach: number;
+  impressions: number;
+  idempotencyKey: string;
+  lastError?: {
+    code: string;
+    message: string;
+    timestamp: string;
+  };
+  isAutomationActive?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type InstagramIntentType =
+  | "GENERAL_QUESTION"
+  | "PRODUCT_QUESTION"
+  | "PRICE"
+  | "AVAILABILITY"
+  | "SUPPORT"
+  | "COMPLAINT"
+  | "PRAISE"
+  | "LEAD"
+  | "PURCHASE_INTENT"
+  | "NEGOTIATION"
+  | "REFUND"
+  | "SHIPPING"
+  | "BUG"
+  | "FEATURE_REQUEST"
+  | "SPAM"
+  | "ABUSE"
+  | "LEGAL"
+  | "URGENT"
+  | "OTHER";
+
+export type InstagramSentimentType = "positive" | "neutral" | "negative" | "very_negative" | "mixed";
+
+export interface InstagramComment {
+  id: string;
+  tenantId: string;
+  accountId: string;
+  postId: string;
+  providerCommentId: string;
+  authorProviderId: string;
+  authorUsername: string;
+  text: string;
+  status: "PENDING" | "REPLIED" | "ESCALATED" | "HIDDEN" | "DELETED" | "SPAM";
+  sentiment: InstagramSentimentType;
+  intent: InstagramIntentType;
+  priority: "LOW" | "NORMAL" | "HIGH" | "URGENT";
+  spamScore: number; // 0-100
+  automationState: "NOT_APPLICABLE" | "QUEUED" | "PROCESSED" | "SKIPPED" | "FAILED";
+  aiSuggestedReply?: string;
+  replyText?: string;
+  replyCommentId?: string;
+  repliedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InstagramConversation {
+  id: string;
+  tenantId: string;
+  accountId: string;
+  contactId: string;
+  providerConversationId: string;
+  status: "ACTIVE" | "RESOLVED" | "ESCALATED" | "PAUSED";
+  assignedAgentId?: string;
+  priority: "LOW" | "NORMAL" | "HIGH" | "URGENT";
+  unreadCount: number;
+  sentiment: InstagramSentimentType;
+  intent: InstagramIntentType;
+  lastMessageAt: string;
+  lastMessagePreview?: string;
+  aiEnabled: boolean;
+  automationEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InstagramMessage {
+  id: string;
+  tenantId: string;
+  accountId: string;
+  conversationId: string;
+  providerMessageId: string;
+  direction: "INBOUND" | "OUTBOUND";
+  type: "TEXT" | "IMAGE" | "VIDEO" | "QUICK_REPLY" | "SHARE";
+  body: string;
+  mediaUrl?: string;
+  status: "RECEIVED" | "QUEUED" | "SENT" | "DELIVERED" | "FAILED";
+  replyToMessageId?: string;
+  automationRunId?: string;
+  aiRunId?: string;
+  error?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InstagramAutomation {
+  id: string;
+  tenantId: string;
+  name: string;
+  status: "ACTIVE" | "PAUSED" | "DRAFT";
+  trigger: "NEW_COMMENT" | "COMMENT_KEYWORD" | "NEW_DM" | "DM_INTENT" | "MENTION" | "STORY_REPLY" | "AFTER_HOURS";
+  conditions: Array<{
+    type: "contains_keyword" | "regex_match" | "intent_equals" | "sentiment_is" | "lead_score_gt" | "is_outside_business_hours";
+    value: string;
+  }>;
+  actions: Array<{
+    type: "SEND_DM" | "REPLY_COMMENT" | "HIDE_COMMENT" | "ESCALATE_HUMAN" | "UPDATE_LEAD_SCORE" | "ADD_CRM_TAG";
+    payload?: string;
+    scoreDelta?: number;
+    tag?: string;
+  }>;
+  priority: number; // Higher number = evaluated first
+  cooldownMs: number;
+  maxExecutionsPerHour: number;
+  approvalMode: "AUTO_EXECUTE" | "HUMAN_APPROVAL_REQUIRED";
+  executionCount: number;
+  lastExecutedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InstagramAutomationExecution {
+  id: string;
+  tenantId: string;
+  automationId: string;
+  eventId: string;
+  conversationId?: string;
+  commentId?: string;
+  messageId?: string;
+  status: "SUCCESS" | "FAILED" | "ESCALATED" | "SKIPPED_COOLDOWN";
+  decision: string;
+  actionsTaken: string[];
+  reason?: string;
+  startedAt: string;
+  completedAt: string;
+  error?: string;
+}
+
+export interface InstagramScheduledJob {
+  id: string;
+  tenantId: string;
+  type: "PUBLISH_POST" | "SYNC_ANALYTICS" | "RUN_AUTOMATION_RECONCILIATION" | "SLA_WATCHDOG_CHECK";
+  payload: Record<string, any>;
+  scheduledFor: string;
+  status: "QUEUED" | "PROCESSING" | "COMPLETED" | "FAILED" | "DEAD_LETTER";
+  attempts: number;
+  maxAttempts: number;
+  nextRetryAt?: string;
+  lockedAt?: string;
+  workerId?: string;
+  error?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InstagramEvent {
+  id: string;
+  tenantId: string;
+  providerEventId: string;
+  eventType: "comment" | "message" | "mention" | "story_reply";
+  payloadHash: string;
+  receivedAt: string;
+  processedAt?: string;
+  status: "PROCESSED" | "IGNORED_DUPLICATE" | "FAILED";
+  retryCount: number;
+  error?: string;
+}
+
+export interface InstagramContact {
+  id: string;
+  tenantId: string;
+  accountId: string;
+  providerUserId: string;
+  username: string;
+  displayName?: string;
+  profilePicUrl?: string;
+  tags: string[];
+  notes?: string[];
+  customFields?: Record<string, any>;
+  leadScore: number; // 0 - 100
+  leadStage: "HOT" | "WARM" | "COLD";
+  source: "COMMENT" | "DM" | "STORY_REPLY" | "MENTION";
+  totalInteractions: number;
+  lastInteractionAt: string;
+  sentimentTrend: InstagramSentimentType;
+  intentHistory: InstagramIntentType[];
+  assignedAgent?: string;
+  isVip?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ============================================================
+// Telegram 24/7 Autonomous Enterprise Operations — Data Models
+// ============================================================
+
+export type TelegramConnectionStatus =
+  | "NOT_CONNECTED"
+  | "CONNECTING"
+  | "CONNECTED"
+  | "DEGRADED"
+  | "REAUTH_REQUIRED"
+  | "REVOKED"
+  | "DISABLED"
+  | "RATE_LIMITED"
+  | "PROVIDER_ERROR";
+
+export type TelegramConnectionType = "BOT" | "BUSINESS_BOT" | "GROUP_BOT" | "CHANNEL_BOT";
+
+export interface TelegramConnection {
+  id: string;
+  tenantId: string;
+  workspaceId: string;
+  type: TelegramConnectionType;
+  botId: string;
+  botUsername: string;
+  botName: string;
+  businessConnectionId?: string;
+  status: TelegramConnectionStatus;
+  capabilities: string[];
+  encryptedCredentialRef?: string;
+  webhookSecret?: string;
+  webhookStatus: "healthy" | "degraded" | "error" | "unregistered";
+  webhookUrl?: string;
+  lastWebhookAt?: string;
+  lastSuccessfulApiCallAt?: string;
+  lastFailureAt?: string;
+  errorCode?: string;
+  errorMessage?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TelegramChatType = "private" | "group" | "supergroup" | "channel";
+
+export interface TelegramChat {
+  id: string;
+  tenantId: string;
+  connectionId: string;
+  providerChatId: string;
+  chatType: TelegramChatType;
+  title?: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  photo?: string;
+  memberCount?: number;
+  languageCode?: string;
+  timezone?: string;
+  tags: string[];
+  status: "ACTIVE" | "ARCHIVED" | "BLOCKED" | "MUTED";
+  lastMessageAt: string;
+  isAutomationActive?: boolean;
+  chatId?: string;
+  assignedRuleId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TelegramContact {
+  id: string;
+  tenantId: string;
+  connectionId: string;
+  telegramUserId: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  languageCode?: string;
+  photoUrl?: string;
+  tags: string[];
+  leadScore: number; // 0 - 100
+  leadStage: "HOT" | "WARM" | "COLD";
+  source: "DIRECT_MESSAGE" | "GROUP" | "CHANNEL" | "MINI_APP" | "PAYMENT";
+  totalInteractions: number;
+  lastInteractionAt: string;
+  sentimentTrend: TelegramSentimentType;
+  intentHistory: TelegramIntentType[];
+  assignedAgent?: string;
+  customFields?: Record<string, any>;
+  notes?: string[];
+  isVip?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TelegramIntentType =
+  | "SALES"
+  | "SUPPORT"
+  | "PRICING"
+  | "ORDER_STATUS"
+  | "REFUND"
+  | "PAYMENT"
+  | "DELIVERY"
+  | "TECHNICAL"
+  | "COMPLAINT"
+  | "PRAISE"
+  | "LEAD"
+  | "DEMO"
+  | "BOOKING"
+  | "FAQ"
+  | "SPAM"
+  | "ABUSE"
+  | "LEGAL"
+  | "URGENT"
+  | "GENERAL_QUERY"
+  | "OTHER";
+
+export type TelegramSentimentType = "positive" | "neutral" | "negative" | "very_negative" | "mixed";
+
+export interface TelegramConversation {
+  id: string;
+  tenantId: string;
+  connectionId: string;
+  chatId: string;
+  contactId: string;
+  status: "OPEN" | "WAITING_CUSTOMER" | "RESOLVED" | "ESCALATED" | "CLOSED";
+  assignedAgentId?: string;
+  priority: "LOW" | "NORMAL" | "HIGH" | "URGENT";
+  unreadCount: number;
+  sentiment: TelegramSentimentType;
+  intent: TelegramIntentType;
+  aiEnabled: boolean;
+  automationEnabled: boolean;
+  lastMessageAt: string;
+  lastMessagePreview?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TelegramMessageType =
+  | "text"
+  | "photo"
+  | "video"
+  | "audio"
+  | "document"
+  | "voice"
+  | "animation"
+  | "location"
+  | "contact"
+  | "poll"
+  | "invoice"
+  | "successful_payment";
+
+export interface TelegramMessage {
+  id: string;
+  tenantId: string;
+  connectionId: string;
+  chatId: string;
+  conversationId: string;
+  providerMessageId: string;
+  direction: "INBOUND" | "OUTBOUND";
+  messageType: TelegramMessageType;
+  text: string;
+  mediaUrl?: string;
+  caption?: string;
+  replyToMessageId?: string;
+  threadId?: string;
+  topicId?: string;
+  status: "RECEIVED" | "QUEUED" | "SENDING" | "SENT" | "FAILED";
+  automationRunId?: string;
+  aiRunId?: string;
+  error?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TelegramAutomation {
+  id: string;
+  tenantId: string;
+  name: string;
+  status: "ACTIVE" | "PAUSED" | "DRAFT";
+  actionType?: string;
+  trigger:
+    | "NEW_MESSAGE"
+    | "KEYWORD"
+    | "COMMAND"
+    | "CALLBACK"
+    | "PAYMENT_SUCCESS"
+    | "CHAT_MEMBER_JOIN"
+    | "BUSINESS_MESSAGE"
+    | "AFTER_HOURS";
+  conditions: Array<{
+    type: "contains_keyword" | "regex_match" | "intent_equals" | "sentiment_is" | "lead_score_gt" | "is_outside_business_hours";
+    value: string;
+  }>;
+  actions: Array<{
+    type: "SEND_MESSAGE" | "SEND_KEYBOARD" | "ESCALATE_HUMAN" | "UPDATE_LEAD_SCORE" | "ADD_TAG" | "SEND_INVOICE";
+    payload?: string;
+    scoreDelta?: number;
+    tag?: string;
+  }>;
+  priority: number;
+  cooldown: number; // in seconds
+  maxExecutions: number;
+  approvalMode: "AUTO_EXECUTE" | "HUMAN_APPROVAL_REQUIRED";
+  executionCount: number;
+  lastExecutedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TelegramAutomationExecution {
+  id: string;
+  tenantId: string;
+  automationId: string;
+  eventId: string;
+  chatId: string;
+  messageId?: string;
+  status: "SUCCESS" | "FAILED" | "ESCALATED" | "SKIPPED_COOLDOWN";
+  decision: string;
+  actionsTaken: string[];
+  startedAt: string;
+  completedAt: string;
+  error?: string;
+}
+
+export interface TelegramScheduledJob {
+  id: string;
+  tenantId: string;
+  type: "PUBLISH_POST" | "FOLLOW_UP" | "SYNC_ANALYTICS" | "SLA_WATCHDOG_CHECK" | "BROADCAST_CAMPAIGN";
+  payload: Record<string, any>;
+  scheduledFor: string;
+  status: "QUEUED" | "PROCESSING" | "COMPLETED" | "FAILED" | "DEAD_LETTER";
+  attempts: number;
+  maxAttempts: number;
+  nextRetryAt?: string;
+  lockedAt?: string;
+  workerId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TelegramEvent {
+  id: string;
+  tenantId: string;
+  providerUpdateId: string;
+  eventType: string;
+  payloadHash: string;
+  receivedAt: string;
+  processedAt?: string;
+  status: "PROCESSED" | "IGNORED_DUPLICATE" | "FAILED";
+  retryCount: number;
+}
+
+export interface TelegramPayment {
+  id: string;
+  tenantId: string;
+  connectionId: string;
+  providerPaymentId: string;
+  telegramUserId: string;
+  invoiceId: string;
+  productId: string;
+  currency: string;
+  amount: number;
+  status: "PENDING" | "SUCCESSFUL" | "FAILED" | "REFUNDED";
+  payloadHash: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TelegramCampaign {
+  id: string;
+  tenantId: string;
+  connectionId: string;
+  name: string;
+  status: "DRAFT" | "SCHEDULED" | "RUNNING" | "PAUSED" | "COMPLETED" | "FAILED" | "CANCELLED";
+  targetAudience: "all" | "hot_leads" | "tag_filter" | "custom";
+  content: string;
+  scheduleTime?: string;
+  totalRecipients: number;
+  sentCount: number;
+  deliveredCount: number;
+  failedCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TelegramMiniApp {
+  id: string;
+  tenantId: string;
+  name: string;
+  shortName: string;
+  url: string;
+  description: string;
+  iconUrl?: string;
+  status: "ACTIVE" | "DRAFT";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TelegramVoiceOfCustomer {
+  id: string;
+  tenantId: string;
+  topic: string;
+  category: "OBJECTION" | "FEATURE_REQUEST" | "PRICING" | "COMPLAINT" | "PRAISE";
+  frequency: number;
+  sentiment: TelegramSentimentType;
+  sampleQuotes: string[];
+  recommendedAction: string;
+  lastDetectedAt: string;
+}
+
+export interface TelegramSupportTicket {
+  id: string;
+  tenantId: string;
+  conversationId: string;
+  contactId: string;
+  title: string;
+  description: string;
+  priority: "LOW" | "NORMAL" | "HIGH" | "URGENT";
+  status: "OPEN" | "IN_PROGRESS" | "WAITING_CUSTOMER" | "WAITING_INTERNAL" | "RESOLVED" | "CLOSED";
+  assignedAgent?: string;
+  slaDeadline: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /** Generate a unique username from a base name */
 function generateUniqueUsername(baseName: string): string {
   // Clean the base name
@@ -1440,6 +2592,33 @@ function buildDefaultData(email: string): DBData {
       lastResetDate: todayStr
     },
     coupons: [],
+    creditAccount: {
+      id: `cr_${email ? email.toLowerCase().replace(/[^a-z0-9]/g, "_") : "default"}`,
+      tenantId: email || "default",
+      balance: 100,
+      reservedBalance: 0,
+      lifetimeGranted: 100,
+      lifetimeUsed: 0,
+      version: 1,
+      updatedAt: new Date().toISOString(),
+    },
+    creditLedger: [
+      {
+        id: `tx_init_${Date.now()}`,
+        tenantId: email || "default",
+        type: "SIGNUP_BONUS",
+        amount: 100,
+        balanceAfter: 100,
+        referenceType: "SIGNUP_BONUS",
+        idempotencyKey: `init_${email || "default"}`,
+        metadata: { note: "Welcome bonus credits (Free Starter Tier)" },
+        createdAt: new Date().toISOString(),
+      },
+    ],
+    creditReservations: [],
+    subscriptions: [],
+    paymentTransactions: [],
+    webhookEvents: [],
     topCommenters: [],
     engagementHourly: [],
     roiData: {
@@ -1589,20 +2768,15 @@ function buildDefaultData(email: string): DBData {
       },
       activeGoals: [],
       knowledgeCoverage: {
-        knownCount: 142,
-        unknownCount: 18,
-        staleCount: 4,
-        conflictedCount: 1,
-        coveragePercentage: 86.1,
+        knownCount: 0,
+        unknownCount: 0,
+        staleCount: 0,
+        conflictedCount: 0,
+        coveragePercentage: 0,
         lastAuditedAt: new Date().toISOString(),
       },
-      topOpportunities: [
-        { title: "Recover high-intent customer inquiries", potentialRevenue: 24000, action: "Send personalized stock reservation link", confidence: 0.88 },
-        { title: "Scale video and social post reach", potentialRevenue: 45000, action: "Publish high-converting product clips", confidence: 0.84 },
-      ],
-      topRisks: [
-        { title: "Unanswered product questions", severity: "medium", impact: "Lost conversions", recommendation: "Enable instant automated rule matching" },
-      ],
+      topOpportunities: [],
+      topRisks: [],
       updatedAt: new Date().toISOString(),
     },
     autonomyConfig: {
@@ -1624,6 +2798,82 @@ function buildDefaultData(email: string): DBData {
         tripped: false,
       },
     },
+    // Telegram 24/7 Autonomous Enterprise Operations
+    telegramConnections: [],
+    telegramChats: [],
+    telegramContacts: [],
+    telegramConversations: [],
+    telegramMessages: [],
+    telegramAutomations: [
+      {
+        id: "tg_auto_pricing",
+        tenantId: email || "default",
+        name: "Instant Pricing Menu & Checkout Responder",
+        status: "ACTIVE",
+        trigger: "KEYWORD",
+        conditions: [{ type: "contains_keyword", value: "price, cost, pricing, plans, buy" }],
+        actions: [{ type: "SEND_MESSAGE", payload: "Here is our official pricing catalog with instant Telegram checkout:" }, { type: "UPDATE_LEAD_SCORE", scoreDelta: 15 }],
+        priority: 10,
+        cooldown: 60,
+        maxExecutions: 500,
+        approvalMode: "AUTO_EXECUTE",
+        executionCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: "tg_auto_welcome",
+        tenantId: email || "default",
+        name: "Group Member Onboarding & Security Verification",
+        status: "ACTIVE",
+        trigger: "CHAT_MEMBER_JOIN",
+        conditions: [],
+        actions: [{ type: "SEND_MESSAGE", payload: "Welcome to QuickReply Enterprise! Type /help to view interactive commands or /pricing for direct plans." }],
+        priority: 5,
+        cooldown: 10,
+        maxExecutions: 1000,
+        approvalMode: "AUTO_EXECUTE",
+        executionCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: "tg_auto_escalate",
+        tenantId: email || "default",
+        name: "Escalate Legal Disputes & Urgent Complaints",
+        status: "ACTIVE",
+        trigger: "NEW_MESSAGE",
+        conditions: [{ type: "sentiment_is", value: "very_negative" }, { type: "intent_equals", value: "LEGAL" }],
+        actions: [{ type: "ESCALATE_HUMAN" }, { type: "ADD_TAG", tag: "URGENT_LEGAL" }],
+        priority: 20,
+        cooldown: 0,
+        maxExecutions: 100,
+        approvalMode: "AUTO_EXECUTE",
+        executionCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ],
+    telegramExecutions: [],
+    telegramScheduledJobs: [],
+    telegramEvents: [],
+    telegramPayments: [],
+    telegramCampaigns: [],
+    telegramMiniApps: [
+      {
+        id: "tg_app_store",
+        tenantId: email || "default",
+        name: "QuickReply Digital Store & Customer Portal",
+        shortName: "Store",
+        url: "https://quickreply.ai/miniapp",
+        description: "Official Telegram Mini App for in-chat catalog browsing, orders, and customer support tickets.",
+        status: "ACTIVE",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ],
+    telegramVoiceOfCustomer: [],
+    telegramSupportTickets: [],
   };
 }
 
@@ -1647,6 +2897,41 @@ function ensureDataIntegrity(parsed: DBData, email: string): boolean {
     parsed.coupons = [];
     dirty = true;
   }
+
+  // Ensure credit account and ledger exist
+  if (!parsed.creditAccount) {
+    parsed.creditAccount = {
+      id: `cr_${email ? email.toLowerCase().replace(/[^a-z0-9]/g, "_") : "default"}`,
+      tenantId: email || "default",
+      balance: 100,
+      reservedBalance: 0,
+      lifetimeGranted: 100,
+      lifetimeUsed: 0,
+      version: 1,
+      updatedAt: new Date().toISOString(),
+    };
+    dirty = true;
+  }
+  if (!parsed.creditLedger) {
+    parsed.creditLedger = [
+      {
+        id: `tx_init_${Date.now()}`,
+        tenantId: email || "default",
+        type: "SIGNUP_BONUS",
+        amount: 100,
+        balanceAfter: 100,
+        referenceType: "SIGNUP_BONUS",
+        idempotencyKey: `init_${email || "default"}`,
+        metadata: { note: "Welcome bonus credits" },
+        createdAt: new Date().toISOString(),
+      }
+    ];
+    dirty = true;
+  }
+  if (!parsed.creditReservations) { parsed.creditReservations = []; dirty = true; }
+  if (!parsed.subscriptions) { parsed.subscriptions = []; dirty = true; }
+  if (!parsed.paymentTransactions) { parsed.paymentTransactions = []; dirty = true; }
+  if (!parsed.webhookEvents) { parsed.webhookEvents = []; dirty = true; }
 
   if (!parsed.faqs) {
     parsed.faqs = [];
@@ -1805,36 +3090,24 @@ function ensureDataIntegrity(parsed: DBData, email: string): boolean {
   }
   if (!parsed.businessDigitalTwin) {
     parsed.businessDigitalTwin = {
-      organizationName: parsed.workspace?.name || "QuickReply Commerce",
+      organizationName: parsed.workspace?.name || "QuickReply Workspace",
       revenueSummary: {
-        yesterdayRevenue: 42300,
-        weekToDateRevenue: 284500,
-        growthPercentage: 14.2,
-        attributedChannels: [
-          { channel: "WhatsApp", revenue: 154000, percentage: 54.1 },
-          { channel: "Instagram", revenue: 98500, percentage: 34.6 },
-          { channel: "YouTube", revenue: 32000, percentage: 11.3 },
-        ],
+        yesterdayRevenue: 0,
+        weekToDateRevenue: 0,
+        growthPercentage: 0,
+        attributedChannels: [],
       },
-      activeGoals: [
-        { id: "g1", name: "Increase repeat WhatsApp checkout", target: 35, current: 28, metric: "% repeat rate" },
-        { id: "g2", name: "Reduce first-response SLA", target: 5, current: 8.5, metric: "minutes" },
-      ],
+      activeGoals: [],
       knowledgeCoverage: {
-        knownCount: 142,
-        unknownCount: 18,
-        staleCount: 4,
-        conflictedCount: 1,
-        coveragePercentage: 86.1,
+        knownCount: 0,
+        unknownCount: 0,
+        staleCount: 0,
+        conflictedCount: 0,
+        coveragePercentage: 0,
         lastAuditedAt: new Date().toISOString(),
       },
-      topOpportunities: [
-        { title: "Recover high-intent abandoned carts", potentialRevenue: 34000, action: "Send personalized stock reservation via WhatsApp", confidence: 0.88 },
-        { title: "Scale Product X ad spend on Instagram", potentialRevenue: 52000, action: "High positive ROAS detected with 92% sentiment", confidence: 0.84 },
-      ],
-      topRisks: [
-        { title: "Delivery delay complaints in Maharashtra region", severity: "high", impact: "Elevated return risk", recommendation: "Switch regional logistics carrier" },
-      ],
+      topOpportunities: [],
+      topRisks: [],
       updatedAt: new Date().toISOString(),
     };
     dirty = true;
@@ -1880,6 +3153,22 @@ function ensureDataIntegrity(parsed: DBData, email: string): boolean {
     dirty = true;
   }
 
+  // Ensure Telegram enterprise collections exist
+  if (!parsed.telegramConnections) { parsed.telegramConnections = []; dirty = true; }
+  if (!parsed.telegramChats) { parsed.telegramChats = []; dirty = true; }
+  if (!parsed.telegramContacts) { parsed.telegramContacts = []; dirty = true; }
+  if (!parsed.telegramConversations) { parsed.telegramConversations = []; dirty = true; }
+  if (!parsed.telegramMessages) { parsed.telegramMessages = []; dirty = true; }
+  if (!parsed.telegramAutomations) { parsed.telegramAutomations = []; dirty = true; }
+  if (!parsed.telegramExecutions) { parsed.telegramExecutions = []; dirty = true; }
+  if (!parsed.telegramScheduledJobs) { parsed.telegramScheduledJobs = []; dirty = true; }
+  if (!parsed.telegramEvents) { parsed.telegramEvents = []; dirty = true; }
+  if (!parsed.telegramPayments) { parsed.telegramPayments = []; dirty = true; }
+  if (!parsed.telegramCampaigns) { parsed.telegramCampaigns = []; dirty = true; }
+  if (!parsed.telegramMiniApps) { parsed.telegramMiniApps = []; dirty = true; }
+  if (!parsed.telegramVoiceOfCustomer) { parsed.telegramVoiceOfCustomer = []; dirty = true; }
+  if (!parsed.telegramSupportTickets) { parsed.telegramSupportTickets = []; dirty = true; }
+
   return dirty;
 }
 
@@ -1894,9 +3183,19 @@ const DEFAULT_RULES: Rule[] = [];
 
 const CACHE_TTL_SECONDS = 60; // Cache user DB for 60 seconds
 
-function getCacheKey(email: string): string {
-  // Simple deterministic key — safe for Redis keyspace
-  return `qr:db:${email.toLowerCase().trim().replace(/[^a-z0-9_.@-]/g, "_")}`;
+export function getCanonicalTenantId(identifier: string): string {
+  if (!identifier) return "anonymous_tenant";
+  const clean = identifier.toLowerCase().trim();
+  if (clean.startsWith("tenant_") || clean.startsWith("ws_")) {
+    return clean;
+  }
+  const hash = crypto.createHash("sha256").update(clean).digest("hex").slice(0, 16);
+  return `tenant_${hash}`;
+}
+
+function getCacheKey(tenantIdOrEmail: string): string {
+  const tenantId = getCanonicalTenantId(tenantIdOrEmail);
+  return `qr:tenant:${tenantId}`;
 }
 
 /** Lazily imported Redis client — only initialised when REDIS_URL is set */
@@ -1922,6 +3221,7 @@ async function getRedisClient(): Promise<any | null> {
 }
 
 async function redisCacheGet(email: string): Promise<DBData | null> {
+  if (!email || typeof email !== "string" || !email.includes("@")) return null;
   try {
     const redis = await getRedisClient();
     if (!redis) return null;
@@ -1934,6 +3234,7 @@ async function redisCacheGet(email: string): Promise<DBData | null> {
 }
 
 async function redisCacheSet(email: string, data: DBData): Promise<void> {
+  if (!email || typeof email !== "string" || !email.includes("@")) return;
   try {
     const redis = await getRedisClient();
     if (!redis) return;
@@ -1944,6 +3245,7 @@ async function redisCacheSet(email: string, data: DBData): Promise<void> {
 }
 
 async function redisCacheInvalidate(email: string): Promise<void> {
+  if (!email || typeof email !== "string" || !email.includes("@")) return;
   try {
     const redis = await getRedisClient();
     if (!redis) return;
@@ -1980,7 +3282,24 @@ export async function getDB(customEmail?: string): Promise<DBData> {
       try {
         const { headers } = await import("next/headers");
         const headerStore = await headers();
-        email = headerStore.get("x-session-email") || "";
+        const headerEmail = headerStore.get("x-session-email") || "";
+        const headerToken = headerStore.get("x-session-token") || "";
+        
+        // Strict verification: x-session-email is only accepted if accompanied by a valid HMAC x-session-token
+        if (headerEmail && headerToken) {
+          const secret = process.env.SESSION_SECRET || process.env.JWT_SECRET || "";
+          if (secret) {
+            const enc = new TextEncoder();
+            const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+            const sig = await crypto.subtle.sign("HMAC", key, enc.encode(headerEmail.toLowerCase().trim()));
+            const expected = Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
+            if (expected === headerToken) {
+              email = headerEmail;
+            } else {
+              console.warn(`[Security] Rejected unverified x-session-email header: ${headerEmail}`);
+            }
+          }
+        }
       } catch (e) {
         // not in request context
       }
@@ -2004,7 +3323,7 @@ export async function getDB(customEmail?: string): Promise<DBData> {
         return cachedData;
       }
 
-      // ── Cache MISS — fetch from MongoDB with fast timeout ──
+      // ── Cache MISS — fetch from MongoDB with serverless-safe timeout ──
       const mongoFetch = async () => {
         const client = await getMongoClient();
         const db = client.db("quickreply");
@@ -2013,7 +3332,7 @@ export async function getDB(customEmail?: string): Promise<DBData> {
       };
 
       const timeoutPromise = new Promise<null>((_, reject) =>
-        setTimeout(() => reject(new Error("MongoDB query timed out (1500ms)")), 1500)
+        setTimeout(() => reject(new Error("MongoDB query timed out (5000ms)")), 5000)
       );
 
       const document = await Promise.race([mongoFetch(), timeoutPromise]);
@@ -2037,11 +3356,11 @@ export async function getDB(customEmail?: string): Promise<DBData> {
         return defaultData;
       }
     } catch (err: any) {
-      console.warn(`[DB] ⚠️ MongoDB unavailable: ${err.message || err}. Using local ${getDataDirectory()}/`);
+      console.warn(`[DB] ⚠️ MongoDB query failed (${err.message || err}). Gracefully falling back to local file storage.`);
     }
   }
 
-  // Local fallback
+  // Local development file fallback (strictly development mode without MONGODB_URI)
   try {
     const fileSuffix = email ? `_${email.toLowerCase().replace(/[^a-z0-9_]/g, "_")}` : "";
     const customDbPath = path.join(getDataDirectory(), `db${fileSuffix}.json`);
@@ -2066,24 +3385,7 @@ export async function getDB(customEmail?: string): Promise<DBData> {
     return parsed;
   } catch (err) {
     console.error("Failed to read DB file:", err);
-    return {
-      workspace: { name: "Error Workspace", members: [], settings: { dailyReplyQuota: 100, blockedUsers: [], spamProtection: true, slackWebhook: "", emailDigest: "weekly", negativeKeywords: "scam, refund, disappointed, hate, fake, bot, report", globalReplyConfig: { replyToAll: false, tags: "", template: "Thank you for commenting!" } } },
-      channels: [],
-      templates: [],
-      rules: [],
-      comments: [],
-      activityLogs: [],
-      faqs: [],
-      userSession: {
-        email: email,
-        name: email ? (email.split("@")[0].charAt(0).toUpperCase() + email.split("@")[0].slice(1)) : "Creator",
-        username: email ? email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "") : "creator",
-        tier: "free",
-        repliesToday: 0,
-        lastResetDate: new Date().toISOString().split("T")[0]
-      },
-      coupons: []
-    };
+    return buildDefaultData(email);
   }
 }
 
@@ -2130,11 +3432,11 @@ export async function saveDB(data: DBData, customEmail?: string): Promise<boolea
       await redisCacheSet(email, data);
       return true;
     } catch (err: any) {
-      console.warn(`[DB] ⚠️ MongoDB save skipped: ${err.message || err}. Saving locally.`);
+      console.warn(`[DB] ⚠️ MongoDB save failed (${err.message || err}). Persisting to local file storage.`);
     }
   }
 
-  // Local fallback
+  // Local development file persistence (strictly development mode without MONGODB_URI)
   try {
     const fileSuffix = email ? `_${email.toLowerCase().replace(/[^a-z0-9_]/g, "_")}` : "";
     const customDbPath = path.join(getDataDirectory(), `db${fileSuffix}.json`);
@@ -2370,3 +3672,56 @@ export async function requireWorkspaceEmail(): Promise<string> {
   (err as any).statusCode = 401;
   throw err;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  MULTI-TENANT DISCOVERY
+//  Enumerate all registered tenant workspaces for background polling
+// ─────────────────────────────────────────────────────────────
+
+export async function getAllTenantEmails(): Promise<string[]> {
+  const uri = process.env.MONGODB_URI;
+  const emails = new Set<string>();
+
+  if (uri) {
+    try {
+      const client = await getMongoClient();
+      const db = client.db("quickreply");
+      const collection = db.collection("users");
+      const docs = await collection.find({}, { projection: { _id: 1, "userSession.email": 1 } }).toArray();
+      for (const doc of docs) {
+        const userDoc = doc as Record<string, any>;
+        if (userDoc.userSession?.email) {
+          emails.add(String(userDoc.userSession.email).toLowerCase().trim());
+        } else if (userDoc._id) {
+          const docIdStr = String(userDoc._id);
+          if (docIdStr.startsWith("user_")) {
+            emails.add(docIdStr.replace(/^user_/, "").toLowerCase().trim());
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("[DB] Failed to query Mongo for tenant list:", err);
+    }
+  }
+
+  // Also check local disk data directory
+  try {
+    const dataDir = getDataDirectory();
+    if (fs.existsSync(dataDir)) {
+      const files = fs.readdirSync(dataDir);
+      for (const file of files) {
+        if (file.startsWith("db_") && file.endsWith(".json")) {
+          const rawEmail = file.slice(3, -5).replace(/_/g, ".");
+          if (rawEmail && rawEmail.includes("@")) {
+            emails.add(rawEmail.toLowerCase().trim());
+          }
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return Array.from(emails);
+}
+

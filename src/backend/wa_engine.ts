@@ -40,7 +40,6 @@ import type {
   WASettings,
   WAAnalyticsEvent,
 } from "@/database/db";
-import { WAMCPToolEngine } from "./wa_mcp";
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -766,64 +765,22 @@ export async function processWhatsAppMessage(input: WAEngineInput): Promise<WAEn
   const customer = getCustomerContext(input);
   stages.push({ stage: "memory", status: "pass", latencyMs: 1, detail: customer ? `Customer: ${customer.name || customer.phone}` : "New customer" });
 
-  // MCP Context
-  const mcpCtx = {
-    db: input.db,
-    organizationId: input.organizationId,
-    conversationId: input.conversationId,
-    customerPhone: input.customerPhone,
-  };
-
-  // Stage 8: Knowledge RAG (via Real MCP tool)
-  const knowledgeToolRes = await WAMCPToolEngine.executeTool("knowledge_search", { query: cleanText }, mcpCtx);
-  const knowledgeMatch = knowledgeToolRes.data?.found
-    ? {
-        answer: knowledgeToolRes.data.faqs?.[0]?.answer || knowledgeToolRes.data.quickReplies?.[0]?.message,
-        source: knowledgeToolRes.data.faqs?.length ? "faq" : "quick_reply",
-        confidence: 0.92,
-      }
-    : searchKnowledge(cleanText, input.db);
-
-  if (knowledgeMatch.answer) {
-    knowledgeChunksUsed.push(knowledgeMatch.source || "faq");
+  // Stage 8: Knowledge RAG
+  const knowledge = searchKnowledge(cleanText, input.db);
+  if (knowledge.answer) {
+    knowledgeChunksUsed.push(knowledge.source || "faq");
     toolsUsed.push("knowledge_search");
   }
-  stages.push({
-    stage: "rag",
-    status: "pass",
-    latencyMs: knowledgeToolRes.executionMs || 2,
-    detail: knowledgeMatch.answer ? `Match: ${Math.round(knowledgeMatch.confidence * 100)}%` : "No match",
-  });
+  stages.push({ stage: "rag", status: "pass", latencyMs: 2, detail: knowledge.answer ? `Match: ${Math.round(knowledge.confidence * 100)}%` : "No match" });
 
-  // Stage 9: Business data (via Real MCP tools)
+  // Stage 9: Business data
   const businessData = lookupBusinessData(cleanText, intent, input.db, input.customerPhone);
-  if (["product_question", "price_question", "availability", "purchase_intent"].includes(intent)) {
-    const pToolRes = await WAMCPToolEngine.executeTool("business_search_products", { query: cleanText }, mcpCtx);
-    if (pToolRes.success && pToolRes.data?.products?.length > 0) {
-      businessData.products = pToolRes.data.products;
-    }
-  }
-  if (intent === "order_status" || intent === "refund" || intent === "cancellation") {
-    const oToolRes = await WAMCPToolEngine.executeTool("business_get_order", { customerPhone: input.customerPhone }, mcpCtx);
-    if (oToolRes.success && oToolRes.data?.found && oToolRes.data.order) {
-      businessData.order = oToolRes.data.order;
-    }
-  }
-  if (["purchase_intent", "price_question", "lead_generation"].includes(intent)) {
-    await WAMCPToolEngine.executeTool("crm_create_lead", { phone: input.customerPhone, scoreIncrement: 10 }, mcpCtx);
-    toolsUsed.push("crm_create_lead");
-  }
   toolsUsed.push(...businessData.toolsUsed);
-  stages.push({
-    stage: "business_data",
-    status: "pass",
-    latencyMs: 3,
-    detail: `Products: ${businessData.products.length}, Order: ${businessData.order ? "found" : "none"}`,
-  });
+  stages.push({ stage: "business_data", status: "pass", latencyMs: 1, detail: `Products: ${businessData.products.length}, Order: ${businessData.order ? "found" : "none"}` });
 
   // Copilot mode: don't auto-send, just prepare draft
   if (settings.mode === "copilot") {
-    const { text, confidence } = await generateResponse(input, intent, lang, customer, recentMessages, knowledgeMatch, businessData, settings, client);
+    const { text, confidence } = await generateResponse(input, intent, lang, customer, recentMessages, knowledge, businessData, settings, client);
     stages.push({ stage: "generation", status: "pass", latencyMs: 5, detail: "Copilot draft generated" });
     return buildResult(false, false, text, undefined, intent, confidence, pipelineStart, toolsUsed, knowledgeChunksUsed, stages, newMessages, analyticsEvents);
   }
@@ -836,7 +793,7 @@ export async function processWhatsAppMessage(input: WAEngineInput): Promise<WAEn
 
   // Stage 11: Generate response
   const { text: rawResponse, confidence: genConfidence } = await generateResponse(
-    input, intent, lang, customer, recentMessages, knowledgeMatch, businessData, settings, client
+    input, intent, lang, customer, recentMessages, knowledge, businessData, settings, client
   );
   analyticsEvents.push({ id: uuidv4(), type: "ai_reply", conversationId: input.conversationId, aiConfidence: genConfidence, timestamp: new Date().toISOString() });
 

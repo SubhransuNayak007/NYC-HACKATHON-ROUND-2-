@@ -39,6 +39,8 @@ import {
   type SocialMessage,
 } from "@/database/db";
 
+import { TelegramApiClient } from "@/backend/telegram/TelegramApiClient";
+
 const TELEGRAM_API_BASE = "https://api.telegram.org";
 
 export class TelegramProvider implements SocialProvider {
@@ -46,13 +48,14 @@ export class TelegramProvider implements SocialProvider {
   readonly displayName = "Telegram Bot";
 
   private getApiUrl(token: string, method: string): string {
-    return `${TELEGRAM_API_BASE}/bot${token}/${method}`;
+    const clean = TelegramApiClient.cleanToken(token);
+    return `${TELEGRAM_API_BASE}/bot${clean}/${method}`;
   }
 
   private async callBotApi(token: string, method: string, body?: any): Promise<any> {
     const url = this.getApiUrl(token, method);
     const response = await fetch(url, {
-      method: "POST",
+      method: body ? "POST" : "GET",
       headers: { "Content-Type": "application/json" },
       body: body ? JSON.stringify(body) : undefined,
     });
@@ -136,6 +139,28 @@ export class TelegramProvider implements SocialProvider {
       } else {
         db.socialAccounts.push(newAccount);
       }
+
+      if (!db.telegramConnections) db.telegramConnections = [];
+      const tgConnRecord = {
+        id: `tgconn_${botId}`,
+        tenantId: "default",
+        workspaceId: "default",
+        type: "BOT" as const,
+        botId,
+        botUsername: botInfo.username || "Bot",
+        botName: botInfo.first_name || "Telegram Bot",
+        status: "CONNECTED" as const,
+        capabilities: ["MESSAGING", "COMMANDS", "CHANNELS", "AI"],
+        encryptedCredentialRef: TelegramApiClient.encryptToken(rawToken),
+        webhookStatus: "healthy" as const,
+        lastSuccessfulApiCallAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      db.telegramConnections = [
+        tgConnRecord,
+        ...db.telegramConnections.filter((c) => c.botId !== botId),
+      ];
 
       await saveDB(db);
 

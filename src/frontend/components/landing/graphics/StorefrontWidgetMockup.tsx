@@ -185,6 +185,8 @@ export function StorefrontWidgetMockup({ className = "" }: StorefrontWidgetMocku
                   <img
                     src="https://images.unsplash.com/photo-1544441893-675973e31985?w=300&auto=format&fit=crop&q=80"
                     alt="Runner jacket"
+                    width={140}
+                    height={96}
                     loading="lazy"
                     decoding="async"
                     className="w-full h-24 object-cover rounded-md"
@@ -196,6 +198,8 @@ export function StorefrontWidgetMockup({ className = "" }: StorefrontWidgetMocku
                   <img
                     src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=300&auto=format&fit=crop&q=80"
                     alt="Heavyweight tee"
+                    width={140}
+                    height={96}
                     loading="lazy"
                     decoding="async"
                     className="w-full h-24 object-cover rounded-md"
@@ -258,6 +262,8 @@ export function StorefrontWidgetMockup({ className = "" }: StorefrontWidgetMocku
                             <img
                               src={m.product.image}
                               alt={m.product.title}
+                              width={40}
+                              height={40}
                               loading="lazy"
                               decoding="async"
                               className="w-10 h-10 rounded-md object-cover border border-black/10 shrink-0"

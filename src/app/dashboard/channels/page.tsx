@@ -115,8 +115,9 @@ const PLATFORMS: PlatformDef[] = [
     iconColor: "text-pink-600",
     iconBg: "bg-pink-50 border-pink-100",
     description: "Official Meta Graph API for automated DMs, feed reels, comments & private replies.",
-    connectUrl: "/api/auth/instagram",
+    connectUrl: "#instagram_modal",
     docsUrl: "https://developers.facebook.com/docs/instagram-api",
+    isCustomModal: true,
     capabilities: [
       { label: "DMs (24h Window)", supported: true },
       { label: "Post Comments", supported: true },
@@ -133,7 +134,7 @@ const PLATFORMS: PlatformDef[] = [
     iconColor: "text-sky-500",
     iconBg: "bg-sky-50 border-sky-100",
     description: "Direct official Telegram Bot API with instant webhooks, interactive buttons & commands.",
-    connectUrl: "#telegram_modal",
+    connectUrl: "/dashboard/telegram",
     docsUrl: "https://core.telegram.org/bots/api",
     isCustomModal: true,
     capabilities: [
@@ -152,8 +153,9 @@ const PLATFORMS: PlatformDef[] = [
     iconColor: "text-blue-600",
     iconBg: "bg-blue-50 border-blue-100",
     description: "Official Community & Posts REST API for Member & Company Page posts, comments & analytics.",
-    connectUrl: "/api/auth/linkedin",
+    connectUrl: "#linkedin_modal",
     docsUrl: "https://learn.microsoft.com/en-us/linkedin/marketing/integrations",
+    isCustomModal: true,
     capabilities: [
       { label: "Member & Page Posts", supported: true },
       { label: "Post Comments", supported: true },
@@ -216,6 +218,18 @@ export default function ChannelsPage() {
   const [telegramTokenInput, setTelegramTokenInput] = useState("");
   const [telegramConnecting, setTelegramConnecting] = useState(false);
   const [telegramError, setTelegramError] = useState<string | null>(null);
+
+  // Instagram Modal State
+  const [showInstagramModal, setShowInstagramModal] = useState(false);
+  const [igTokenInput, setIgTokenInput] = useState("");
+  const [igConnecting, setIgConnecting] = useState(false);
+  const [igError, setIgError] = useState<string | null>(null);
+
+  // LinkedIn Modal State
+  const [showLinkedInModal, setShowLinkedInModal] = useState(false);
+  const [liTokenInput, setLiTokenInput] = useState("");
+  const [liConnecting, setLiConnecting] = useState(false);
+  const [liError, setLiError] = useState<string | null>(null);
 
   // Diagnostics Modal State
   const [showDiagModal, setShowDiagModal] = useState(false);
@@ -291,6 +305,72 @@ export default function ChannelsPage() {
       setTelegramError(err.message || "Network error connecting Telegram Bot.");
     } finally {
       setTelegramConnecting(false);
+    }
+  };
+
+  const handleConnectInstagram = async () => {
+    if (!igTokenInput.trim()) {
+      setIgError("Please enter your Meta System User or Page Access Token.");
+      return;
+    }
+
+    setIgConnecting(true);
+    setIgError(null);
+
+    try {
+      const res = await fetch("/api/social/instagram/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accessToken: igTokenInput.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setShowInstagramModal(false);
+        setIgTokenInput("");
+        await fetchSocialAccounts();
+      } else {
+        setIgError(data.error || "Failed to verify Instagram account via Meta Graph API.");
+      }
+    } catch (err: any) {
+      setIgError(err.message || "Network error connecting to Meta Graph API.");
+    } finally {
+      setIgConnecting(false);
+    }
+  };
+
+  const handleConnectLinkedIn = async () => {
+    if (!liTokenInput.trim()) {
+      setLiError("Please enter your LinkedIn Access Token.");
+      return;
+    }
+
+    setLiConnecting(true);
+    setLiError(null);
+
+    try {
+      const res = await fetch("/api/social/linkedin/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accessToken: liTokenInput.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setShowLinkedInModal(false);
+        setLiTokenInput("");
+        await fetchSocialAccounts();
+      } else {
+        setLiError(data.error || "Failed to verify LinkedIn account.");
+      }
+    } catch (err: any) {
+      setLiError(err.message || "Network error connecting to LinkedIn API.");
+    } finally {
+      setLiConnecting(false);
     }
   };
 
@@ -553,10 +633,14 @@ export default function ChannelsPage() {
                     </>
                   ) : platform.isCustomModal ? (
                     <button
-                      onClick={() => setShowTelegramModal(true)}
-                      className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
+                      onClick={() => {
+                        if (platform.key === "instagram") setShowInstagramModal(true);
+                        else if (platform.key === "linkedin") setShowLinkedInModal(true);
+                        else setShowTelegramModal(true);
+                      }}
+                      className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                     >
-                      <span>Connect Bot</span>
+                      <span>Connect {platform.label}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   ) : platform.isInternalRoute ? (
@@ -790,6 +874,152 @@ export default function ChannelsPage() {
                   Verify & Connect
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── INSTAGRAM PROFESSIONAL CONNECT MODAL ── */}
+      <AnimatePresence>
+        {showInstagramModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full border border-slate-200 shadow-2xl space-y-5"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center">
+                    <Instagram className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">Connect Instagram Professional</h3>
+                    <p className="text-xs text-slate-500">Official Meta Graph API Integration</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowInstagramModal(false)} className="text-slate-400 hover:text-slate-600">
+                  <CloseIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Informative Card */}
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <Instagram className="w-4 h-4 text-[#DD2A7B]" />
+                  <span className="font-bold text-xs text-[#161616]">Connect your Instagram account</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                  Securely authorize QuickReply through Meta. You don&apos;t need to enter API keys or access tokens.
+                </p>
+              </div>
+
+              {/* Primary OAuth Action Button */}
+              <div className="space-y-3">
+                <a
+                  href="/api/integrations/instagram/connect"
+                  className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white text-xs font-bold transition-all shadow-md shadow-pink-500/25 flex items-center justify-center gap-2.5 text-center cursor-pointer"
+                >
+                  <Instagram className="w-4 h-4" />
+                  <span>Continue with Instagram</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+
+                <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5 font-medium">
+                  <Shield className="w-3 h-3 text-emerald-600 shrink-0" />
+                  <span>You&apos;ll be redirected to Meta to securely authorize this connection.</span>
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── LINKEDIN CONNECT MODAL ── */}
+      <AnimatePresence>
+        {showLinkedInModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full border border-slate-200 shadow-2xl space-y-5"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <Linkedin className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">Connect LinkedIn Account</h3>
+                    <p className="text-xs text-slate-500">Official LinkedIn Community & Posts REST API</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowLinkedInModal(false)} className="text-slate-400 hover:text-slate-600">
+                  <CloseIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* METHOD 1: OFFICIAL OAUTH 2.0 DIRECT LOGIN */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white space-y-3 shadow-md shadow-blue-500/20">
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Linkedin className="w-4 h-4" />
+                    <span>Official LinkedIn Login</span>
+                  </h4>
+                  <p className="text-[11px] text-blue-100 leading-relaxed">
+                    Authenticate your Member or Organization Company Page admin profile with zero key management.
+                  </p>
+                </div>
+                <a
+                  href="/api/auth/linkedin"
+                  className="w-full py-3 rounded-xl bg-white hover:bg-blue-50 text-slate-900 text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 block text-center"
+                >
+                  <Linkedin className="w-4 h-4 text-blue-600" />
+                  <span>Continue with LinkedIn</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-500" />
+                </a>
+              </div>
+
+              <div className="relative flex py-1 items-center">
+                <div className="flex-grow border-t border-slate-200"></div>
+                <span className="flex-shrink mx-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">or direct token</span>
+                <div className="flex-grow border-t border-slate-200"></div>
+              </div>
+
+              {/* METHOD 2: REAL LINKEDIN ACCESS TOKEN */}
+              <div className="space-y-3 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-800">LinkedIn OAuth / Developer Bearer Token</label>
+                  <p className="text-[11px] text-slate-500">
+                    Paste an access token from the LinkedIn Developer Portal with <code>w_member_social</code> and <code>openid</code>.
+                  </p>
+                </div>
+                <input
+                  type="password"
+                  value={liTokenInput}
+                  onChange={(e) => setLiTokenInput(e.target.value)}
+                  placeholder="e.g. AQX... (LinkedIn REST Bearer Token)"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                />
+                <div className="flex justify-end gap-2 pt-1">
+                  <button
+                    onClick={handleConnectLinkedIn}
+                    disabled={liConnecting || !liTokenInput.trim()}
+                    className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+                  >
+                    {liConnecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                    Verify & Connect
+                  </button>
+                </div>
+              </div>
+
+              {liError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+                  {liError}
+                </div>
+              )}
             </motion.div>
           </div>
         )}

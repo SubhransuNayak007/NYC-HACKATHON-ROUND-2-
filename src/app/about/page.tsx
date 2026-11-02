@@ -17,13 +17,13 @@ import {
   Linkedin,
   Mail,
 } from "lucide-react";
-import { MySamparkHeader } from "@/frontend/components/landing/MySamparkHeader";
-import { MySamparkFooter } from "@/frontend/components/landing/MySamparkFooter";
+import { Navbar } from "@/frontend/components/landing/Navbar";
+import { Footer } from "@/frontend/components/landing/Footer";
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F6F0] text-[#161616] font-sans">
-      <MySamparkHeader />
+      <Navbar />
 
       <main className="flex-1 pt-40 sm:pt-48 pb-24">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -102,7 +102,7 @@ export default function AboutPage() {
                 QuickReply was created after observing hundreds of boutique owners and brand founders answering the exact same sizing, pricing, and shipping questions on Instagram DMs and WhatsApp until 2 AM every single night.
               </p>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                We engineered an agentic system that indexes your product catalog, connects seamlessly to official Meta Graph APIs and local Baileys connectors, and replies with authentic human warmth and exact inventory numbers.
+                We engineered an agentic system that indexes your product catalog, connects seamlessly to official Meta Graph APIs and WhatsApp Business Cloud API, and replies with authentic human warmth and exact inventory numbers.
               </p>
             </div>
 
@@ -266,7 +266,7 @@ export default function AboutPage() {
         </div>
       </main>
 
-      <MySamparkFooter />
+      <Footer />
     </div>
   );
 }

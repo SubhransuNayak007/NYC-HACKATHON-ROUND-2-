@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Instagram,
@@ -29,23 +29,37 @@ export function CommentToDMMockup({ className = "" }: CommentToDMMockupProps) {
   const [platform, setPlatform] = useState<"instagram" | "facebook">("instagram");
   const [selectedTrigger, setSelectedTrigger] = useState(0);
   const [customComment, setCustomComment] = useState("");
-  const [, setIsTyping] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
   const [checkoutState, setCheckoutState] = useState<"idle" | "loading" | "success">("idle");
+  const simulationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const checkoutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (simulationTimeoutRef.current) clearTimeout(simulationTimeoutRef.current);
+      if (checkoutTimeoutRef.current) clearTimeout(checkoutTimeoutRef.current);
+    };
+  }, []);
 
   const currentTrigger = customComment || SAMPLE_TRIGGERS[selectedTrigger].text;
 
   const handleTriggerClick = (index: number) => {
     setSelectedTrigger(index);
     setCustomComment("");
-    setIsTyping(true);
-    setTimeout(() => setIsTyping(false), 400);
+    setIsSimulating(true);
+
+    if (simulationTimeoutRef.current) clearTimeout(simulationTimeoutRef.current);
+    simulationTimeoutRef.current = setTimeout(() => {
+      setIsSimulating(false);
+    }, 1200);
   };
 
   const handleCheckout = () => {
     setCheckoutState("loading");
-    setTimeout(() => {
+    if (checkoutTimeoutRef.current) clearTimeout(checkoutTimeoutRef.current);
+    checkoutTimeoutRef.current = setTimeout(() => {
       setCheckoutState("success");
-      setTimeout(() => setCheckoutState("idle"), 3500);
+      checkoutTimeoutRef.current = setTimeout(() => setCheckoutState("idle"), 3500);
     }, 900);
   };
 
@@ -137,8 +151,10 @@ export function CommentToDMMockup({ className = "" }: CommentToDMMockupProps) {
             className="flex items-start gap-3 bg-white p-3 rounded-xl border border-black/5 shadow-2xs"
           >
             <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80"
+              src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&auto=format&fit=crop&q=80"
               alt="Customer Neha"
+              width={36}
+              height={36}
               loading="lazy"
               decoding="async"
               className="w-9 h-9 rounded-full object-cover border border-black/10 shrink-0"
@@ -171,21 +187,30 @@ export function CommentToDMMockup({ className = "" }: CommentToDMMockupProps) {
               </div>
               <span className="text-xs font-bold text-[#161616]">YourBrand · Auto-Reply</span>
               <span className="text-[10px] text-emerald-600 bg-emerald-100 font-bold px-1.5 py-0.5 rounded-md font-mono">
-                1.2s reply
+                {isSimulating ? "simulating..." : "1.2s reply"}
               </span>
             </div>
             <div className="bg-white p-3 rounded-xl border border-black/5 text-xs text-slate-700 font-medium shadow-2xs">
-              {selectedTrigger === 0 && (
-                <p>&quot;Hey @nehavarma_style! 🌟 Dropped the full product breakdown, sizing chart &amp; instant 20% OFF checkout link right into your DM! Check your inbox 💌&quot;</p>
-              )}
-              {selectedTrigger === 1 && (
-                <p>&quot;Hey @nehavarma_style! Size M is available with fast dispatch. We just slid the direct 1-click cart link into your DM! 🛍️✨&quot;</p>
-              )}
-              {selectedTrigger === 2 && (
-                <p>&quot;Hey @nehavarma_style! Secret code <strong>SAVE20</strong> has been applied &amp; sent to your direct messages 🎁&quot;</p>
-              )}
-              {selectedTrigger === 3 && (
-                <p>&quot;Hey @nehavarma_style! Yes, Cash on Delivery is active for Delhi pincodes (2-day express). Check your DM for details 🚚📦&quot;</p>
+              {isSimulating ? (
+                <div className="flex items-center gap-2 py-1 text-slate-500">
+                  <div className="w-3.5 h-3.5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                  <span>Processing Meta webhook &amp; generating grounded catalog reply in 1.2s...</span>
+                </div>
+              ) : (
+                <>
+                  {selectedTrigger === 0 && (
+                    <p>&quot;Hey @nehavarma_style! 🌟 Dropped the full product breakdown, sizing chart &amp; instant 20% OFF checkout link right into your DM! Check your inbox 💌&quot;</p>
+                  )}
+                  {selectedTrigger === 1 && (
+                    <p>&quot;Hey @nehavarma_style! Size M is available with fast dispatch. We just slid the direct 1-click cart link into your DM! 🛍️✨&quot;</p>
+                  )}
+                  {selectedTrigger === 2 && (
+                    <p>&quot;Hey @nehavarma_style! Secret code <strong>SAVE20</strong> has been applied &amp; sent to your direct messages 🎁&quot;</p>
+                  )}
+                  {selectedTrigger === 3 && (
+                    <p>&quot;Hey @nehavarma_style! Yes, Cash on Delivery is active for Delhi pincodes (2-day express). Check your DM for details 🚚📦&quot;</p>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -219,6 +244,8 @@ export function CommentToDMMockup({ className = "" }: CommentToDMMockupProps) {
                 <img
                   src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500&auto=format&fit=crop&q=80"
                   alt="Classic Vintage Biker Jacket"
+                  width={500}
+                  height={160}
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-500"

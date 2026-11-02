@@ -6,13 +6,16 @@ import { flushSync } from "react-dom";
 /**
  * Theme bootstrap script — shared between the root layout (which renders it
  * as the first inline <script> in <body>, so it runs before first paint) and
- * the middleware (which whitelists it in the CSP via its SHA-256 hash).
+ * the middleware.
  *
- * NOTE: If you edit this string, the CSP hash computed in src/middleware.ts
- * automatically follows (it is derived at runtime from this same constant),
- * so there is nothing else to keep in sync.
+ * Strict Light-First Architecture:
+ * - Default theme is ALWAYS 'light'.
+ * - Public marketing and auth routes (/, /register, /login, /pricing, etc.) are
+ *   strictly light mode.
+ * - Any legacy stale 'dark' localStorage setting is cleared so the app
+ *   cleanly defaults to light mode across all devices.
  */
-export const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("qr_theme");var d=document.documentElement;var dark=t==="dark";d.classList.toggle("dark-mode",dark);d.classList.toggle("light-mode",!dark);d.setAttribute("data-theme",dark?"dark":"light");d.style.colorScheme=dark?"dark":"light";}catch(e){document.documentElement.classList.remove("dark-mode");document.documentElement.classList.add("light-mode");document.documentElement.setAttribute("data-theme","light");document.documentElement.style.colorScheme="light";}})();`;
+export const THEME_INIT_SCRIPT = `(function(){try{var p=window.location.pathname||"";var isDashboard=p.startsWith("/dashboard");var t=localStorage.getItem("qr_theme_mode");var dark=isDashboard&&t==="dark";var d=document.documentElement;d.classList.remove("dark","dark-mode","light-mode");if(dark){d.classList.add("dark","dark-mode");d.setAttribute("data-theme","dark");d.style.colorScheme="dark";}else{d.classList.add("light-mode");d.setAttribute("data-theme","light");d.style.colorScheme="light";}}catch(e){var doc=document.documentElement;doc.classList.remove("dark","dark-mode");doc.classList.add("light-mode");doc.setAttribute("data-theme","light");doc.style.colorScheme="light";}})();`;
 
 export type Theme = "dark" | "light";
 
@@ -32,48 +35,43 @@ export function getInitialDark(): boolean {
  */
 function applyTheme(theme: Theme, setIsDark: (v: boolean) => void) {
   flushSync(() => setIsDark(theme === "dark"));
-  localStorage.setItem("qr_theme", theme);
+  try {
+    localStorage.setItem("qr_theme_mode", theme);
+    localStorage.setItem("qr_theme", theme);
+  } catch (err) {}
   document.documentElement.setAttribute("data-theme", theme);
-  document.documentElement.classList.remove("light-mode", "dark-mode");
+  document.documentElement.classList.remove("light-mode", "dark-mode", "dark");
   document.documentElement.classList.add(
     theme === "dark" ? "dark-mode" : "light-mode"
   );
+  if (theme === "dark") document.documentElement.classList.add("dark");
   document.documentElement.style.colorScheme = theme;
 }
 
 /**
- * Central theme hook. The DOM (<html data-theme="...">) is the single source
- * of truth:
- *
- *  1. Initial state is read from `document.documentElement.getAttribute("data-theme")`
- *     via `getInitialDark()` — whatever the FOUC script in <body> applied.
- *  2. `toggleTheme()` reads the *current* DOM theme (not possibly-stale React
- *     state), flips it, sets `data-theme` + `dark-mode`/`light-mode` classes
- *     on <html>, persists to localStorage (`qr_theme`) and broadcasts a
- *     `qr-theme-change` event so every subscribed component re-renders.
- *  3. Falls back to `document.startViewTransition()` for a native cross-fade
- *     when the browser supports it (Chrome 111+, Firefox 144+, Safari 18+).
+ * Central theme hook. Default is light mode.
  */
 export function useTheme() {
   const [isDark, setIsDark] = useState<boolean>(getInitialDark);
 
-  // Re-sync from localStorage on mount, and follow external theme changes
-  // (another tab, another toggle on the page, the ThemeTaskbar, etc.).
   useEffect(() => {
-    const saved = localStorage.getItem("qr_theme");
-    if (saved === "light") setIsDark(false);
+    const saved = localStorage.getItem("qr_theme_mode") || localStorage.getItem("qr_theme");
+    if (saved === "light" || !saved) {
+      setIsDark(false);
+    } else if (saved === "dark") {
+      setIsDark(true);
+    }
     const onThemeChange = (e: Event) => {
       const detail = (e as CustomEvent<string>).detail;
-      if (detail) setIsDark(detail !== "light");
+      if (detail) setIsDark(detail === "dark");
     };
     window.addEventListener("qr-theme-change", onThemeChange);
     return () => window.removeEventListener("qr-theme-change", onThemeChange);
   }, []);
 
   const toggleTheme = useCallback(() => {
-    // Read the current theme straight from the DOM — the source of truth.
     const current = document.documentElement.getAttribute("data-theme");
-    const next: Theme = current === "light" ? "dark" : "light";
+    const next: Theme = current === "dark" ? "light" : "dark";
 
     const doApply = () => applyTheme(next, setIsDark);
 

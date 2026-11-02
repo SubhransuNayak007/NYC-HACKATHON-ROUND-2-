@@ -23,6 +23,8 @@ import {
   Zap,
   Sparkles,
   Telescope,
+  Send,
+  Building2,
   X as CloseIcon,
 } from "lucide-react";
 
@@ -48,6 +50,19 @@ export default function Sidebar() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [workspaceName, setWorkspaceName] = useState("My Workspace");
   const [userSession, setUserSession] = useState<any>(null);
+
+  const formattedWorkspaceName = (() => {
+    if (!workspaceName) return "My Workspace";
+    if (workspaceName.includes(".") || workspaceName.includes("@")) {
+      const raw = workspaceName.replace(/['’]s\s+workspace$/i, "").replace(/@.*$/, "");
+      const parts = raw.split(/[._-]/).filter((p) => isNaN(Number(p)) && p.length > 0);
+      if (parts.length > 0) {
+        const titleCased = parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(" ");
+        return `${titleCased}'s Workspace`;
+      }
+    }
+    return workspaceName.charAt(0).toUpperCase() + workspaceName.slice(1);
+  })();
 
   const refreshTrigger = useUIStore((state) => state.refreshTrigger);
 
@@ -76,18 +91,17 @@ export default function Sidebar() {
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "AI Automation OS", href: "/dashboard/automations", icon: Zap, badge: "AI Studio" },
+    { name: "Platforms Hub", href: "/dashboard/platforms", icon: Globe },
+    { name: "Instagram Scout", href: "/dashboard/instagram", icon: Sparkles },
+    { name: "WhatsApp Scout", href: "/dashboard/whatsapp", icon: MessageCircle },
+    { name: "Telegram Scout", href: "/dashboard/telegram", icon: Send },
+    { name: "LinkedIn Scout", href: "/dashboard/linkedin", icon: Building2 },
+    { name: "YouTube Scout", href: "/dashboard/youtube", icon: Play },
     { name: "Live Feed", href: "/dashboard/feed", icon: MessageSquare },
-    { name: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageCircle },
-    { name: "Videos", href: "/dashboard/videos", icon: Play },
-    { name: "Rule Builder", href: "/dashboard/rules", icon: Sliders },
-    { name: "Automations", href: "/dashboard/automations", icon: Zap },
-    { name: "Platforms", href: "/dashboard/channels", icon: Globe },
-    { name: "Team", href: "/dashboard/team", icon: Users },
+    { name: "Team & RBAC", href: "/dashboard/team", icon: Users },
     { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
-    { name: "FAQ Knowledge Base", href: "/dashboard/faqs", icon: Brain },
-    { name: "AI Insights", href: "/dashboard/ai", icon: Bot },
-    { name: "Intelligence", href: "/dashboard/intelligence", icon: Telescope },
-    { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+    { name: "Channel Analytics", href: "/dashboard/analytics", icon: BarChart3 },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
@@ -113,6 +127,9 @@ export default function Sidebar() {
 
       {/* App Sidebar Shell */}
       <aside
+        data-lenis-prevent="true"
+        data-lenis-prevent-wheel="true"
+        data-lenis-prevent-touch="true"
         className={`fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)]
           ${sidebarOpen
             ? "translate-x-0 w-[280px] max-w-[85vw] shadow-2xl"
@@ -123,9 +140,9 @@ export default function Sidebar() {
         `}
       >
         {/* Glass background */}
-        <div className="absolute inset-0 sidebar-premium rounded-none border-r border-surface-200/60" />
+        <div className="absolute inset-0 sidebar-premium rounded-none border-r border-surface-200/60 pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col h-full">
+        <div className="relative z-10 flex flex-col h-full min-h-0">
           {/* Workspace Switcher Header */}
           <div className="flex h-16 items-center justify-between px-4 border-b border-surface-200/60 shrink-0">
             <div className="flex items-center gap-3 overflow-hidden">
@@ -134,15 +151,15 @@ export default function Sidebar() {
                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-brand text-white font-brand text-sm font-bold shadow-glow-navy ${
                   isDesktopCompact && !sidebarOpen ? "cursor-pointer hover:scale-105 transition-transform" : ""
                 }`}
-                title={workspaceName}
+                title={formattedWorkspaceName}
               >
-                {(workspaceName || "M").charAt(0).toUpperCase()}
+                {(formattedWorkspaceName || "M").charAt(0).toUpperCase()}
               </button>
               <div className={`flex flex-col truncate ${sidebarOpen ? "block" : isDesktopCompact ? "hidden" : "hidden lg:block"}`}>
-                <span className="font-display text-sm font-bold text-ink-800 tracking-tight truncate">
-                  {workspaceName}
+                <span className="font-sans text-sm font-semibold text-ink-800 dark:text-slate-100 tracking-tight truncate">
+                  {formattedWorkspaceName}
                 </span>
-                <span className="text-[10px] font-semibold text-ink-400 uppercase tracking-widest">
+                <span className="text-[10px] font-semibold text-ink-400 dark:text-slate-400 uppercase tracking-widest">
                   Workspace
                 </span>
               </div>
@@ -169,7 +186,13 @@ export default function Sidebar() {
           </div>
 
           {/* Scrollable Center Content */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div
+            data-lenis-prevent="true"
+            data-lenis-prevent-wheel="true"
+            data-lenis-prevent-touch="true"
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain custom-scrollbar pointer-events-auto"
+            style={{ touchAction: "pan-y" }}
+          >
             {/* Channels Switcher */}
             <div className={`py-3 border-b border-surface-200/60 ${sidebarOpen ? "px-3" : isDesktopCompact ? "px-2" : "px-2 lg:px-3"}`}>
               <div className={`px-2 mb-2 ${sidebarOpen ? "block" : isDesktopCompact ? "hidden" : "hidden lg:block"}`}>
@@ -227,7 +250,9 @@ export default function Sidebar() {
             {/* Navigation */}
             <nav className={`space-y-1 py-3 ${sidebarOpen ? "px-3" : isDesktopCompact ? "px-2" : "px-2 lg:px-3"}`}>
               {navItems.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const isActive = item.href === "/dashboard" 
+                  ? pathname === "/dashboard" 
+                  : (pathname === item.href || pathname.startsWith(`${item.href}/`));
                 return (
                   <Link
                     key={item.name}
@@ -262,6 +287,12 @@ export default function Sidebar() {
                     `}>
                       {item.name}
                     </span>
+
+                    {(item as any).badge && !isActive && (sidebarOpen || !isDesktopCompact) && (
+                      <span className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-linear-to-r from-violet-100 to-indigo-100 text-violet-700 border border-violet-200/60 shrink-0 ${sidebarOpen ? "inline-block" : "hidden lg:inline-block"}`}>
+                        {(item as any).badge}
+                      </span>
+                    )}
 
                     {isActive && (sidebarOpen || !isDesktopCompact) && (
                       <div className={`absolute right-3 ${sidebarOpen ? "block" : "hidden lg:block"}`}>

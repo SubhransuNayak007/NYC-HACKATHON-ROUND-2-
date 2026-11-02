@@ -34,7 +34,7 @@ export default function EmptyState({
       <div className={`h-14 w-14 rounded-2xl ${iconBg} flex items-center justify-center mb-4`}>
         <Icon className={`h-6 w-6 ${iconColor}`} />
       </div>
-      <h3 className="font-display text-base font-bold text-ink-800 mb-1.5">{title}</h3>
+      <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white mb-1.5">{title}</h3>
       <p className="text-sm text-ink-500 max-w-sm leading-relaxed">{description}</p>
       {action && (
         <button

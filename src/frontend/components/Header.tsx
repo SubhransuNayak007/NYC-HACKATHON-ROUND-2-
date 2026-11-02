@@ -25,6 +25,12 @@ export default function Header() {
 
   const pageTitleMap: Record<string, string> = {
     "/dashboard": "Dashboard",
+    "/dashboard/platforms": "Platforms Hub",
+    "/dashboard/instagram": "Instagram Scout",
+    "/dashboard/whatsapp": "WhatsApp Scout",
+    "/dashboard/telegram": "Telegram Scout",
+    "/dashboard/linkedin": "LinkedIn Scout",
+    "/dashboard/youtube": "YouTube Scout",
     "/dashboard/feed": "Live Feed",
     "/dashboard/feed/review": "Review Queue",
     "/dashboard/videos": "Video Selection",
@@ -32,12 +38,12 @@ export default function Header() {
     "/dashboard/rules/new": "Create Rule",
     "/dashboard/automations": "Automations",
     "/dashboard/channels": "Connected Platforms",
-    "/dashboard/team": "Team",
+    "/dashboard/team": "Team & RBAC",
     "/dashboard/notifications": "Notifications",
     "/dashboard/faqs": "FAQ Knowledge Base",
     "/dashboard/ai": "AI Insights",
     "/dashboard/intelligence": "Business Intelligence Engine",
-    "/dashboard/analytics": "Analytics",
+    "/dashboard/analytics": "Channel Analytics",
     "/dashboard/settings": "Settings",
     "/dashboard/settings/team": "Team Management",
     "/dashboard/status": "System Status",
@@ -73,7 +79,7 @@ export default function Header() {
   const usagePercent = usage && usage.limit ? Math.min(100, (usage.used / usage.limit) * 100) : 0;
 
   return (
-    <header className="sticky top-0 z-30">
+    <header className="sticky top-0 z-30 shrink-0">
       <div className="glass-strong border-b border-surface-200/60">
         <div className="flex h-16 w-full items-center justify-between px-4 sm:px-6">
           {/* Left: Mobile Toggle & Page Title */}
@@ -87,7 +93,7 @@ export default function Header() {
             </button>
 
             <div className="flex items-center gap-2">
-              <span className="font-display text-base font-bold text-ink-800 tracking-tight">
+              <span className="font-sans text-base font-semibold text-slate-800 dark:text-slate-100 tracking-tight">
                 {pageTitle}
               </span>
             </div>

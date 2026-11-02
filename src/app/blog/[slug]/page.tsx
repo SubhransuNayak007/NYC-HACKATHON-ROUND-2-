@@ -4,8 +4,8 @@ import React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Calendar, Clock, Tag, Share2, CheckCircle2 } from "lucide-react";
-import { MySamparkHeader } from "@/frontend/components/landing/MySamparkHeader";
-import { MySamparkFooter } from "@/frontend/components/landing/MySamparkFooter";
+import { Navbar } from "@/frontend/components/landing/Navbar";
+import { Footer } from "@/frontend/components/landing/Footer";
 
 export default function BlogPostPage() {
   const params = useParams();
@@ -13,7 +13,7 @@ export default function BlogPostPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-[#161616] font-sans">
-      <MySamparkHeader />
+      <Navbar />
 
       <main className="flex-1 pt-36 pb-24">
         <article className="max-w-3xl mx-auto px-4 sm:px-6">
@@ -40,7 +40,7 @@ export default function BlogPostPage() {
             <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" /> 6 min read
             </span>
-            <span>By Saurabh Infosys Research Team</span>
+            <span>By QuickReply Team Infosys Research Team</span>
           </div>
 
           <div className="prose prose-slate max-w-none text-sm sm:text-base leading-relaxed space-y-6 text-slate-700">
@@ -87,7 +87,7 @@ export default function BlogPostPage() {
         </article>
       </main>
 
-      <MySamparkFooter />
+      <Footer />
     </div>
   );
 }

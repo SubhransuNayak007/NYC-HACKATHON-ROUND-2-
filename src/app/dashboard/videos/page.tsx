@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Youtube, Loader2, RefreshCw, CheckCircle,
   Play, MessageSquare, Calendar, ToggleLeft, ToggleRight,
-  Search, ChevronDown
+  Search, ChevronDown, Sparkles
 } from "lucide-react";
+import { CommentExplainabilityModal } from "@/frontend/components/video_rag/CommentExplainabilityModal";
 
 // ---------- Types ----------
 interface Video {
@@ -43,11 +44,13 @@ function VideoCard({
   video,
   isAutomated,
   onToggle,
+  onInspect,
   isSaving,
 }: {
   video: Video;
   isAutomated: boolean;
   onToggle: () => void;
+  onInspect?: () => void;
   isSaving: boolean;
 }) {
   const formatDate = (dateStr: string) => {
@@ -99,16 +102,25 @@ function VideoCard({
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <h3 className="font-semibold text-slate-900 text-sm line-clamp-2 mb-3 leading-snug">
+      <div className="p-4 space-y-3">
+        <h3 className="font-semibold text-slate-900 text-sm line-clamp-2 leading-snug">
           {video.title}
         </h3>
 
-        <div className="flex items-center gap-3 text-[11px] text-ink-500 mb-4">
+        <div className="flex items-center justify-between text-[11px] text-ink-500">
           <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
             {formatDate(video.publishedAt)}
           </span>
+          {onInspect && (
+            <button
+              onClick={onInspect}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 font-bold border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer text-[10px]"
+            >
+              <Sparkles className="w-2.5 h-2.5 text-blue-600" />
+              <span>Inspect RAG</span>
+            </button>
+          )}
         </div>
 
         {/* Toggle Row */}
@@ -150,6 +162,7 @@ export default function VideosPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [explainabilityVideo, setExplainabilityVideo] = useState<{ id: string; title: string } | null>(null);
 
   // Fetch channels
   const fetchChannels = useCallback(async () => {
@@ -404,6 +417,7 @@ export default function VideosPage() {
                 video={video}
                 isAutomated={automatedVideos.includes(video.id)}
                 onToggle={() => handleToggle(video.id)}
+                onInspect={() => setExplainabilityVideo({ id: video.id, title: video.title })}
                 isSaving={saving === video.id}
               />
             ))}
@@ -433,6 +447,16 @@ export default function VideosPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Video RAG Explainability Modal */}
+      {explainabilityVideo && (
+        <CommentExplainabilityModal
+          isOpen={!!explainabilityVideo}
+          onClose={() => setExplainabilityVideo(null)}
+          videoId={explainabilityVideo.id}
+          videoTitle={explainabilityVideo.title}
+        />
+      )}
     </div>
   );
 }

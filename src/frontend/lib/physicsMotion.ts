@@ -49,34 +49,61 @@ export const tactileButtonTap: TargetAndTransition = {
 
 /**
  * Hook: Real-Time 3D Card Parallax & Tilt Physics
- * Solves 2nd-order rotational inertia relative to pointer coordinates
+ * Solves 2nd-order rotational inertia relative to pointer coordinates with requestAnimationFrame throttling
  */
 export function useCardTiltPhysics(intensity = 12, maxTilt = 15) {
   const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0, glareX: 50, glareY: 50 });
   const cardRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
+      }
+    };
+  }, []);
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      const el = cardRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = (e.clientY - rect.top) / rect.height;
+      // Ignore touch events to preserve native buttery touch scroll
+      if (e.pointerType === "touch") return;
+      if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        return;
+      }
 
-      const rX = Math.max(-maxTilt, Math.min(maxTilt, (0.5 - y) * intensity * 2));
-      const rY = Math.max(-maxTilt, Math.min(maxTilt, (x - 0.5) * intensity * 2));
+      if (frameRef.current !== null) return;
+      const clientX = e.clientX;
+      const clientY = e.clientY;
 
-      setTilt({
-        rotateX: rX,
-        rotateY: rY,
-        glareX: x * 100,
-        glareY: y * 100,
+      frameRef.current = requestAnimationFrame(() => {
+        frameRef.current = null;
+        const el = cardRef.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const x = (clientX - rect.left) / rect.width;
+        const y = (clientY - rect.top) / rect.height;
+
+        const rX = Math.max(-maxTilt, Math.min(maxTilt, (0.5 - y) * intensity * 2));
+        const rY = Math.max(-maxTilt, Math.min(maxTilt, (x - 0.5) * intensity * 2));
+
+        setTilt({
+          rotateX: rX,
+          rotateY: rY,
+          glareX: x * 100,
+          glareY: y * 100,
+        });
       });
     },
     [intensity, maxTilt]
   );
 
   const handlePointerLeave = useCallback(() => {
+    if (frameRef.current !== null) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
     setTilt({ rotateX: 0, rotateY: 0, glareX: 50, glareY: 50 });
   }, []);
 
@@ -85,32 +112,54 @@ export function useCardTiltPhysics(intensity = 12, maxTilt = 15) {
 
 /**
  * Hook: Magnetic Pointer Attraction Physics
- * Elements subtly attract towards the cursor with inverse-square falloff
+ * Elements subtly attract towards the cursor with inverse-square falloff and RAF throttling
  */
 export function useMagneticPhysics(strength = 0.25, maxOffset = 18) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const ref = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
+      }
+    };
+  }, []);
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      const el = ref.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
+      if (e.pointerType === "touch") return;
+      if (frameRef.current !== null) return;
+      const clientX = e.clientX;
+      const clientY = e.clientY;
 
-      const dx = (e.clientX - cx) * strength;
-      const dy = (e.clientY - cy) * strength;
+      frameRef.current = requestAnimationFrame(() => {
+        frameRef.current = null;
+        const el = ref.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
 
-      setOffset({
-        x: Math.max(-maxOffset, Math.min(maxOffset, dx)),
-        y: Math.max(-maxOffset, Math.min(maxOffset, dy)),
+        const dx = (clientX - cx) * strength;
+        const dy = (clientY - cy) * strength;
+
+        setOffset({
+          x: Math.max(-maxOffset, Math.min(maxOffset, dx)),
+          y: Math.max(-maxOffset, Math.min(maxOffset, dy)),
+        });
       });
     },
     [strength, maxOffset]
   );
 
   const handlePointerLeave = useCallback(() => {
+    if (frameRef.current !== null) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
     setOffset({ x: 0, y: 0 });
   }, []);
 
@@ -118,7 +167,7 @@ export function useMagneticPhysics(strength = 0.25, maxOffset = 18) {
 }
 
 /**
- * Hook: Scroll Velocity Sensor for Acceleration Physics
+ * Hook: Scroll Velocity Sensor (Passive, zero-RAF overhead)
  */
 export function useScrollVelocity() {
   const [velocity, setVelocity] = useState(0);
@@ -126,24 +175,29 @@ export function useScrollVelocity() {
   useEffect(() => {
     let lastScrollY = window.scrollY;
     let lastTime = performance.now();
-    let frameId: number;
+    let timeoutId: any;
 
-    const checkVelocity = () => {
+    const onScroll = () => {
       const currentScrollY = window.scrollY;
       const currentTime = performance.now();
       const dt = (currentTime - lastTime) / 1000;
 
-      if (dt > 0) {
+      if (dt > 0.016) {
         const currentVel = (currentScrollY - lastScrollY) / dt;
-        setVelocity((prev) => prev * 0.85 + currentVel * 0.15); // Low-pass filter
+        setVelocity(currentVel);
         lastScrollY = currentScrollY;
         lastTime = currentTime;
       }
-      frameId = requestAnimationFrame(checkVelocity);
+
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => setVelocity(0), 100);
     };
 
-    frameId = requestAnimationFrame(checkVelocity);
-    return () => cancelAnimationFrame(frameId);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   return velocity;

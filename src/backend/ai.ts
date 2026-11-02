@@ -62,6 +62,26 @@ export interface TranslationResult {
 
 // --- Reply Generation ---
 
+export async function generateSmartReply(promptOrContext: string | ReplyContext): Promise<string> {
+  if (typeof promptOrContext === "string") {
+    const client = getClient();
+    if (!client) return "Thank you for reaching out! A specialist will assist you shortly.";
+    try {
+      const response = await client.messages.create({
+        model: FAST_MODEL,
+        max_tokens: 300,
+        messages: [{ role: "user", content: promptOrContext }],
+      });
+      const firstBlock = response.content[0];
+      return firstBlock && "text" in firstBlock ? firstBlock.text : "Thank you for reaching out!";
+    } catch {
+      return "Thank you for reaching out! A specialist will assist you shortly.";
+    }
+  }
+  const result = await generateReply(promptOrContext);
+  return result?.reply || "Thank you for your comment!";
+}
+
 export async function generateReply(context: ReplyContext): Promise<GenerateReplyResult | null> {
   const client = getClient();
   if (!client) return null;

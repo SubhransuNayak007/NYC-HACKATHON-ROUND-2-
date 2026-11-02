@@ -16,7 +16,7 @@ import { ActionFirewall } from "../firewall/ActionFirewall";
 import { ZeroDashboardEngine } from "./ZeroDashboardEngine";
 import { VerifiableAuditLedger } from "../audit/VerifiableAuditLedger";
 import { ReliabilityEngine } from "../reliability/ReliabilityEngine";
-import { getWhatsAppWebSessionProvider } from "@/channels/whatsapp/WhatsAppProviderFactory";
+import { getWhatsAppProvider } from "@/channels/whatsapp/WhatsAppProviderFactory";
 import { processWhatsAppMessage } from "../wa_engine";
 import { getDB, saveDB } from "@/database/db";
 
@@ -84,16 +84,16 @@ export class ExecutionPlane {
           timestamp: new Date().toISOString(),
         });
 
-        if (firewallDecision.allowed && aiResult.responseText) {
+        if (firewallDecision.allowed) {
           // Send response via provider
-          const wa = getWhatsAppWebSessionProvider();
-          await wa.sendMessage(from, aiResult.responseText);
+          const wa = getWhatsAppProvider();
+          await wa.sendMessage(from, aiResult.responseText || "");
 
           // Record in Verifiable Audit Ledger
           VerifiableAuditLedger.record("message_dispatched", "ai_agent", {
             to: from,
-            intent: aiResult.intent,
-            confidence: aiResult.confidence,
+            intent: (aiResult as any).intentDetected || "general",
+            confidence: (aiResult as any).confidence || 1.0,
           });
         } else if (firewallDecision.requiresOwnerApproval) {
           // Gate action and notify owner

@@ -37,33 +37,11 @@ function getStripe(): Stripe {
   return stripeClient;
 }
 
-// --- Pricing Configuration ---
+import { SUBSCRIPTION_PLANS, getPlanConfig } from "./billing/plans";
 
-export const PRICING_TIERS = {
-  free: {
-    name: "Free",
-    monthlyReplyLimit: 500,
-    channelLimit: 1,
-    features: ["basic_rules", "comment_monitoring"],
-    stripePriceId: null, // No Stripe price for free tier
-  },
-  premium: {
-    name: "Premium",
-    monthlyReplyLimit: 5000,
-    channelLimit: 5,
-    features: ["basic_rules", "comment_monitoring", "rag_matching", "priority_support", "analytics"],
-    stripePriceId: process.env.STRIPE_PREMIUM_PRICE_ID || "price_premium_monthly",
-  },
-  pro: {
-    name: "Pro",
-    monthlyReplyLimit: 25000,
-    channelLimit: -1, // unlimited
-    features: ["basic_rules", "comment_monitoring", "rag_matching", "ai_replies", "webhooks", "priority_support", "analytics", "team_members"],
-    stripePriceId: process.env.STRIPE_PRO_PRICE_ID || "price_pro_monthly",
-  },
-} as const;
+export type SubscriptionTier = "free" | "starter" | "growth" | "pro" | "business" | "premium";
 
-export type SubscriptionTier = keyof typeof PRICING_TIERS;
+export const PRICING_TIERS = SUBSCRIPTION_PLANS;
 
 // --- Customer Management ---
 
@@ -127,35 +105,43 @@ export async function createCheckoutSession(
 ): Promise<Stripe.Checkout.Session> {
   const stripe = getStripe();
   const customer = await getOrCreateCustomer(email, name);
-  const priceId = PRICING_TIERS[tier].stripePriceId;
+  const plan = getPlanConfig(tier);
+  const priceId = plan.stripePriceId;
 
   if (!priceId) {
     throw new Error(`No Stripe price configured for tier: ${tier}`);
   }
 
-  return stripe.checkout.sessions.create({
-    customer: customer.id,
-    mode: "subscription",
-    payment_method_types: ["card"],
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
-      },
-    ],
-    success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: cancelUrl,
-    metadata: {
-      userId: email,
-      tier,
-    },
-    subscription_data: {
+  return stripe.checkout.sessions.create(
+    {
+      customer: customer.id,
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl,
       metadata: {
         userId: email,
-        tier,
+        tier: plan.id,
+        credits: String(plan.monthlyCredits + plan.bonusCredits),
+      },
+      subscription_data: {
+        metadata: {
+          userId: email,
+          tier: plan.id,
+          credits: String(plan.monthlyCredits + plan.bonusCredits),
+        },
       },
     },
-  });
+    {
+      idempotencyKey: `cs_${email}_${plan.id}_${Date.now().toString().slice(0, 8)}`,
+    }
+  );
 }
 
 /**
@@ -272,13 +258,11 @@ export async function checkReplyLimit(
 ): Promise<{ allowed: boolean; tier: SubscriptionTier; used: number; limit: number }> {
   const { getDB } = await import("@/database/db");
   const db = await getDB(userId);
-  const tier = db.userSession?.tier || "free";
-  const tierConfig = PRICING_TIERS[tier];
+  const tier = (db.userSession?.tier || "free") as SubscriptionTier;
+  const tierConfig = PRICING_TIERS[tier] || PRICING_TIERS.free;
 
-  // Get monthly usage (simplified: use repliesToday as proxy for monthly)
-  // In production, you'd query a separate usage collection
   const used = db.userSession?.repliesToday || 0;
-  const limit = tierConfig.monthlyReplyLimit;
+  const limit = tierConfig.dailyReplyLimit;
 
   return {
     allowed: used < limit,

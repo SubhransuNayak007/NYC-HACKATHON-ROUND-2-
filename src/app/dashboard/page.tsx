@@ -15,10 +15,12 @@ import {
   Zap,
   TrendingUp,
   ArrowUpRight,
+  ArrowRight,
   BarChart3,
   Database,
   Plus,
   Inbox,
+  Radio,
   Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -124,8 +126,8 @@ function GoldenHourRing({ rate }: { rate: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display text-xl font-bold text-white tabular-nums">{pct.toFixed(0)}%</span>
-        <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: "#8A8A8A" }}>
+        <span className="font-sans text-2xl font-extrabold text-white tracking-tight tabular-nums">{pct.toFixed(0)}%</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
           reply rate
         </span>
       </div>
@@ -153,7 +155,6 @@ export default function DashboardOverviewPage() {
     template: "Thank you for commenting!",
   });
   const [savingConfig, setSavingConfig] = useState(false);
-  const [seedingDemo, setSeedingDemo] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -226,27 +227,6 @@ export default function DashboardOverviewPage() {
     }
   };
 
-  const handleSeedDemo = async () => {
-    setSeedingDemo(true);
-    try {
-      const res = await fetch("/api/demo/inject", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ count: 3 }),
-      });
-      if (res.ok) {
-        showToast("Demo comments injected — watch the pipeline!", "success");
-        triggerRefresh();
-      } else {
-        showToast("Failed to inject demo comments", "error");
-      }
-    } catch {
-      showToast("Network error seeding demo data", "error");
-    } finally {
-      setSeedingDemo(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="space-y-6">
@@ -300,6 +280,33 @@ export default function DashboardOverviewPage() {
         iconColor="text-navy-500"
       />
 
+      {/* ═══ AI AUTOMATION OS BANNER ═══ */}
+      <motion.div variants={item}>
+        <div className="rounded-2xl p-6 bg-linear-to-r from-violet-900/90 via-indigo-900/80 to-slate-900 border border-violet-500/30 shadow-lg text-white flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1.5 max-w-2xl">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-500/20 text-violet-300 text-xs font-bold uppercase tracking-wider border border-violet-400/30">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+              <span>AI Automation OS · n8n & LangGraph</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              Natural Language Workflow Creator
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Describe any automation in plain English. Generate n8n workflows with canvas previews, validate with synthetic tests, and deploy directly to n8n, LangGraph, or Native runtimes.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <Link href="/dashboard/automations">
+              <button className="px-5 py-3 rounded-xl bg-linear-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs uppercase tracking-wider shadow-md flex items-center gap-2 transition cursor-pointer">
+                <Zap className="w-4 h-4 fill-white" />
+                <span>Open AI Studio</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </Link>
+          </div>
+        </div>
+      </motion.div>
+
       {/* ═══ GOLDEN HOUR HERO CARD ═══ */}
       <motion.div variants={item}>
         <div
@@ -316,7 +323,7 @@ export default function DashboardOverviewPage() {
                 <Sparkles className="h-5 w-5" style={{ color: "#E8B931" }} />
               </div>
               <div>
-                <h2 className="font-display text-xl font-bold tracking-tight">Golden Hour</h2>
+                <h2 className="font-sans text-xl font-bold tracking-tight text-white">Golden Hour</h2>
                 <p className="text-[11px] flex items-center gap-1.5" style={{ color: "#8A8A8A" }}>
                   <TrendingUp className="h-3 w-3" style={{ color: "#34d399" }} />
                   Comments answered in the first hour — when reach is highest
@@ -412,13 +419,13 @@ export default function DashboardOverviewPage() {
           >
             <div className="relative z-10 flex items-start justify-between">
               <div className="space-y-1.5">
-                <span className="text-[10px] font-bold text-ink-400 uppercase tracking-[0.12em] block">
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
                   {kpi.label}
                 </span>
-                <span className="font-display text-2xl font-bold text-ink-800 tracking-tight">
+                <span className="font-sans text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                   <AnimatedCounter end={kpi.value} />
                 </span>
-                <span className="text-[10px] text-ink-400 block">{kpi.sub}</span>
+                <span className="text-[11px] text-slate-400 dark:text-slate-400 block">{kpi.sub}</span>
               </div>
               <div className={`h-10 w-10 rounded-xl ${kpi.iconBg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
                 <kpi.icon className={`h-5 w-5 ${kpi.iconColor}`} />
@@ -437,7 +444,7 @@ export default function DashboardOverviewPage() {
               <div className="h-9 w-9 rounded-xl bg-navy-500/8 flex items-center justify-center">
                 <Sliders className="h-4 w-4 text-navy-500" />
               </div>
-              <h4 className="font-display text-sm font-bold text-ink-800">Global Reply Config</h4>
+              <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white tracking-tight">Global Reply Config</h3>
             </div>
           </div>
 
@@ -500,7 +507,7 @@ export default function DashboardOverviewPage() {
               <div className="h-9 w-9 rounded-xl bg-volt-500/8 flex items-center justify-center">
                 <History className="h-4 w-4 text-volt-600" />
               </div>
-              <h4 className="font-display text-sm font-bold text-ink-800">Recent Activity</h4>
+              <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white tracking-tight">Recent Activity</h3>
             </div>
           </div>
 
@@ -544,7 +551,7 @@ export default function DashboardOverviewPage() {
               <div className="h-9 w-9 rounded-xl bg-mint-500/8 flex items-center justify-center">
                 <Zap className="h-4 w-4 text-mint-500" />
               </div>
-              <h4 className="font-display text-sm font-bold text-ink-800">Quick Actions</h4>
+              <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white tracking-tight">Quick Actions</h3>
             </div>
           </div>
 
@@ -577,24 +584,19 @@ export default function DashboardOverviewPage() {
               <ArrowUpRight className="h-3.5 w-3.5 text-ink-400 group-hover:text-volt-600 transition-colors shrink-0" />
             </Link>
 
-            <button
-              onClick={handleSeedDemo}
-              disabled={seedingDemo}
-              className="group flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-mint-500/40 transition-all w-full text-left disabled:opacity-60"
+            <Link
+              href="/dashboard/channels"
+              className="group flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-mint-500/40 transition-all w-full text-left"
             >
               <div className="h-8 w-8 rounded-lg bg-mint-500/8 flex items-center justify-center shrink-0">
-                {seedingDemo ? (
-                  <Loader2 className="h-4 w-4 text-mint-500 animate-spin" />
-                ) : (
-                  <Sparkles className="h-4 w-4 text-mint-500" />
-                )}
+                <Radio className="h-4 w-4 text-mint-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-ink-800">Seed Demo</p>
-                <p className="text-[10px] text-ink-400">Inject 3 synthetic comments</p>
+                <p className="text-xs font-bold text-ink-800">Connected Channels</p>
+                <p className="text-[10px] text-ink-400">Manage YouTube, Instagram & WhatsApp</p>
               </div>
               <ArrowUpRight className="h-3.5 w-3.5 text-ink-400 group-hover:text-mint-500 transition-colors shrink-0" />
-            </button>
+            </Link>
           </div>
         </div>
       </motion.div>

@@ -12,6 +12,7 @@
  */
 
 import { MongoClient } from "mongodb";
+import { getMongoClient } from "@/database/db";
 
 // --- Index Definitions ---
 
@@ -224,11 +225,8 @@ export async function ensureIndexes(): Promise<void> {
     return;
   }
 
-  let client: MongoClient | null = null;
-
   try {
-    client = new MongoClient(uri);
-    await client.connect();
+    const client = await getMongoClient();
     const db = client.db("quickreply");
     const collection = db.collection("users");
 
@@ -296,10 +294,6 @@ export async function ensureIndexes(): Promise<void> {
     indexesCreated = true;
   } catch (err) {
     console.error("[Indexes] Failed to connect to MongoDB for index creation:", err);
-  } finally {
-    if (client) {
-      await client.close().catch(() => {});
-    }
   }
 }
 
@@ -315,11 +309,8 @@ export async function getIndexStats(): Promise<Array<{
   const uri = process.env.MONGODB_URI;
   if (!uri) return [];
 
-  let client: MongoClient | null = null;
-
   try {
-    client = new MongoClient(uri);
-    await client.connect();
+    const client = await getMongoClient();
     const db = client.db("quickreply");
     const collection = db.collection("users");
 
@@ -337,9 +328,5 @@ export async function getIndexStats(): Promise<Array<{
     });
   } catch {
     return [];
-  } finally {
-    if (client) {
-      await client.close().catch(() => {});
-    }
   }
 }

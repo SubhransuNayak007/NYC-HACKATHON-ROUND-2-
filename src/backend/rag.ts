@@ -383,3 +383,20 @@ Generate ONLY the reply text, nothing else.`,
 export async function syncFAQIndex(userEmail: string, faqs: FAQEntry[]) {
   return await indexUserFAQs(userEmail, faqs);
 }
+
+/**
+ * Generic RAG query helper for multi-channel runtimes
+ */
+export async function queryRag(
+  query: string,
+  options: { userId?: string; limit?: number } = {}
+): Promise<Array<{ text: string; score: number }>> {
+  try {
+    const userEmail = options.userId || "default_user";
+    const matches = await findBestFAQMatch(query, [], options.limit || 3, 0.3, userEmail);
+    return matches.map((m) => ({ text: `${m.question}: ${m.answer}`, score: m.confidence }));
+  } catch {
+    return [];
+  }
+}
+

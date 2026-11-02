@@ -89,7 +89,7 @@ export function AuthShell({ mode }: AuthShellProps) {
         <ThemeToggle size="sm" />
       </div>
 
-      {/* Centered Minimal Authentication Card (MySampark Style) */}
+      {/* Centered Minimal Authentication Card (QuickReply Style) */}
       <div className="w-full max-w-[420px] mx-auto my-auto py-8">
         <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-800/90 bg-white dark:bg-zinc-900 p-6 sm:p-8 shadow-xs">
           {/* Headline */}

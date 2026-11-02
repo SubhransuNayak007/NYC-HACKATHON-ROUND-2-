@@ -114,7 +114,7 @@ const CONVERSATIONS: ConversationItem[] = [
   {
     id: "conv-4",
     name: "Meera Kapoor",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80",
+    avatar: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=120&auto=format&fit=crop&q=80",
     channel: "linkedin",
     handle: "Meera Kapoor · VP Brand",
     lastMessage: "We'd love to partner for an influencer collaboration campaign next month.",
@@ -159,7 +159,7 @@ export function UnifiedInboxMockup({ className = "" }: UnifiedInboxMockupProps) 
   const [selectedChannel, setSelectedChannel] = useState<string>("all");
   const [selectedConvId, setSelectedConvId] = useState<string>("conv-1");
   const [autopilotMode, setAutopilotMode] = useState<boolean>(true);
-  const [sentStatus, setSentStatus] = useState<boolean>(false);
+  const [sentStatuses, setSentStatuses] = useState<Record<string, boolean>>({});
 
   const filteredConversations =
     selectedChannel === "all"
@@ -170,8 +170,10 @@ export function UnifiedInboxMockup({ className = "" }: UnifiedInboxMockupProps) 
     CONVERSATIONS.find((c) => c.id === selectedConvId) || CONVERSATIONS[0];
 
   const handleSendReply = () => {
-    setSentStatus(true);
-    setTimeout(() => setSentStatus(false), 3000);
+    setSentStatuses((prev) => ({ ...prev, [activeConv.id]: true }));
+    setTimeout(() => {
+      setSentStatuses((prev) => ({ ...prev, [activeConv.id]: false }));
+    }, 3500);
   };
 
   const getChannelIcon = (channel: string) => {
@@ -283,6 +285,17 @@ export function UnifiedInboxMockup({ className = "" }: UnifiedInboxMockupProps) 
         >
           LinkedIn (1)
         </button>
+        <button
+          type="button"
+          onClick={() => setSelectedChannel("twitter")}
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-bold transition-all shrink-0 ${
+            selectedChannel === "twitter"
+              ? "bg-black text-white shadow-xs"
+              : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+          }`}
+        >
+          X (Twitter) (1)
+        </button>
       </div>
 
       {/* Main Grid: Split List + Detail Chat Window */}
@@ -307,6 +320,8 @@ export function UnifiedInboxMockup({ className = "" }: UnifiedInboxMockupProps) 
                       <img
                         src={conv.avatar}
                         alt={conv.name}
+                        width={32}
+                        height={32}
                         loading="lazy"
                         decoding="async"
                         className="w-8 h-8 rounded-full object-cover border border-black/10"
@@ -361,6 +376,8 @@ export function UnifiedInboxMockup({ className = "" }: UnifiedInboxMockupProps) 
               <img
                 src={activeConv.avatar}
                 alt={activeConv.name}
+                width={32}
+                height={32}
                 loading="lazy"
                 decoding="async"
                 className="w-8 h-8 rounded-full object-cover border border-black/10 shrink-0"
@@ -428,12 +445,12 @@ export function UnifiedInboxMockup({ className = "" }: UnifiedInboxMockupProps) 
                 type="button"
                 onClick={handleSendReply}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
-                  sentStatus
+                  sentStatuses[activeConv.id]
                     ? "bg-emerald-600 text-white"
                     : "bg-[#161616] text-white hover:bg-black"
                 }`}
               >
-                {sentStatus ? (
+                {sentStatuses[activeConv.id] ? (
                   <>
                     <Check className="w-3 h-3" />
                     <span>Sent!</span>

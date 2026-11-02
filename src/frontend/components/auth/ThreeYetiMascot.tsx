@@ -142,9 +142,9 @@ export function ThreeYetiMascot({
       springTranslateY.current.setTarget(0);
     };
 
-    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
     const c = containerRef.current;
-    if (c) c.addEventListener("pointerleave", handlePointerLeave);
+    if (c) c.addEventListener("pointerleave", handlePointerLeave, { passive: true });
 
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);

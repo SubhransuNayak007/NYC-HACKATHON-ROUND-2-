@@ -14,7 +14,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { CircuitBreaker } from "./CircuitBreaker";
 import { type BusinessEvent, DurableEventBus } from "../events/EventBus";
-import { getWhatsAppWebSessionProvider } from "@/channels/whatsapp/WhatsAppProviderFactory";
+import { getWhatsAppProvider } from "@/channels/whatsapp/WhatsAppProviderFactory";
 
 export interface DLQEntry {
   id: string;
@@ -38,7 +38,7 @@ export class ReliabilityEngine {
   };
 
   // Dead Letter Queue
-  private dlq = new Map<string, DLQEntry>();
+  private dlq: Map<string, DLQEntry> = new Map();
 
   private isWatchdogRunning = false;
 
@@ -53,30 +53,32 @@ export class ReliabilityEngine {
     return this.instance;
   }
 
-  getCircuitBreaker(name: string): CircuitBreaker {
-    if (!this.circuitBreakers[name]) {
-      this.circuitBreakers[name] = new CircuitBreaker(name);
-    }
-    return this.circuitBreakers[name];
+  /**
+   * Execute an operation guarded by a named Circuit Breaker
+   */
+  async executeWithCircuitBreaker<T>(
+    circuitName: string,
+    operation: () => Promise<T>
+  ): Promise<T> {
+    const cb = this.circuitBreakers[circuitName] || this.circuitBreakers.database;
+    return cb.execute(operation);
   }
 
   /**
-   * Routes exhausted/failed events to the Dead Letter Queue
+   * Records a failed event into the Dead Letter Queue
    */
-  moveToDLQ(event: BusinessEvent, error: string): DLQEntry {
-    const id = `dlq_${uuidv4().replace(/-/g, "")}`;
+  moveToDLQ(event: BusinessEvent, error: string): void {
+    const id = `dlq_${uuidv4()}`;
     const entry: DLQEntry = {
       id,
       originalEvent: event,
       error,
       failedAt: new Date().toISOString(),
-      retryCount: event.attempts || 1,
+      retryCount: 0,
       resolved: false,
     };
-
     this.dlq.set(id, entry);
-    console.error(`[ReliabilityEngine] Event ${event.eventId} MOVED TO DLQ: ${error}`);
-    return entry;
+    console.error(`🚨 [ReliabilityEngine] Event moved to DLQ: [${id}] - Error: ${error}`);
   }
 
   /**
@@ -128,10 +130,10 @@ export class ReliabilityEngine {
   }
 
   /**
-   * Self-healing WhatsApp check: detects zombie sockets and recovers
+   * Self-healing WhatsApp check: detects session issues and recovers
    */
   private async checkWhatsAppHealth(): Promise<void> {
-    const wa = getWhatsAppWebSessionProvider();
+    const wa = getWhatsAppProvider();
     const status = wa.getStatus();
 
     // If configured and state is errored, trigger graceful reconnect

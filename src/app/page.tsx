@@ -1,19 +1,38 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import { MySamparkHeader } from "@/frontend/components/landing/MySamparkHeader";
 import { MySamparkHero } from "@/frontend/components/landing/MySamparkHero";
 import { SlidingCardsMarquee } from "@/frontend/components/landing/SlidingCardsMarquee";
 import { MySamparkMarquee } from "@/frontend/components/landing/MySamparkMarquee";
 import { MySamparkProblem } from "@/frontend/components/landing/MySamparkProblem";
-import { MySamparkEverythingItDoes } from "@/frontend/components/landing/MySamparkEverythingItDoes";
-import { MySamparkComparison } from "@/frontend/components/landing/MySamparkComparison";
-import { MySamparkFourSteps } from "@/frontend/components/landing/MySamparkFourSteps";
-import { MySamparkProofGrid } from "@/frontend/components/landing/MySamparkProofGrid";
-import { MySamparkTestimonials } from "@/frontend/components/landing/MySamparkTestimonials";
-import { MySamparkFAQ } from "@/frontend/components/landing/MySamparkFAQ";
-import { MySamparkFinalCTA } from "@/frontend/components/landing/MySamparkFinalCTA";
-import { MySamparkFooter } from "@/frontend/components/landing/MySamparkFooter";
+
+// Code-split below-the-fold heavy modules to maximize LCP and minimize initial bundle
+const MySamparkEverythingItDoes = dynamic(
+  () => import("@/frontend/components/landing/MySamparkEverythingItDoes").then((mod) => mod.MySamparkEverythingItDoes)
+);
+const MySamparkComparison = dynamic(
+  () => import("@/frontend/components/landing/MySamparkComparison").then((mod) => mod.MySamparkComparison)
+);
+const MySamparkFourSteps = dynamic(
+  () => import("@/frontend/components/landing/MySamparkFourSteps").then((mod) => mod.MySamparkFourSteps)
+);
+const MySamparkProofGrid = dynamic(
+  () => import("@/frontend/components/landing/MySamparkProofGrid").then((mod) => mod.MySamparkProofGrid)
+);
+const MySamparkTestimonials = dynamic(
+  () => import("@/frontend/components/landing/MySamparkTestimonials").then((mod) => mod.MySamparkTestimonials)
+);
+const MySamparkFAQ = dynamic(
+  () => import("@/frontend/components/landing/MySamparkFAQ").then((mod) => mod.MySamparkFAQ)
+);
+const MySamparkFinalCTA = dynamic(
+  () => import("@/frontend/components/landing/MySamparkFinalCTA").then((mod) => mod.MySamparkFinalCTA)
+);
+const MySamparkFooter = dynamic(
+  () => import("@/frontend/components/landing/MySamparkFooter").then((mod) => mod.MySamparkFooter)
+);
 
 export default function LandingPage() {
   return (
@@ -28,35 +47,35 @@ export default function LandingPage() {
         {/* 3. Bi-Directional Sliding Cards Suite */}
         <SlidingCardsMarquee />
 
-        {/* 4. Omnichannel Logo Marquee */}
+        {/* 5. Omnichannel Logo Marquee */}
         <MySamparkMarquee />
 
-        {/* 5. Editorial Problem -> Solution Highlight Pills */}
+        {/* 6. Editorial Problem -> Solution Highlight Pills */}
         <MySamparkProblem />
 
-        {/* 6. Sequential 7-Story "EVERYTHING IT DOES" Showcase */}
+        {/* 7. Sequential 7-Story "EVERYTHING IT DOES" Showcase */}
         <MySamparkEverythingItDoes />
 
-        {/* 7. Strategic Comparison Table */}
+        {/* 8. Strategic Comparison Table */}
         <MySamparkComparison />
 
-        {/* 8. Four Steps from Comment to Customer */}
+        {/* 9. Four Steps from Comment to Customer */}
         <MySamparkFourSteps />
 
-        {/* 9. Real Questions, Real Answers, Real Sales Proof Grid */}
+        {/* 10. Real Questions, Real Answers, Real Sales Proof Grid */}
         <MySamparkProofGrid />
 
-        {/* 10. Reviews & Testimonial Grid */}
+        {/* 11. Reviews & Testimonial Grid */}
         <MySamparkTestimonials />
 
-        {/* 11. FAQ Accordion Grid */}
+        {/* 12. FAQ Accordion Grid */}
         <MySamparkFAQ />
 
-        {/* 12. Final High-Converting CTA */}
+        {/* 13. Final High-Converting CTA */}
         <MySamparkFinalCTA />
       </main>
 
-      {/* 13. Editorial Footer */}
+      {/* 14. Editorial Footer */}
       <MySamparkFooter />
     </div>
   );

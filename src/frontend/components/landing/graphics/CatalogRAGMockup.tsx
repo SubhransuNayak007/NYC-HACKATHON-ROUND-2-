@@ -280,6 +280,8 @@ export function CatalogRAGMockup({ className = "" }: CatalogRAGMockupProps) {
                   <img
                     src={prod.image}
                     alt={prod.name}
+                    width={48}
+                    height={48}
                     loading="lazy"
                     decoding="async"
                     className="w-12 h-12 rounded-lg object-cover border border-black/10 shrink-0"
@@ -311,6 +313,8 @@ export function CatalogRAGMockup({ className = "" }: CatalogRAGMockupProps) {
                 <img
                   src={activeProduct.image}
                   alt={activeProduct.name}
+                  width={80}
+                  height={80}
                   loading="lazy"
                   decoding="async"
                   className="w-20 h-20 rounded-xl object-cover border border-black/10 shadow-xs shrink-0"

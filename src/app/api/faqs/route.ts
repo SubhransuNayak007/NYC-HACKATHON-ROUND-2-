@@ -6,7 +6,9 @@ import { sanitize, checkBodySize, safeError } from '@/backend/security';
 export async function GET() {
   try {
     const db = await getDB();
-    return NextResponse.json(db.faqs || []);
+    return NextResponse.json(db.faqs || [], {
+      headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=120" },
+    });
   } catch (err) {
     return safeError(err, "Failed to fetch FAQs");
   }

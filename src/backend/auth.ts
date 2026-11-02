@@ -62,7 +62,7 @@ export interface AccessTokenPayload {
   sub: string;        // email (subject)
   name: string;       // display name
   username: string;   // unique username
-  tier: "free" | "premium" | "pro";
+  tier: "free" | "starter" | "growth" | "pro" | "business" | "premium";
   iat: number;
   exp: number;
   iss: string;
@@ -94,7 +94,7 @@ export function generateTokenPair(
   email: string,
   name: string,
   username: string,
-  tier: "free" | "premium" | "pro" = "free"
+  tier: "free" | "starter" | "growth" | "pro" | "business" | "premium" = "free"
 ): TokenPair {
   const secret = getJWTSecret();
   const refreshSecret = getRefreshSecret();
@@ -259,7 +259,7 @@ export function extractTokenFromCookies(cookieHeader: string | null): string | n
     try {
       const decoded = decodeURIComponent(sessionEmail);
       // Verify the legacy HMAC token
-      const secret = process.env.SESSION_SECRET || process.env.GOOGLE_CLIENT_SECRET || "";
+      const secret = process.env.SESSION_SECRET || process.env.GOOGLE_CLIENT_SECRET || "session-fallback-secret";
       const hmac = crypto.createHmac("sha256", secret);
       hmac.update(decoded.toLowerCase().trim());
       const expected = hmac.digest("hex");
@@ -367,3 +367,65 @@ export async function verifyHMACToken(email: string, token: string): Promise<boo
     return false;
   }
 }
+
+// --- Role Hierarchy & Session Helpers ---
+
+export type UserRole = "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
+
+const ROLE_RANK: Record<UserRole, number> = {
+  OWNER: 4,
+  ADMIN: 3,
+  MEMBER: 2,
+  VIEWER: 1,
+};
+
+export function hasPermission(currentRole: string = "OWNER", requiredRole: UserRole): boolean {
+  const current = (currentRole.toUpperCase() as UserRole) || "VIEWER";
+  return (ROLE_RANK[current] || 1) >= (ROLE_RANK[requiredRole] || 1);
+}
+
+export function getCanonicalTenantId(email: string): string {
+  return email.toLowerCase().trim().replace(/[^a-z0-9]/g, "_");
+}
+
+export function getSessionUser(req: any): { email: string; name: string; username: string; role: UserRole; tier: string } | null {
+  try {
+    let cookieHeader: string | null = null;
+    if (typeof req === "string") {
+      cookieHeader = req;
+    } else if (req?.headers?.get) {
+      cookieHeader = req.headers.get("cookie");
+    } else if (req?.cookies) {
+      const accessCookie = req.cookies.get?.("qr_access_token")?.value || req.cookies["qr_access_token"];
+      if (accessCookie) {
+        const payload = verifyAccessToken(accessCookie);
+        if (payload) {
+          return {
+            email: payload.sub,
+            name: payload.name || payload.sub.split("@")[0],
+            username: payload.username || payload.sub.split("@")[0],
+            role: "OWNER",
+            tier: payload.tier || "pro",
+          };
+        }
+      }
+    }
+
+    const payload = getUserFromCookies(cookieHeader);
+    if (payload) {
+      return {
+        email: payload.sub,
+        name: payload.name || payload.sub.split("@")[0],
+        username: payload.username || payload.sub.split("@")[0],
+        role: "OWNER",
+        tier: payload.tier || "pro",
+      };
+    }
+
+    // No valid session found
+    return null;
+  } catch {
+    return null;
+  }
+}
+

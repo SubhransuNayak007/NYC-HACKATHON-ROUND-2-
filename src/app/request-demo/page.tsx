@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Clock, Video, Calendar as CalendarIcon, CheckCircle2, ArrowRight } from "lucide-react";
-import { MySamparkHeader } from "@/frontend/components/landing/MySamparkHeader";
-import { MySamparkFooter } from "@/frontend/components/landing/MySamparkFooter";
+import { Navbar } from "@/frontend/components/landing/Navbar";
+import { Footer } from "@/frontend/components/landing/Footer";
 
 const TIME_SLOTS = [
   "10:00 AM",
@@ -62,7 +62,7 @@ export default function RequestDemoPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-[#161616] font-sans">
-      <MySamparkHeader />
+      <Navbar />
 
       <main className="flex-1 pt-32 pb-24">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -215,7 +215,7 @@ export default function RequestDemoPage() {
         </div>
       </main>
 
-      <MySamparkFooter />
+      <Footer />
     </div>
   );
 }

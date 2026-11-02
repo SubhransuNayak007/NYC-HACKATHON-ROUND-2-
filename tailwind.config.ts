@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: ['selector', '[data-theme="dark"]'],
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,10 +11,11 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"DM Sans"', '"Inter"', 'system-ui', 'sans-serif'],
-        display: ['"Space Grotesk"', '"DM Sans"', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', '"SF Mono"', 'monospace'],
-        brand: ['"Outfit"', '"DM Sans"', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', '"Plus Jakarta Sans"', '"Inter"', 'system-ui', 'sans-serif'],
+        display: ['var(--font-sans)', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        anton: ['var(--font-anton)', '"Anton"', 'Impact', 'sans-serif'],
+        mono: ['var(--font-mono)', '"JetBrains Mono"', '"SF Mono"', 'monospace'],
+        brand: ['var(--font-sans)', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
       },
       colors: {
         // Navy core

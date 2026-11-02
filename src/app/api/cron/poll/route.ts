@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { pollAndReply } from "@/backend/scheduler";
 import { runDiscoveryIfNeeded, writeHeartbeat } from "@/backend/cron_manager";
 import { syncQuotaLedger, getQuotaRemaining } from "@/backend/youtube";
+import { getVideosReadyToSync, syncVideoComments, recordSyncFailure } from "@/backend/youtube-sync";
+import { processNewCommentsForVideo } from "@/backend/youtube-automation-runtime";
+import { getDB } from "@/database/db";
 
 /**
  * Cron-triggered endpoint - the single entry point for 24/7 operation.
@@ -33,29 +36,67 @@ import { syncQuotaLedger, getQuotaRemaining } from "@/backend/youtube";
  */
 export async function GET(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const urlToken = req.nextUrl.searchParams.get("token");
-    const authHeader = req.headers.get("authorization");
-    const bearerToken = authHeader?.startsWith("Bearer ")
-      ? authHeader.slice(7)
-      : null;
+  const urlToken = req.nextUrl.searchParams.get("token");
+  const authHeader = req.headers.get("authorization");
+  const bearerToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : null;
 
+  // Strict Cron authentication: In production, CRON_SECRET is strictly required
+  if (cronSecret) {
     if (urlToken !== cronSecret && bearerToken !== cronSecret) {
       return NextResponse.json(
-        { error: "Unauthorized: invalid cron token" },
+        { error: "Unauthorized: invalid or missing cron token" },
         { status: 401 }
       );
     }
+  } else if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { error: "Unauthorized: CRON_SECRET environment variable is required in production" },
+      { status: 500 }
+    );
   }
 
   const startTime = Date.now();
-  const selfMode = req.nextUrl.searchParams.get("self") === "true";
 
   // Hydrate the persistent quota ledger (cold-start safe)
   await syncQuotaLedger();
 
-  // 1. Run comment polling and KB-only auto-reply
+  // 1. Run comment polling and KB-only auto-reply (legacy scheduler — kept for backward compat)
   const pollResult = await pollAndReply();
+
+  // 1b. Run durable sync for videos tracked in yt_sync_state collection
+  //     This is the new production path — persists to dedicated MongoDB collections.
+  let durableSyncSummary = { processed: 0, newComments: 0, errors: 0, automationReplies: 0 };
+  try {
+    const db = await getDB();
+    const workspaceId = db.userSession?.email?.toLowerCase().trim();
+    if (workspaceId) {
+      const due = await getVideosReadyToSync(10); // Up to 10 videos per cron tick
+      for (const syncState of due) {
+        const result = await syncVideoComments(
+          workspaceId,
+          syncState.videoId,
+          syncState.channelId,
+          syncState.lastPageToken
+        );
+        durableSyncSummary.processed++;
+        if (result.error) {
+          await recordSyncFailure(workspaceId, syncState.videoId, result.error);
+          durableSyncSummary.errors++;
+        } else {
+          durableSyncSummary.newComments += result.newComments;
+          // Run automation runtime against newly ingested comments
+          if (result.newComments > 0) {
+            const runtimeResult = await processNewCommentsForVideo(workspaceId, syncState.videoId);
+            durableSyncSummary.automationReplies += runtimeResult.replied;
+          }
+        }
+      }
+    }
+  } catch (syncErr) {
+    console.error("[Cron] Durable sync error:", syncErr);
+  }
 
   // 2. Run video discovery if due (every 30 minutes)
   const discovery = await runDiscoveryIfNeeded();
@@ -64,7 +105,7 @@ export async function GET(req: NextRequest) {
   await writeHeartbeat();
 
   const response = {
-    source: selfMode ? "self-triggered" : "cron",
+    source: "cron",
     timestamp: new Date().toISOString(),
     durationMs: Date.now() - startTime,
     polling: {
@@ -75,6 +116,7 @@ export async function GET(req: NextRequest) {
       ragMatched: pollResult.summary.ragMatched,
       quotaError: pollResult.summary.quotaError,
     },
+    durableSync: durableSyncSummary,
     discovery: {
       ran: discovery.ran,
       ...(discovery.summary
@@ -88,48 +130,11 @@ export async function GET(req: NextRequest) {
       used: await syncQuotaLedger(),
       remaining: getQuotaRemaining(),
     },
-    nextScheduled: selfMode ? "~30 seconds (self-triggered chain)" : null,
+    nextScheduled: "Managed by Cron runner (Vercel / external runner)",
   };
 
-  // 4. Self-triggering: chain the next invocation after 30 seconds
-  //    Uses waitUntil when available (Vercel), otherwise fetch-and-forget
-  if (selfMode) {
-    const host = req.headers.get("host") || "localhost:3000";
-    const protocol = host.includes("localhost") ? "http" : "https";
-    const nextUrl = `${protocol}://${host}/api/cron/poll?self=true${
-      cronSecret ? `&token=${cronSecret}` : ""
-    }`;
-
-    const scheduleNext = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 30_000));
-      try {
-        const res = await fetch(nextUrl, { signal: AbortSignal.timeout(25_000) });
-        const text = await res.text();
-        console.log(`[SelfCron] Chained poll result (${res.status}): ${text.slice(0, 100)}`);
-      } catch (err: any) {
-        console.error(`[SelfCron] Chained poll failed: ${err.message}`);
-        // Retry once after 10 seconds on failure
-        try {
-          await new Promise((resolve) => setTimeout(resolve, 10_000));
-          await fetch(nextUrl, { signal: AbortSignal.timeout(25_000) });
-        } catch (retryErr: any) {
-          console.error(`[SelfCron] Retry also failed: ${retryErr.message}`);
-        }
-      }
-    };
-
-    // Try to use Vercel's waitUntil if available, otherwise fire-and-forget
-    try {
-      const vercel = globalThis as any;
-      if (typeof vercel.waitUntil === "function") {
-        vercel.waitUntil(scheduleNext());
-      } else {
-        scheduleNext().catch(() => {});
-      }
-    } catch {
-      scheduleNext().catch(() => {});
-    }
-  }
+  // Scheduled execution should be handled by external Cron (Vercel Cron Jobs or cron-job.org)
+  // Recursive in-process self-invocation has been disabled to prevent runaway lambda charges.
 
   return NextResponse.json(response);
 }

@@ -3,22 +3,18 @@
  *  QuickReply — WhatsApp Provider Factory
  *  src/channels/whatsapp/WhatsAppProviderFactory.ts
  *
- *  Resolves the active real WhatsApp channel provider:
- *  1. Meta WhatsApp Cloud API (if configured via env)
- *  2. WhatsApp Web Session Provider (self-hosted real QR linking via Baileys)
+ *  Resolves the official Meta WhatsApp Cloud API Provider.
+ *  Exclusively standardizes on Meta WhatsApp Business Platform (Cloud API).
  * ============================================================
  */
 
 import type { IChannel, ChannelStatus } from "../core/IChannel";
 import { WhatsAppCloudProvider } from "./WhatsAppCloudProvider";
-import { WhatsAppWebSessionProvider } from "./WhatsAppWebSessionProvider";
 
 // Global cache for Next.js hot module reloads & route isolation
 declare global {
   // eslint-disable-next-line no-var
   var __qr_wa_cloud_instance__: WhatsAppCloudProvider | undefined;
-  // eslint-disable-next-line no-var
-  var __qr_wa_web_session_instance__: WhatsAppWebSessionProvider | undefined;
 }
 
 /**
@@ -32,35 +28,14 @@ export function getWhatsAppCloudProvider(): WhatsAppCloudProvider {
 }
 
 /**
- * Get or instantiate the WhatsApp Web Session Provider (Baileys)
+ * Get the active WhatsApp provider (exclusively official WhatsApp Cloud API)
  */
-export function getWhatsAppWebSessionProvider(): WhatsAppWebSessionProvider {
-  if (!globalThis.__qr_wa_web_session_instance__) {
-    globalThis.__qr_wa_web_session_instance__ = new WhatsAppWebSessionProvider();
-  }
-  return globalThis.__qr_wa_web_session_instance__;
+export function getWhatsAppProvider(): WhatsAppCloudProvider {
+  return getWhatsAppCloudProvider();
 }
 
 /**
- * Get the active WhatsApp provider.
- * Priority:
- * 1. Cloud API if credentials are set in env
- * 2. WebSession Provider for self-hosted QR login
- */
-export function getWhatsAppProvider(): WhatsAppWebSessionProvider | WhatsAppCloudProvider {
-  const hasCloudCreds =
-    !!process.env.WHATSAPP_PHONE_NUMBER_ID &&
-    !!process.env.WHATSAPP_ACCESS_TOKEN;
-
-  if (hasCloudCreds) {
-    return getWhatsAppCloudProvider();
-  }
-
-  return getWhatsAppWebSessionProvider();
-}
-
-/**
- * Get overall connection status across available providers
+ * Get overall connection status for Meta Cloud API
  */
 export function getWhatsAppConnectionStatus(): ChannelStatus {
   const provider = getWhatsAppProvider();
@@ -68,11 +43,10 @@ export function getWhatsAppConnectionStatus(): ChannelStatus {
 }
 
 /**
- * Force reset all provider instances
+ * Force reset WhatsApp provider instance
  */
 export function resetWhatsAppProviders(): void {
   globalThis.__qr_wa_cloud_instance__ = undefined;
-  globalThis.__qr_wa_web_session_instance__ = undefined;
 }
 
 export type { IChannel, ChannelStatus };

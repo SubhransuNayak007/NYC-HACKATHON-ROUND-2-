@@ -184,12 +184,12 @@ export default function AnalyticsCharts() {
   return (
     <div className="space-y-6">
       {/* Tab Navigation */}
-      <div className="flex items-center gap-1 p-1 rounded-2xl bg-surface-100/80 border border-surface-200/60 w-fit">
+      <div className="flex items-center gap-1 p-1 rounded-2xl bg-surface-100/80 border border-surface-200/60 w-full sm:w-fit overflow-x-auto no-scrollbar">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 focus-ring
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 focus-ring whitespace-nowrap shrink-0
               ${activeTab === tab.id
                 ? "bg-surface-0 text-navy-600 shadow-sm"
                 : "text-ink-400 hover:text-ink-700"

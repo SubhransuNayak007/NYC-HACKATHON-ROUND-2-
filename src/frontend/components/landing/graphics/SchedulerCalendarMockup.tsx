@@ -129,7 +129,7 @@ const SCHEDULE_DAYS: ScheduledPost[] = [
     date: "AUG 22",
     time: "11:00 AM",
     channel: "facebook",
-    title: "Weekend Weekend Lookbook Album",
+    title: "Weekend Lookbook Album",
     image: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&auto=format&fit=crop&q=80",
     badge: "Catalog Album",
     status: "scheduled",
@@ -238,6 +238,8 @@ export function SchedulerCalendarMockup({ className = "" }: SchedulerCalendarMoc
                 <img
                   src={post.image}
                   alt={post.title}
+                  width={180}
+                  height={72}
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover"
@@ -322,6 +324,8 @@ export function SchedulerCalendarMockup({ className = "" }: SchedulerCalendarMoc
             <img
               src={activePost.image}
               alt={activePost.title}
+              width={240}
+              height={112}
               loading="lazy"
               decoding="async"
               className="w-full h-28 object-cover rounded-xl border border-black/10 shadow-xs"

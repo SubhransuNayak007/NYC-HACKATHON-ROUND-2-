@@ -3,16 +3,11 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Users,
   Award,
   Sparkles,
-  TrendingUp,
   Copy,
   Check,
-  ArrowUpRight,
   Plus,
-  DollarSign,
-  Share2,
 } from "lucide-react";
 
 interface PartnerLeaderboardMockupProps {
@@ -24,7 +19,6 @@ interface CreatorPartner {
   rank: number;
   name: string;
   handle: string;
-  avatar: string;
   tier: string;
   tierColor: string;
   code: string;
@@ -34,18 +28,21 @@ interface CreatorPartner {
   gmv: number;
   commissionPaid: number;
   status: "paid" | "processing";
+  initials: string;
+  accentBg: string;
 }
 
 const CREATORS: CreatorPartner[] = [
   {
     id: "creator-1",
     rank: 1,
-    name: "Riya Sharma",
-    handle: "@riyastyle",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80",
+    name: "Alex Rivera",
+    handle: "@alexcreates",
+    initials: "AR",
+    accentBg: "bg-blue-600",
     tier: "Tier-1 Elite Partner",
-    tierColor: "bg-amber-100 text-amber-800 border-amber-300",
-    code: "RIYA20",
+    tierColor: "bg-blue-100 text-blue-800 border-blue-300",
+    code: "ALEX20",
     discount: "20% OFF",
     salesCount: 214,
     conversionRate: "19.8%",
@@ -56,12 +53,13 @@ const CREATORS: CreatorPartner[] = [
   {
     id: "creator-2",
     rank: 2,
-    name: "Aman Malhotra",
-    handle: "@amansneaks",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80",
+    name: "Jordan Lee",
+    handle: "@jordancommerce",
+    initials: "JL",
+    accentBg: "bg-purple-600",
     tier: "Ambassador",
     tierColor: "bg-purple-100 text-purple-800 border-purple-300",
-    code: "AMAN15",
+    code: "JORDAN15",
     discount: "15% OFF",
     salesCount: 148,
     conversionRate: "16.4%",
@@ -72,12 +70,13 @@ const CREATORS: CreatorPartner[] = [
   {
     id: "creator-3",
     rank: 3,
-    name: "Priya Sundaram",
-    handle: "@priyacurator",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80",
+    name: "Taylor Kim",
+    handle: "@taylorcurates",
+    initials: "TK",
+    accentBg: "bg-emerald-600",
     tier: "Pro Creator",
-    tierColor: "bg-blue-100 text-blue-800 border-blue-300",
-    code: "PRIYA10",
+    tierColor: "bg-emerald-100 text-emerald-800 border-emerald-300",
+    code: "TAYLOR10",
     discount: "10% OFF",
     salesCount: 96,
     conversionRate: "14.2%",
@@ -88,12 +87,13 @@ const CREATORS: CreatorPartner[] = [
   {
     id: "creator-4",
     rank: 4,
-    name: "Vikram Sengupta",
-    handle: "@vikramfits",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80",
+    name: "Morgan Brooks",
+    handle: "@morganfits",
+    initials: "MB",
+    accentBg: "bg-amber-600",
     tier: "Pro Creator",
-    tierColor: "bg-blue-100 text-blue-800 border-blue-300",
-    code: "VIKRAM10",
+    tierColor: "bg-amber-100 text-amber-800 border-amber-300",
+    code: "MORGAN10",
     discount: "10% OFF",
     salesCount: 72,
     conversionRate: "12.8%",
@@ -103,11 +103,29 @@ const CREATORS: CreatorPartner[] = [
   },
 ];
 
+const SESSION_STORAGE_KEY = "quickreply_partner_leaderboard";
+
 export function PartnerLeaderboardMockup({ className = "" }: PartnerLeaderboardMockupProps) {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [creatorList, setCreatorList] = useState<CreatorPartner[]>(CREATORS);
   const [newCreatorName, setNewCreatorName] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+
+  // Hydrate from sessionStorage on client mount
+  React.useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(SESSION_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCreatorList(parsed);
+        }
+      }
+    } catch {
+      // ignore in restricted environments
+    }
+  }, []);
 
   const handleCopy = (code: string) => {
     setCopiedCode(code);
@@ -116,16 +134,39 @@ export function PartnerLeaderboardMockup({ className = "" }: PartnerLeaderboardM
 
   const handleAddCreator = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCreatorName.trim()) return;
+    setFormError(null);
 
     const cleanName = newCreatorName.trim();
-    const code = cleanName.toUpperCase().slice(0, 5) + "15";
+    if (!cleanName) {
+      setFormError("Creator name cannot be empty.");
+      return;
+    }
+    if (cleanName.length > 30) {
+      setFormError("Creator name must be 30 characters or fewer.");
+      return;
+    }
+    if (!/^[a-zA-Z\s.'-]+$/.test(cleanName)) {
+      setFormError("Creator name should only contain letters and spaces.");
+      return;
+    }
+
+    const firstNameOnly = cleanName.split(/\s+/)[0].replace(/[^a-zA-Z]/g, "").toUpperCase();
+    const code = (firstNameOnly.slice(0, 5) || "PARTNER") + "15";
+    const initials =
+      cleanName
+        .split(/\s+/)
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2) || "CR";
+
     const newEntry: CreatorPartner = {
       id: `creator-${Date.now()}`,
-      rank: creatorList.length + 1,
+      rank: 1,
       name: cleanName,
-      handle: `@${cleanName.toLowerCase().replace(/\s+/g, "_")}`,
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80",
+      handle: `@${cleanName.toLowerCase().replace(/[^a-z0-9]/g, "_")}`,
+      initials,
+      accentBg: "bg-indigo-600",
       tier: "New Creator",
       tierColor: "bg-emerald-100 text-emerald-800 border-emerald-300",
       code: code,
@@ -137,7 +178,14 @@ export function PartnerLeaderboardMockup({ className = "" }: PartnerLeaderboardM
       status: "processing",
     };
 
-    setCreatorList([newEntry, ...creatorList]);
+    const updatedList = [newEntry, ...creatorList.map((c, idx) => ({ ...c, rank: idx + 2 }))];
+    setCreatorList(updatedList);
+    try {
+      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(updatedList));
+    } catch {
+      // ignore
+    }
+
     setNewCreatorName("");
     setShowAddForm(false);
   };
@@ -147,7 +195,7 @@ export function PartnerLeaderboardMockup({ className = "" }: PartnerLeaderboardM
       {/* Top Header Bar */}
       <div className="flex items-center justify-between pb-3.5 border-b border-black/5 flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-[#EE7D60] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
             <Award className="w-4 h-4" />
           </div>
           <div>
@@ -165,10 +213,13 @@ export function PartnerLeaderboardMockup({ className = "" }: PartnerLeaderboardM
 
         <button
           type="button"
-          onClick={() => setShowAddForm(!showAddForm)}
+          onClick={() => {
+            setShowAddForm(!showAddForm);
+            setFormError(null);
+          }}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161616] text-white text-xs font-bold hover:bg-black transition-colors cursor-pointer shadow-2xs"
         >
-          <Plus className="w-3.5 h-3.5 text-[#EE7D60]" />
+          <Plus className="w-3.5 h-3.5 text-blue-400" />
           <span>New Partner Link</span>
         </button>
       </div>
@@ -176,27 +227,40 @@ export function PartnerLeaderboardMockup({ className = "" }: PartnerLeaderboardM
       {/* Add Partner Form Dropdown */}
       <AnimatePresence>
         {showAddForm && (
-          <motion.form
+          <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            onSubmit={handleAddCreator}
-            className="mt-3 p-3 bg-[#FAF8F5] rounded-xl border border-black/10 flex items-center gap-2 flex-wrap"
+            className="mt-3 overflow-hidden"
           >
-            <input
-              type="text"
-              value={newCreatorName}
-              onChange={(e) => setNewCreatorName(e.target.value)}
-              placeholder="Creator name (e.g. Natasha Rao)..."
-              className="flex-1 min-w-[180px] px-3 py-1.5 rounded-lg bg-white border border-black/10 text-xs font-medium focus:outline-none focus:border-orange-500"
-            />
-            <button
-              type="submit"
-              className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors"
+            <form
+              onSubmit={handleAddCreator}
+              className="p-3 bg-[#FAF8F5] rounded-xl border border-black/10 flex items-center gap-2 flex-wrap"
             >
-              Generate Coupon Code
-            </button>
-          </motion.form>
+              <input
+                type="text"
+                value={newCreatorName}
+                maxLength={30}
+                onChange={(e) => {
+                  setNewCreatorName(e.target.value);
+                  if (formError) setFormError(null);
+                }}
+                placeholder="Creator name (e.g. Robin Vance)..."
+                className="flex-1 min-w-[180px] px-3 py-1.5 rounded-lg bg-white border border-black/10 text-xs font-medium focus:outline-none focus:border-blue-500"
+              />
+              <button
+                type="submit"
+                className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors cursor-pointer"
+              >
+                Generate Coupon Code
+              </button>
+            </form>
+            {formError && (
+              <div className="mt-1 px-3 text-[11px] font-semibold text-rose-600">
+                {formError}
+              </div>
+            )}
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -207,19 +271,15 @@ export function PartnerLeaderboardMockup({ className = "" }: PartnerLeaderboardM
             key={creator.id}
             className="p-3 rounded-xl bg-[#FAF8F5] border border-black/5 hover:border-black/15 transition-all flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap"
           >
-            {/* Left: Rank, Avatar, Creator Info */}
+            {/* Left: Rank, Abstract Vector Avatar, Creator Info */}
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-6 h-6 rounded-full bg-white border border-black/10 flex items-center justify-center font-black text-xs font-mono text-slate-700 shrink-0 shadow-2xs">
                 #{creator.rank}
               </div>
 
-              <img
-                src={creator.avatar}
-                alt={creator.name}
-                loading="lazy"
-                decoding="async"
-                className="w-10 h-10 rounded-full object-cover border border-black/10 shadow-xs shrink-0"
-              />
+              <div className={`w-10 h-10 rounded-full ${creator.accentBg} text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0 tracking-wider font-mono`}>
+                {creator.initials}
+              </div>
 
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -273,7 +333,7 @@ export function PartnerLeaderboardMockup({ className = "" }: PartnerLeaderboardM
       {/* Bottom Summary Bar */}
       <div className="mt-4 pt-3 border-t border-black/5 flex items-center justify-between text-xs text-slate-600 flex-wrap gap-2">
         <div className="flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-[#EE7D60]" />
+          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
           <span>Automated Payouts via Razorpay / Stripe Connected Accounts</span>
         </div>
         <span className="font-mono text-[11px] font-bold text-emerald-600">

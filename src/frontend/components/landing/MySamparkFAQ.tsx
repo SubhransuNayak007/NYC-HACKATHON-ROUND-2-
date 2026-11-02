@@ -2,106 +2,146 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Minus, Sparkles, HelpCircle } from "lucide-react";
-import { appleFluid, appleSpring, heavyCardSpring } from "@/frontend/lib/physicsMotion";
+import { ChevronDown } from "lucide-react";
 
-const FAQ_ITEMS = [
+export interface FAQItem {
+  q: string;
+  a: string;
+  category: string;
+}
+
+export const FAQ_ITEMS: FAQItem[] = [
   {
+    category: "Product & Trust",
     q: "Why do businesses worldwide trust QuickReply over other auto-reply platforms?",
-    a: "From solo creators to multi-million dollar global brands, merchants choose QuickReply because it couples genuine AI intelligence — trained directly on your live product catalog, pricing tiers, and shipping FAQs — with fair, transparent usage-based pricing that scales with your growth.",
+    a: "From solo boutique owners to scaling e-commerce brands, businesses choose QuickReply because it combines deterministic catalog grounding — ensuring your AI answers strictly from your verified pricing, sizing, and stock — with fair, usage-based credit pricing where manual human replies are 100% free forever.",
   },
   {
-    q: "What is QuickReply and how does it work?",
-    a: "QuickReply is an autonomous AI sales assistant that answers your Instagram, WhatsApp, Facebook, LinkedIn, X, and YouTube comments and DMs in 1.4 seconds. It syncs with your product catalog, provides 1-click checkout links, schedules cross-platform posts, and consolidates all customer conversations into a single unified inbox.",
+    category: "Capabilities",
+    q: "What is QuickReply?",
+    a: "QuickReply answers your Instagram, WhatsApp, and Facebook comments and DMs automatically using your verified product catalog. It also handles multi-platform scheduling, a unified inbox, and custom web chat in one place.",
   },
   {
-    q: "Can the AI answer complex questions like 'will this fit me?' or 'which one is better?'",
-    a: "Yes, absolutely. Because the AI is grounded in your uploaded size charts, material specifications, and product variants, it answers consultative buying questions just like your best in-store sales associate.",
+    category: "Accuracy",
+    q: "Can the AI answer questions like 'will this fit me?' or 'which size is in stock?'",
+    a: "Yes. QuickReply indexes your verified products, dimensions, and sizing charts, so it accurately answers buying questions the way an experienced salesperson who knows the stock would, with zero fabricated prices.",
   },
   {
-    q: "Does it use my real prices and stock levels?",
-    a: "Yes — QuickReply answers strictly from the live catalog you upload or connect via Shopify/WooCommerce/CSV. It never hallucinates prices or quotes out-of-date stock, ensuring 100% pricing accuracy.",
+    category: "Integrations",
+    q: "Does QuickReply quote my real prices and stock levels?",
+    a: "Yes — it answers strictly from the catalog you upload or connect, not from guesses. If an inquiry cannot be matched with 100% certainty, the system abstains or routes to your human inbox rather than inventing details.",
   },
   {
+    category: "Automation",
     q: "What is comment-to-DM automation?",
-    a: "When a potential buyer comments a keyword like 'price', 'link', or 'size' on your post, Reel, or ad, QuickReply instantly posts a public reply for social proof and immediately slides into their DM with the exact product details, size guide, and direct checkout link.",
+    a: "When someone comments a trigger keyword like 'price' or 'link' on your Instagram post or Reel, QuickReply posts a public comment reply and opens a private DM with exact product cards and direct checkout links automatically.",
   },
   {
+    category: "Onboarding",
     q: "How do I get started?",
-    a: "Setup takes under 15 minutes. Sign up for a free account, connect your social channels with 1-click OAuth, and upload your product catalog or website link. Turn on Auto DM and your first automated replies start converting customers immediately.",
+    a: "Sign up, connect your social accounts via official OAuth APIs, and upload your product catalog or website URL. Switch on Auto DM and your first automated reply goes live the same day.",
   },
 ];
 
 export function MySamparkFAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0); // First item open by default
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const toggle = (idx: number) => {
     setOpenIndex(openIndex === idx ? null : idx);
   };
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ_ITEMS.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.a,
+      },
+    })),
+  };
+
   return (
-    <section className="py-24 bg-[#F5F6F0]" id="faq">
+    <section className="py-16 sm:py-24 bg-[#FAF8F5] border-t border-black/5" id="faq">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
       <div className="max-w-[1140px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-[#161616] bg-white border border-black/5 shadow-2xs mb-4">
-            <HelpCircle className="w-3.5 h-3.5 text-[#EE7D60]" />
-            <span>FAQs</span>
-          </div>
-          <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-[#161616] tracking-tight uppercase leading-tight">
-            FREQUENTLY ASKED <br className="hidden sm:inline" />
-            <span className="inline-flex items-center px-4 py-1 rounded-full bg-[#EE7D60] text-white">
+        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+          <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold text-neutral-700 bg-white border border-black/10 shadow-xs mb-4">
+            FAQs
+          </span>
+          <h2 className="font-anton text-4xl sm:text-5xl md:text-6xl text-[#161615] leading-[0.96]">
+            FREQUENTLY ASKED <br />
+            <span className="inline-block -rotate-2 rounded-[20px] bg-[#EE7D60] px-5 py-0.5 text-white shadow-xs mt-2">
               QUESTIONS.
             </span>
           </h2>
-          <p className="mt-3 text-sm text-slate-600 font-medium">
-            The short answers. Everything you need to know to get started.
+          <p className="mt-4 text-xs sm:text-sm text-neutral-600 font-medium max-w-md mx-auto leading-relaxed">
+            Clear answers on catalog grounding, official social APIs, and credit pricing.
           </p>
         </div>
 
-        {/* 2-Column FAQ Grid with Spring Physics Accordion */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        {/* Responsive Grid: 1 col on mobile, 2 cols on tablet/desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-start">
           {FAQ_ITEMS.map((item, idx) => {
             const isOpen = openIndex === idx;
+            const contentId = `faq-answer-${idx}`;
+
             return (
               <div
                 key={idx}
-                className={`rounded-[28px] bg-white border transition-all duration-200 p-7 sm:p-8 cursor-pointer select-none ${
-                  isOpen
-                    ? "border-black/15 shadow-md ring-2 ring-black/5"
-                    : "border-black/5 shadow-xs hover:shadow-sm"
-                }`}
+                className="rounded-[24px] sm:rounded-[28px] bg-white border border-black/10 p-5 sm:p-7 shadow-xs cursor-pointer select-none transition-all hover:shadow-md"
                 onClick={() => toggle(idx)}
+                role="button"
+                tabIndex={0}
+                aria-expanded={isOpen}
+                aria-controls={contentId}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    toggle(idx);
+                  }
+                }}
               >
-                <div className="flex items-start justify-between gap-4">
-                  <h3 className="font-extrabold text-base sm:text-lg text-[#161616] leading-snug">
-                    {item.q}
-                  </h3>
-                  {/* Plus / Minus Animated Roundel */}
-                  <motion.div
-                    animate={{ rotate: isOpen ? 180 : 0 }}
-                    transition={appleSpring}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors shadow-2xs ${
-                      isOpen ? "bg-[#EE7D60] text-white" : "bg-zinc-100 text-[#161616] group-hover:bg-zinc-200"
+                <div className="flex items-start justify-between gap-3 sm:gap-4">
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#EE7D60] font-mono block">
+                      {item.category}
+                    </span>
+                    <h3 className="font-bold text-sm sm:text-base text-[#161615] leading-snug">
+                      {item.q}
+                    </h3>
+                  </div>
+
+                  <div
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 mt-1 ${
+                      isOpen
+                        ? "bg-[#EE7D60] text-white rotate-180 shadow-xs"
+                        : "bg-neutral-100 text-neutral-600 rotate-0"
                     }`}
                   >
-                    {isOpen ? <Minus className="w-4 h-4 stroke-[2.5]" /> : <Plus className="w-4 h-4 stroke-[2.5]" />}
-                  </motion.div>
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
                 </div>
 
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.div
-                      key="content"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={appleFluid}
+                      id={contentId}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
                       className="overflow-hidden"
                     >
-                      <p className="mt-4 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-black/5 pt-4 font-normal">
+                      <div className="mt-4 pt-3 border-t border-black/5 text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal">
                         {item.a}
-                      </p>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -114,3 +154,4 @@ export function MySamparkFAQ() {
   );
 }
 
+export default MySamparkFAQ;

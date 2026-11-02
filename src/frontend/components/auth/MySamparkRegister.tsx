@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   Circle,
 } from "lucide-react";
-import { ThreeYetiMascot, MascotMode } from "@/frontend/components/auth/ThreeYetiMascot";
+import { UltraYeti3D, MascotMode } from "@/frontend/components/auth/UltraYeti3D";
 
 export function MySamparkRegister() {
   const router = useRouter();
@@ -107,13 +107,9 @@ export function MySamparkRegister() {
       {/* ── Main Split Floating Register Card ── */}
       <div className="relative z-10 w-full max-w-[1040px] bg-white rounded-[32px] sm:rounded-[36px] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.14)] border border-white/90 p-3.5 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">
         
-        {/* ── LEFT COLUMN: True 3D Physics Yeti Mascot (Seamless Full-Bleed) ── */}
-        <div className="lg:col-span-6 w-full flex min-h-[460px] sm:min-h-[540px] lg:min-h-[620px]">
-          <ThreeYetiMascot
-            mode={mascotMode}
-            charCount={name.length + email.length + password.length}
-            typingProgress={Math.min(1, (name.length + email.length) / 32)}
-          />
+        {/* ── LEFT COLUMN: True 3D Ultra Yeti Mascot ── */}
+        <div className="lg:col-span-6 w-full flex">
+          <UltraYeti3D mode={mascotMode} />
         </div>
 
         {/* ── RIGHT COLUMN: Registration Form ── */}
@@ -123,7 +119,7 @@ export function MySamparkRegister() {
 
           {/* Heading & Subtitle */}
           <div className="text-center mb-5">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight uppercase">
+            <h1 className="text-2xl sm:text-3xl font-black text-[#111827] tracking-tight uppercase">
               CREATE AN ACCOUNT
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 font-medium">
@@ -133,7 +129,7 @@ export function MySamparkRegister() {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-semibold flex items-center gap-2.5 animate-shake">
+            <div className="mb-4 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-semibold flex items-center gap-2.5 animate-shake">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
               <span>{error}</span>
             </div>
@@ -154,7 +150,7 @@ export function MySamparkRegister() {
                 onChange={(e) => setName(e.target.value)}
                 onFocus={() => setMascotMode("email_focused")}
                 onBlur={() => setMascotMode("idle")}
-                className="w-full h-11 px-4 rounded-2xl bg-slate-50 border-2 border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#EE7D60]/30 focus:border-[#EE7D60] transition-all shadow-2xs"
+                className="w-full h-11 px-4 rounded-2xl bg-slate-50 border border-slate-300 text-sm text-[#111827] placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#EE7D60]/30 focus:border-[#EE7D60] transition-all shadow-2xs font-medium"
               />
             </div>
 
@@ -171,7 +167,7 @@ export function MySamparkRegister() {
                 onChange={(e) => setEmail(e.target.value)}
                 onFocus={() => setMascotMode("email_focused")}
                 onBlur={() => setMascotMode("idle")}
-                className="w-full h-11 px-4 rounded-2xl bg-slate-50 border-2 border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#EE7D60]/30 focus:border-[#EE7D60] transition-all shadow-2xs"
+                className="w-full h-11 px-4 rounded-2xl bg-slate-50 border border-slate-300 text-sm text-[#111827] placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#EE7D60]/30 focus:border-[#EE7D60] transition-all shadow-2xs font-medium"
               />
             </div>
 
@@ -189,7 +185,7 @@ export function MySamparkRegister() {
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={() => setMascotMode(showPassword ? "password_peeking" : "password_focused")}
                   onBlur={() => setMascotMode("idle")}
-                  className="w-full h-11 pl-4 pr-11 rounded-2xl bg-slate-50 border-2 border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#EE7D60]/30 focus:border-[#EE7D60] transition-all shadow-2xs"
+                  className="w-full h-11 pl-4 pr-11 rounded-2xl bg-slate-50 border border-slate-300 text-sm text-[#111827] placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#EE7D60]/30 focus:border-[#EE7D60] transition-all shadow-2xs font-medium"
                 />
                 <button
                   type="button"

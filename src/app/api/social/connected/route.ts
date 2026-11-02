@@ -4,7 +4,9 @@ import { getDB } from '@/database/db';
 
 export async function GET(req: NextRequest) {
   try {
-    const db = await getDB();
+    const cookieStore = await cookies();
+    const sessionEmail = cookieStore.get('session_email')?.value || process.env.OWNER_EMAIL || "subhransu.nayak.418@gmail.com";
+    const db = await getDB(sessionEmail);
     
     // Strip sensitive tokens
     const accounts = (db.socialAccounts || []).map((account: any) => {

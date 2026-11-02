@@ -15,8 +15,8 @@ import {
   Headphones,
   ArrowRight,
 } from "lucide-react";
-import { MySamparkHeader } from "@/frontend/components/landing/MySamparkHeader";
-import { MySamparkFooter } from "@/frontend/components/landing/MySamparkFooter";
+import { Navbar } from "@/frontend/components/landing/Navbar";
+import { Footer } from "@/frontend/components/landing/Footer";
 
 type InquiryType = "general" | "enterprise" | "support" | "partner";
 
@@ -27,16 +27,47 @@ export default function ContactPage() {
   const [phone, setPhone] = useState("");
   const [brand, setBrand] = useState("");
   const [message, setMessage] = useState("");
+  const [websiteHp, setWebsiteHp] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          inquiryType,
+          name,
+          email,
+          phone,
+          brand,
+          message,
+          website_hp: websiteHp,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to submit inquiry. Please try again.");
+      }
+
+      setSubmitted(true);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F6F0] text-[#161616] font-sans">
-      <MySamparkHeader />
+      <Navbar />
 
       <main className="flex-1 pt-40 sm:pt-48 pb-24">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -82,10 +113,10 @@ export default function ContactPage() {
                   <div>
                     <div className="font-bold text-xs text-[#161616]">Email Support</div>
                     <a
-                      href="mailto:subhransu.nayak.418@gmail.com"
+                      href="mailto:support@quickreply.io"
                       className="text-xs text-slate-500 hover:text-[#EE7D60] transition-colors"
                     >
-                      subhransu.nayak.418@gmail.com
+                      support@quickreply.io
                     </a>
                   </div>
                 </div>
@@ -96,14 +127,22 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="font-bold text-xs text-[#161616]">WhatsApp VIP Hotline</div>
-                    <a
-                      href="https://wa.me/918004929921"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-xs text-slate-500 hover:text-emerald-600 transition-colors"
-                    >
-                      +91 (800) 492-9921 (Direct Chat)
-                    </a>
+                    <div className="space-y-0.5">
+                      <a
+                        href="tel:18004929921"
+                        className="block text-xs text-slate-500 hover:text-emerald-600 transition-colors"
+                      >
+                        1800-492-9921 (Toll-Free)
+                      </a>
+                      <a
+                        href="https://wa.me/919845012890"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block text-xs text-slate-500 hover:text-emerald-600 transition-colors"
+                      >
+                        +91 98450 12890 (Direct WhatsApp)
+                      </a>
+                    </div>
                   </div>
                 </div>
 
@@ -253,12 +292,40 @@ export default function ContactPage() {
                     />
                   </div>
 
+                  {/* Honeypot field for bot detection */}
+                  <div className="hidden" aria-hidden="true">
+                    <input
+                      type="text"
+                      name="website_hp"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={websiteHp}
+                      onChange={(e) => setWebsiteHp(e.target.value)}
+                    />
+                  </div>
+
+                  {errorMessage && (
+                    <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+                      {errorMessage}
+                    </div>
+                  )}
+
                   <button
                     type="submit"
-                    className="w-full h-12 rounded-full bg-[#161616] hover:bg-black text-white text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                    disabled={isSubmitting}
+                    className="w-full h-12 rounded-full bg-[#161616] hover:bg-black disabled:opacity-60 text-white text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:cursor-not-allowed"
                   >
-                    <span>Submit Inquiry</span>
-                    <Send className="w-3.5 h-3.5" />
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Sending Inquiry...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Submit Inquiry</span>
+                        <Send className="w-3.5 h-3.5" />
+                      </>
+                    )}
                   </button>
                 </form>
               )}
@@ -267,7 +334,7 @@ export default function ContactPage() {
         </div>
       </main>
 
-      <MySamparkFooter />
+      <Footer />
     </div>
   );
 }

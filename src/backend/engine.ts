@@ -33,6 +33,8 @@ import type { FAQEntry } from "@/backend/rag";
 import { processEnhancedRAGReply } from "@/backend/rag";
 import { classifyIntent, shouldSkipByIntent } from "@/backend/intent_classifier";
 import { emitCommentEvent } from "@/backend/events";
+import { directDeductCredits, calculateCreditCost } from "@/backend/credits/ledger";
+import { generateSocialReply } from "@/backend/ai/router";
 
 export interface IncomingComment {
   commentId: string;
@@ -340,6 +342,32 @@ export async function processIncomingComment(
     };
   }
 
+  // Credit balance check and atomic deduction
+  const creditCost = calculateCreditCost(replySource);
+  const tenantEmail = activeUser.email || "default";
+  if (creditCost > 0) {
+    const deductRes = await directDeductCredits({
+      tenantId: tenantEmail,
+      amount: creditCost,
+      referenceType: replySource === "rag" ? "REPLY_RAG" : "REPLY_AI",
+      referenceId: input.commentId,
+      idempotencyKey: `reply_${input.commentId}_${Date.now().toString().slice(0, 7)}`,
+      metadata: { commentId: input.commentId, channelId: input.channelId },
+    });
+
+    if (!deductRes.success) {
+      stages.push(makeStage("reply", "hold", Date.now() - tReply, { detail: "insufficient credits" }));
+      const holdComment: DBComment = { ...baseComment, status: "review", matchedRuleId: matchedFAQId || "rag", autoReplyText: replyText, confidence, decidedAt: new Date().toISOString() };
+      db.comments.unshift(holdComment);
+      emitCommentEvent({ type: "review", comment: holdComment });
+      return {
+        comment: holdComment,
+        trace: buildTrace(stages, traceId, input, startedAtIso, startedAt, "review", "insufficient credits", holdComment, replyText, replySource, confidence),
+        replied: false, reviewed: true, skipped: false, failed: false, ruleMatched: false, limitHit: true,
+      };
+    }
+  }
+
   const ytResponse = await postCommentReply(input.channelId, input.commentId, replyText);
   if (ytResponse) {
     activeUser.repliesToday++;
@@ -453,6 +481,32 @@ async function handleRuleMatch(
       trace: buildTrace(stages, traceId, input, startedAtIso, nowMs, "limit", "daily limit reached", holdComment, ruleReplyText, "rule"),
       replied: false, reviewed: false, skipped: false, failed: false, ruleMatched: true, limitHit: true,
     };
+  }
+
+  // Credit balance check and atomic deduction for Rule reply
+  const ruleCreditCost = calculateCreditCost("rule");
+  const tenantEmail = activeUser.email || "default";
+  if (ruleCreditCost > 0) {
+    const deductRes = await directDeductCredits({
+      tenantId: tenantEmail,
+      amount: ruleCreditCost,
+      referenceType: "REPLY_RULE",
+      referenceId: input.commentId,
+      idempotencyKey: `rule_${input.commentId}_${Date.now().toString().slice(0, 7)}`,
+      metadata: { ruleId: rule.id, commentId: input.commentId },
+    });
+
+    if (!deductRes.success) {
+      stages.push(makeStage("rule", "hold", Date.now() - tRule, { detail: "insufficient credits", matchedId: rule.id }));
+      const holdComment: DBComment = { ...baseComment, status: "review", matchedRuleId: rule.id, autoReplyText: ruleReplyText, decidedAt: new Date().toISOString() };
+      db.comments.unshift(holdComment);
+      emitCommentEvent({ type: "review", comment: holdComment });
+      return {
+        comment: holdComment,
+        trace: buildTrace(stages, traceId, input, startedAtIso, nowMs, "review", "insufficient credits", holdComment, ruleReplyText, "rule"),
+        replied: false, reviewed: true, skipped: false, failed: false, ruleMatched: true, limitHit: true,
+      };
+    }
   }
 
   const ytResponse = await postCommentReply(input.channelId, input.commentId, ruleReplyText);

@@ -5,6 +5,7 @@ import { useUIStore } from "@/frontend/store";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap,
+  Sparkles,
   Plus,
   Trash2,
   X,
@@ -23,6 +24,7 @@ import {
   Send,
   Repeat,
 } from "lucide-react";
+import { AIAutomationStudio } from "@/frontend/components/automation/AIAutomationStudio";
 
 const container = {
   hidden: { opacity: 0 },
@@ -71,7 +73,7 @@ export default function AutomationsPage() {
   const triggerRefresh = useUIStore((s) => s.triggerRefresh);
   const refreshTrigger = useUIStore((s) => s.refreshTrigger);
 
-  const [activeTab, setActiveTab] = useState<"chains" | "webhooks" | "followups">("chains");
+  const [activeTab, setActiveTab] = useState<"ai_studio" | "chains" | "webhooks" | "followups">("ai_studio");
   const [chains, setChains] = useState<AutomationChain[]>([]);
   const [webhooks, setWebhooks] = useState<WebhookTrigger[]>([]);
   const [followups, setFollowups] = useState<FollowUpSequence[]>([]);
@@ -239,6 +241,7 @@ export default function AutomationsPage() {
   }
 
   const tabs = [
+    { id: "ai_studio" as const, label: "AI Studio (Natural Language OS)", icon: Sparkles, count: "AI" },
     { id: "chains" as const, label: "Conditional Chains", icon: Zap, count: chains.length },
     { id: "webhooks" as const, label: "Webhook Triggers", icon: Webhook, count: webhooks.length },
     { id: "followups" as const, label: "Follow-up Sequences", icon: Repeat, count: followups.length },
@@ -281,6 +284,9 @@ export default function AutomationsPage() {
           </button>
         ))}
       </motion.div>
+
+      {/* ═══ AI STUDIO TAB ═══ */}
+      {activeTab === "ai_studio" && <AIAutomationStudio />}
 
       {/* ═══ CHAINS TAB ═══ */}
       {activeTab === "chains" && (

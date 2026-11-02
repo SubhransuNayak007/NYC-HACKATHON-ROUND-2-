@@ -253,9 +253,9 @@ export class BusinessMathEngine {
    */
   static computeCommentMetrics(db: DBData, now: Date = new Date()): RealCommentAndSentimentMetrics {
     const rawComments = [
-      ...(db.comments || []).map((c) => ({ id: c.id, text: c.text, status: c.status, author: c.author || (c as any).authorDisplayName || "User" })),
-      ...(db.socialComments || []).map((s) => ({ id: s.id, text: s.text, status: "new", author: (s as any).authorName || (s as any).author || (s as any).authorUsername || "User" })),
-      ...(db.agiLearnedComments || []).map((a) => ({ id: a.id, text: a.text, status: a.replyStatus, author: (a as any).authorName || "User" })),
+      ...(db.comments || []).map((c: any) => ({ id: c.id, text: c.text, status: c.status, author: c.author || c.authorDisplayName || "User" })),
+      ...(db.socialComments || []).map((s: any) => ({ id: s.id, text: s.text, status: "new", author: s.authorName || s.author || s.authorUsername || "User" })),
+      ...(db.agiLearnedComments || []).map((a: any) => ({ id: a.id, text: a.text, status: a.replyStatus, author: a.authorName || "User" })),
     ];
 
     const totalScanned = rawComments.length;

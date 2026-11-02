@@ -49,43 +49,55 @@ export async function GET() {
     const existingIds = new Set((db.socialComments || []).filter(c => c.platform === "linkedin").map(c => c.id));
     const newComments: SocialComment[] = [];
 
-    for (const post of posts.slice(0, 3)) {
-      const postUrn = post.id; // e.g. "urn:li:ugcPost:123"
-      const encodedPostUrn = encodeURIComponent(postUrn);
+    // Concurrently fetch comments across LinkedIn posts with Promise.all
+    const commentBatches = await Promise.all(
+      posts.slice(0, 3).map(async (post) => {
+        try {
+          const postUrn = post.id; // e.g. "urn:li:ugcPost:123"
+          const encodedPostUrn = encodeURIComponent(postUrn);
 
-      // Fetch comments for this post
-      const commRes = await fetch(
-        `${LI_API}/socialActions/${encodedPostUrn}/comments?count=10`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "X-Restli-Protocol-Version": "2.0.0",
-          },
+          const commRes = await fetch(
+            `${LI_API}/socialActions/${encodedPostUrn}/comments?count=10`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "X-Restli-Protocol-Version": "2.0.0",
+              },
+            }
+          );
+          if (!commRes.ok) return [];
+
+          const commData = await commRes.json();
+          const caption = post.specificContent?.["com.linkedin.ugc.ShareContent"]?.shareCommentary?.text || "LinkedIn Post";
+          const items: SocialComment[] = [];
+
+          for (const c of (commData.elements || [])) {
+            const commentId = c.id;
+            if (existingIds.has(commentId)) continue;
+
+            items.push({
+              id: commentId,
+              platform: "linkedin",
+              accountId: acct.id,
+              author: c.commenter?.replace("urn:li:person:", "LI User ") || "LinkedIn User",
+              authorId: c.commenter,
+              text: c.message?.text || "",
+              postId: postUrn,
+              postTitle: caption.slice(0, 80),
+              postUrl: `https://www.linkedin.com/feed/update/${postUrn}`,
+              publishedAt: new Date(c.created?.time || Date.now()).toISOString(),
+              status: "pending",
+            });
+          }
+          return items;
+        } catch {
+          return [];
         }
-      );
-      if (!commRes.ok) continue;
+      })
+    );
 
-      const commData = await commRes.json();
-      const caption = post.specificContent?.["com.linkedin.ugc.ShareContent"]?.shareCommentary?.text || "LinkedIn Post";
-
-      for (const c of (commData.elements || [])) {
-        const commentId = c.id;
-        if (existingIds.has(commentId)) continue;
-
-        newComments.push({
-          id: commentId,
-          platform: "linkedin",
-          accountId: acct.id,
-          author: c.commenter?.replace("urn:li:person:", "LI User ") || "LinkedIn User",
-          authorId: c.commenter,
-          text: c.message?.text || "",
-          postId: postUrn,
-          postTitle: caption.slice(0, 80),
-          postUrl: `https://www.linkedin.com/feed/update/${postUrn}`,
-          publishedAt: new Date(c.created?.time || Date.now()).toISOString(),
-          status: "pending",
-        });
-      }
+    for (const batch of commentBatches) {
+      newComments.push(...batch);
     }
 
     if (newComments.length > 0) {

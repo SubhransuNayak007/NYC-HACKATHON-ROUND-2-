@@ -60,7 +60,7 @@ export function InteractiveYetiMascot({ mode = "idle" }: InteractiveYetiMascotPr
       }
     };
 
-    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
     return () => window.removeEventListener("pointermove", handlePointerMove);
   }, [mode, mouseX, mouseY]);
 

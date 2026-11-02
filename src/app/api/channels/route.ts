@@ -3,7 +3,9 @@ import { getDB, saveDB, logActivity, Channel } from "@/database/db";
 
 export async function GET() {
   const db = await getDB();
-  return NextResponse.json(db.channels);
+  return NextResponse.json(db.channels, {
+    headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" },
+  });
 }
 
 export async function PUT(req: NextRequest) {

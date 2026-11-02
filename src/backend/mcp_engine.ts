@@ -22,7 +22,7 @@ import type {
   WAOrder,
   MCPTool,
 } from "@/database/db";
-import { getWhatsAppWebSessionProvider } from "@/channels/whatsapp/WhatsAppProviderFactory";
+import { getWhatsAppProvider } from "@/channels/whatsapp/WhatsAppProviderFactory";
 import { InstagramChannelAdapter } from "@/channels/instagram/InstagramChannelAdapter";
 import { LinkedInChannelAdapter } from "@/channels/linkedin/LinkedInChannelAdapter";
 
@@ -67,7 +67,7 @@ export class ChannelMCPEngine {
         // ─── 1. WhatsApp Tools ─────────────────────────────────────────
         case "whatsapp_send_message": {
           riskLevel = "medium";
-          const waProvider = getWhatsAppWebSessionProvider();
+          const waProvider = getWhatsAppProvider();
           const to = args.to || ctx.customerPhone;
           const text = args.text;
           if (!to || !text) {
@@ -84,7 +84,7 @@ export class ChannelMCPEngine {
 
         case "whatsapp_get_status": {
           riskLevel = "low";
-          const waProvider = getWhatsAppWebSessionProvider();
+          const waProvider = getWhatsAppProvider();
           data = waProvider.getStatus();
           break;
         }

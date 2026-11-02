@@ -22,6 +22,7 @@
 import {
   getDB,
   saveDB,
+  getAllTenantEmails,
   VideoQueueEntry,
   SystemEvent,
   DBData,
@@ -203,29 +204,22 @@ async function retryFailedReplies(db: DBData): Promise<number> {
 /**
  * Main polling function. Fetches comments and delegates per-comment
  * processing to the engine (src/backend/engine.ts), which auto-replies
- * ONLY to comments that match the knowledge base.
- *
- * Designed to be called from:
- * 1. In-process interval (background scheduler)
- * 2. External cron endpoint (/api/cron/poll)
- * 3. Client-side polling (existing /api/youtube/poll)
+ * Poll and process comments for a specific tenant workspace.
  */
-export async function pollAndReply(): Promise<{
-  success: boolean;
-  summary: PollSummary;
-}> {
-  // a. Hydrate the persistent quota ledger (cold-start safe)
-  await hydrateQuota();
+export async function pollSingleTenant(
+  tenantEmail?: string
+): Promise<{ success: boolean; summary: PollSummary }> {
+  const safeTenant = tenantEmail?.toLowerCase().trim() || "";
+  const lockKey = `poll_${safeTenant || "default"}`;
+  const lockToken = await acquireLock(lockKey, 55_000);
 
-  // b. Acquire a durable lock so only one instance polls at a time
-  const lockToken = await acquireLock("poll", 55_000);
   if (!lockToken) {
-    console.log("[Scheduler] Poll skipped - lock held by another instance");
+    console.log(`[Scheduler] Poll skipped for ${safeTenant || "default"} - lock active`);
     return { success: false, summary: { ...EMPTY_SUMMARY } };
   }
 
   try {
-    const db = await getDB();
+    const db = await getDB(safeTenant);
 
     // Update system status
     if (db.systemStatus) {
@@ -233,10 +227,9 @@ export async function pollAndReply(): Promise<{
       db.systemStatus.youtubeQuotaUsedToday = getQuotaUsedToday();
     }
 
-    // Ensure videoQueue exists
     if (!db.videoQueue) db.videoQueue = [];
 
-    // Migrate any legacy automatedVideos entries on first run
+    // Migrate legacy automatedVideos
     const hasLegacyVideos = db.channels.some(
       (c) => c.automatedVideos && c.automatedVideos.length > 0
     );
@@ -265,26 +258,21 @@ export async function pollAndReply(): Promise<{
       }
     }
 
-    const channels = db.channels;
-
-    if (!channels || channels.length === 0) {
-      console.log("[Scheduler] No channels configured — skipping poll");
+    const channels = db.channels || [];
+    if (channels.length === 0) {
       return { success: true, summary: { ...EMPTY_SUMMARY } };
     }
 
-    // Filter to channels with valid OAuth credentials
     const channelsWithAuth = channels.filter(
       (c) => c.status === "active" && (c.refreshToken || c.accessToken)
     );
 
     if (channelsWithAuth.length === 0) {
-      console.log("[Scheduler] No channels with YouTube OAuth credentials — connect a channel via Google OAuth first");
       return { success: true, summary: { ...EMPTY_SUMMARY } };
     }
 
-    // Reload user session to get fresh quota state
     const activeUser = db.userSession || {
-      email: "",
+      email: safeTenant,
       name: "Creator",
       username: "creator",
       tier: "free" as const,
@@ -292,7 +280,6 @@ export async function pollAndReply(): Promise<{
       lastResetDate: new Date().toISOString().split("T")[0],
     };
 
-    // Check and reset daily counter
     const maxDailyLimit = activeUser.tier === "pro" ? 25000 : activeUser.tier === "premium" ? 5000 : 500;
     const todayStr = new Date().toISOString().split("T")[0];
     if (activeUser.lastResetDate !== todayStr) {
@@ -300,9 +287,7 @@ export async function pollAndReply(): Promise<{
       activeUser.lastResetDate = todayStr;
     }
 
-    // Early exit if daily limit already reached
     if (activeUser.repliesToday >= maxDailyLimit) {
-      console.log("[Scheduler] Daily reply limit reached, skipping poll");
       return {
         success: true,
         summary: {
@@ -314,9 +299,7 @@ export async function pollAndReply(): Promise<{
       };
     }
 
-    // Check YouTube API quota
     if (!canAffordApiCall("commentThreads.list")) {
-      console.log("[Scheduler] YouTube API quota exhausted for today");
       await logSystemEvent("error", "YouTube API quota exhausted for today");
       return {
         success: true,
@@ -338,13 +321,9 @@ export async function pollAndReply(): Promise<{
     let limitReached = false;
     let quotaError = false;
 
-    // Load FAQs for RAG matching
     const faqs: FAQEntry[] = db.faqs || [];
-
-    // Build a Set of processed comment IDs for O(1) lookup
     const processedCommentIds = new Set(db.comments.map((c) => c.id));
 
-    // Engine context shared across every comment in this poll
     const engineContext: EngineContext = {
       db,
       activeUser,
@@ -353,27 +332,14 @@ export async function pollAndReply(): Promise<{
       faqs,
     };
 
-    // c. Get videos due for polling from the videoQueue (golden-hour first)
     const dueVideos = getDueVideos(db.videoQueue);
 
-    if (dueVideos.length === 0) {
-      console.log(`[Scheduler] No videos due for polling (queue size: ${db.videoQueue.length})`);
-    } else {
-      console.log(`[Scheduler] Polling ${dueVideos.length} videos (queue size: ${db.videoQueue.length})`);
-    }
-
-    // d. Process due videos (respecting quota)
     for (const videoEntry of dueVideos) {
-      // Check quota + daily limit before each video
       if (activeUser.repliesToday >= maxDailyLimit) {
         limitReached = true;
         break;
       }
       await syncQuotaLedger();
-      if (!canAffordApiCall("commentThreads.list")) {
-        quotaError = true;
-        break;
-      }
 
       const channel = db.channels.find((c) => c.id === videoEntry.channelId);
       if (!channel || channel.status === "quota_error") continue;
@@ -384,7 +350,6 @@ export async function pollAndReply(): Promise<{
           videoEntry.videoId
         );
 
-        // Update video queue entry
         videoEntry.lastPolledAt = new Date().toISOString();
         videoEntry.pollCount++;
         videoEntry.status = "active";
@@ -397,83 +362,39 @@ export async function pollAndReply(): Promise<{
             commentId: topComment.id,
             author: topComment.snippet?.authorDisplayName || "Viewer",
             authorAvatar: topComment.snippet?.authorChannelImageUrl || "",
-            text:
-              topComment.snippet?.textDisplay ||
-              topComment.snippet?.textOriginal ||
-              "",
-            publishedAt:
-              topComment.snippet?.publishedAt || new Date().toISOString(),
+            text: topComment.snippet?.textDisplay || "",
+            publishedAt: topComment.snippet?.publishedAt || new Date().toISOString(),
             videoId: videoEntry.videoId,
             videoTitle: videoEntry.title || "Video",
             videoThumbnail: "",
             channelId: videoEntry.channelId,
-            channelName: channel.name,
+            channelName: channel.name || "Channel",
           };
-
-          // The engine owns dedup, safety, rule matching, intent, RAG,
-          // confidence gating, and posting the reply via the YouTube API.
-          const result = await processIncomingComment(incoming, engineContext);
-
-          // Engine returns comment=null for duplicate comment IDs
-          if (result.comment === null) {
-            skippedCount++;
-            continue;
-          }
 
           checkedCount++;
 
-          // e. Track repliedCount per video entry
-          if (result.replied) {
-            repliedCount++;
-            videoEntry.repliedCount++;
-            if (result.comment?.replySource === "rag") ragMatched++;
-            if (result.comment?.replySource === "ai") aiReplied++;
-          } else if (result.limitHit) {
-            limitReached = true;
-          } else if (result.skipped || result.reviewed) {
-            skippedCount++;
-          }
+          const result = await processIncomingComment(incoming, engineContext);
+
+          if (result.replied) repliedCount++;
+          if (result.reviewed) matchedCount++;
+          if (result.skipped) skippedCount++;
+          if (result.ruleMatched) matchedCount++;
+          if (result.limitHit) limitReached = true;
+          if (result.comment?.replySource === "rag") ragMatched++;
+          if (result.comment?.replySource === "ai") aiReplied++;
         }
       } catch (err: any) {
-        // Handle YouTube API quota errors
-        if (err.message?.includes("quota") || err.message?.includes("403")) {
-          console.error(`[Scheduler] YouTube API quota exceeded for channel ${channel.name}`);
-          quotaError = true;
-          const chIdx = db.channels.findIndex((c) => c.id === channel.id);
-          if (chIdx >= 0) {
-            db.channels[chIdx].status = "quota_error";
-          }
-          await logSystemEvent("error", `YouTube quota error for ${channel.name}`);
-          break;
-        }
-        console.error(
-          `[Scheduler] Error processing video ${videoEntry.videoId}:`,
-          err
-        );
-        videoEntry.error = err.message;
-        videoEntry.status = "error";
+        console.error(`[Scheduler] Error polling video ${videoEntry.videoId}:`, err);
       }
-
-      if (limitReached || quotaError) break;
     }
 
-    // Retry previously-failed auto-replies (bounded, with backoff)
-    await retryFailedReplies(db);
-
-    // f. Cap comment list at 500 entries
-    if (db.comments.length > 500) {
-      db.comments = db.comments.slice(0, 500);
-    }
-
-    // Update system status
     if (db.systemStatus) {
       db.systemStatus.youtubeQuotaUsedToday = getQuotaUsedToday();
     }
 
     db.userSession = activeUser;
-    await saveDB(db);
+    await saveDB(db, safeTenant);
 
-    // h. Emit poll completion event
     emitCommentEvent({
       type: "poll_complete",
       summary: {
@@ -502,18 +423,54 @@ export async function pollAndReply(): Promise<{
       },
     };
   } catch (err) {
-    console.error("[Scheduler] Poll error:", err);
-    await logSystemEvent("error", `Poll error: ${err}`);
-    return {
-      success: false,
-      summary: { ...EMPTY_SUMMARY },
-    };
+    console.error(`[Scheduler] Poll error for ${safeTenant}:`, err);
+    await logSystemEvent("error", `Poll error for ${safeTenant}: ${err}`);
+    return { success: false, summary: { ...EMPTY_SUMMARY } };
   } finally {
-    // g. Always release the durable lock when we own it
     if (lockToken) {
-      await releaseLock("poll", lockToken);
+      await releaseLock(lockKey, lockToken);
     }
   }
+}
+
+/**
+ * Main polling function. Dispatches polling for a single tenant or all active tenants.
+ */
+export async function pollAndReply(targetEmail?: string): Promise<{
+  success: boolean;
+  summary: PollSummary;
+}> {
+  await hydrateQuota();
+
+  if (targetEmail) {
+    return pollSingleTenant(targetEmail);
+  }
+
+  // Multi-tenant iteration
+  const tenantEmails = await getAllTenantEmails();
+  if (tenantEmails.length === 0) {
+    return pollSingleTenant();
+  }
+
+  let aggregatedSummary: PollSummary = { ...EMPTY_SUMMARY };
+
+  for (const email of tenantEmails) {
+    try {
+      const res = await pollSingleTenant(email);
+      if (res.success) {
+        aggregatedSummary.checkedCount += res.summary.checkedCount;
+        aggregatedSummary.matchedCount += res.summary.matchedCount;
+        aggregatedSummary.repliedCount += res.summary.repliedCount;
+        aggregatedSummary.skippedCount += res.summary.skippedCount;
+        aggregatedSummary.ragMatched += res.summary.ragMatched;
+        aggregatedSummary.aiReplied += res.summary.aiReplied;
+      }
+    } catch (err) {
+      console.warn(`[Scheduler] Multi-tenant poll failed for ${email}:`, err);
+    }
+  }
+
+  return { success: true, summary: aggregatedSummary };
 }
 
 // --- In-Process Background Scheduler ---

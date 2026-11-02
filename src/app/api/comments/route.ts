@@ -14,5 +14,7 @@ export async function GET(req: NextRequest) {
     filteredComments = db.comments.filter((c) => c.status === "review");
   }
 
-  return NextResponse.json(filteredComments);
+  return NextResponse.json(filteredComments, {
+    headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=30" }
+  });
 }

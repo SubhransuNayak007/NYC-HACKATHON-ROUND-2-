@@ -133,11 +133,11 @@ export class InstagramChannelAdapter implements IChannel {
       return { success: false, error: policy.reason };
     }
 
-    const result = await this.client.sendMessage(active.igUserId, to, text, active.token);
+    const result = await this.client.sendMessage(active.token, active.igUserId, to, text);
     return {
       success: result.success,
       messageId: result.messageId,
-      error: result.error,
+      error: result.error ? result.error.userFacingExplanation || result.error.message : undefined,
     };
   }
 
@@ -148,11 +148,11 @@ export class InstagramChannelAdapter implements IChannel {
     const active = await this.getActiveAccount();
     if (!active) return { success: false, error: "Instagram not connected" };
 
-    const result = await this.client.replyToComment(commentId, text, active.token);
+    const result = await this.client.replyToComment(active.token, commentId, text);
     return {
       success: result.success,
       messageId: result.commentId,
-      error: result.error,
+      error: result.error ? result.error.userFacingExplanation || result.error.message : undefined,
     };
   }
 
@@ -163,11 +163,11 @@ export class InstagramChannelAdapter implements IChannel {
     const active = await this.getActiveAccount();
     if (!active) return { success: false, error: "Instagram not connected" };
 
-    const result = await this.client.sendPrivateCommentReply(active.igUserId, commentId, text, active.token);
+    const result = await this.client.sendMessage(active.token, active.igUserId, commentId, text);
     return {
       success: result.success,
       messageId: result.messageId,
-      error: result.error,
+      error: result.error ? result.error.userFacingExplanation || result.error.message : undefined,
     };
   }
 
@@ -178,11 +178,23 @@ export class InstagramChannelAdapter implements IChannel {
     const active = await this.getActiveAccount();
     if (!active) return { success: false, error: "Instagram not connected" };
 
-    const result = await this.client.publishImagePost(active.igUserId, imageUrl, caption, active.token);
+    const containerRes = await this.client.createMediaContainer(active.token, active.igUserId, {
+      mediaType: "IMAGE",
+      imageUrl,
+      caption,
+    });
+    if (!containerRes.success || !containerRes.containerId) {
+      return {
+        success: false,
+        error: containerRes.error?.userFacingExplanation || "Container creation failed",
+      };
+    }
+
+    const pubRes = await this.client.publishMediaContainer(active.token, active.igUserId, containerRes.containerId);
     return {
-      success: result.success,
-      messageId: result.mediaId,
-      error: result.error,
+      success: pubRes.success,
+      messageId: pubRes.mediaId,
+      error: pubRes.error ? pubRes.error.userFacingExplanation || pubRes.error.message : undefined,
     };
   }
 

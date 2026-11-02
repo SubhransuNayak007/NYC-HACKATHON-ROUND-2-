@@ -11,7 +11,6 @@
  */
 
 import { getDB, saveDB, type DBData, type WACustomer, type WAProduct, type WAOrder } from "@/database/db";
-import { getAudienceContextForPrompt } from "../agi/AudienceKnowledgeGraph";
 
 export interface BusinessEntityFact {
   entityType: "product" | "inventory" | "customer" | "order" | "policy" | "store";
@@ -90,9 +89,8 @@ export class BusinessBrain {
     };
 
     // 5. Build Compact Fact Summary for Prompt Grounding
-    const businessName = db.workspace?.name || "QuickReply Commerce";
     const factsSummary = [
-      `Business: ${businessName}`,
+      `Business: ${(db as any).settings?.organizationName || (db as any).waSettings?.organizationName || "QuickReply Commerce"}`,
       customer ? `Customer: ${customer.name || customer.phone} (Stage: ${customer.leadStage}, Orders: ${customer.totalOrders})` : null,
       relevantProducts.length > 0
         ? `Products in stock: ${relevantProducts.map((p) => `${p.name} (₹${p.price}, Stock: ${p.stock})`).join("; ")}`
@@ -103,7 +101,7 @@ export class BusinessBrain {
       .join(" | ");
 
     return {
-      organizationName: businessName,
+      organizationName: (db as any).settings?.organizationName || (db as any).waSettings?.organizationName || "QuickReply Commerce",
       customerProfile: customer,
       relevantProducts,
       activeOrder,
@@ -144,7 +142,8 @@ export class BusinessBrain {
    */
   static async getAudienceContext(): Promise<string> {
     try {
-      return await getAudienceContextForPrompt();
+      const db = await getDB();
+      return (db as any).workspace?.audienceSummary || '';
     } catch {
       return '';
     }
@@ -161,10 +160,10 @@ export class BusinessBrain {
       const db = await getDB();
       if (!db.workspace) return;
       if (!db.activityLogs) db.activityLogs = [];
-      db.activityLogs.unshift({
+      (db.activityLogs as any).unshift({
         id: `agi_${Date.now()}`,
-        user: "QuickReply Brain",
-        action: `[AGI] Learned ${insight.type}: ${insight.text.slice(0, 80)}`,
+        action: `AGI_${insight.type.toUpperCase()}`,
+        description: `[AGI] Learned ${insight.type}: ${insight.text.slice(0, 80)}`,
         timestamp: new Date().toISOString(),
       });
       db.activityLogs = db.activityLogs.slice(0, 500);

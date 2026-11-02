@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* ══════════════════════════════════════════════════════
    LEGACY JS CONFIG — Tailwind v4 no longer auto-loads
@@ -7,7 +8,7 @@
    border-surface-300, shadow-glass, etc.) silently fails to
    generate, producing unstyled/invisible UI in the dashboard.
    ══════════════════════════════════════════════════════ */
-@config "../../tailwind.config.ts";
+@config "../../tailwind.config.js";
 
 /* ══════════════════════════════════════════════════════
    DESIGN TOKENS — Single Source of Truth
@@ -48,10 +49,11 @@
   --duration-slower: 500ms;
 
   /* --- Fonts --- */
-  --font-sans: "DM Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "SF Mono", monospace;
-  --font-brand: "Outfit", "DM Sans", system-ui, sans-serif;
+  --font-sans: var(--font-sans), "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-sans), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-anton: var(--font-anton), "Anton", Impact, sans-serif;
+  --font-mono: var(--font-mono), "JetBrains Mono", "SF Mono", monospace;
+  --font-brand: var(--font-sans), "Plus Jakarta Sans", system-ui, sans-serif;
 
   /* --- Brand Colors --- */
   --color-navy-500: #0038FF;
@@ -92,6 +94,18 @@
   --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 12px 40px rgba(0, 0, 0, 0.1);
   --shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.08);
   --shadow-elevated-lg: 0 16px 48px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+}
+
+.font-anton,
+.marketing-display {
+  font-family: var(--font-anton);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
 }
 
 /* ══════════════════════════════════════════════════════
@@ -167,7 +181,123 @@ body {
   color: #0038FF;
 }
 
-/* ===== GLASS MORPHISM SYSTEM ===== */
+/* ===== APPLE LIQUID GLASS DESIGN SYSTEM ===== */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 
+    0 8px 32px rgba(20, 25, 40, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.liquid-glass-elevated {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(32px) saturate(190%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 
+    0 16px 48px rgba(20, 25, 40, 0.12),
+    0 4px 16px rgba(20, 25, 40, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.liquid-glass-control {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 
+    0 2px 6px rgba(20, 25, 40, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-glass-control:hover {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 
+    0 4px 12px rgba(20, 25, 40, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+/* Zero-jank scrolling optimizer: disable pointer hover calculations during active scroll */
+body.is-scrolling * {
+  pointer-events: none !important;
+}
+
+.liquid-glass-dark {
+  background: rgba(18, 22, 34, 0.78);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 12px 36px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* Fallbacks for browsers without backdrop-filter */
+@supports not (backdrop-filter: blur(1px)) {
+  .liquid-glass,
+  .liquid-glass-control {
+    background: rgba(255, 255, 255, 0.96) !important;
+  }
+  .liquid-glass-elevated {
+    background: #ffffff !important;
+  }
+  .liquid-glass-dark {
+    background: #121622 !important;
+  }
+}
+
+/* Reduced transparency support (macOS / iOS Reduce Transparency) */
+@media (prefers-reduced-transparency: reduce) {
+  .liquid-glass,
+  .liquid-glass-control,
+  .liquid-glass-elevated {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .liquid-glass-dark {
+    background: #121622 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Lenis Smooth Scroll Configuration — disables native conflict when Lenis is active */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+html[data-scroll-behavior="smooth"] {
+  scroll-behavior: smooth;
+}
+
+html {
+  scroll-padding-top: 5.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html,
+  html[data-scroll-behavior="smooth"] {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== LEGACY GLASS MORPHISM SYSTEM ===== */
 .glass {
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(20px) saturate(180%);
@@ -306,33 +436,43 @@ body {
 }
 
 /* ===== CUSTOM SCROLLBARS ===== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 56, 255, 0.15);
+  background: rgba(148, 163, 184, 0.4);
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 56, 255, 0.3);
+  background: rgba(100, 116, 139, 0.65);
 }
 
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+}
 .custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+  width: 7px;
+  height: 7px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0, 56, 255, 0.1);
+  background: rgba(148, 163, 184, 0.45);
   border-radius: 999px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 56, 255, 0.2);
+  background: rgba(100, 116, 139, 0.7);
 }
 
 /* ===== PULSE & LIVE INDICATORS ===== */
@@ -1367,214 +1507,214 @@ html[data-theme="dark"],
     inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
-/* --- Layer 2: Modals, Dropdowns --- */
-.dark-mode .bg-white,
-[data-theme="dark"] .bg-white,
-.dark-mode .bg-\[\#FFFFFF\],
-[data-theme="dark"] .bg-\[\#FFFFFF\],
-.dark-mode .bg-surface-0,
-[data-theme="dark"] .bg-surface-0 {
+/* --- Layer 2: Modals, Dropdowns (Strictly Dashboard Scoped) --- */
+.dark-mode .dashboard-root .bg-white,
+[data-theme="dark"] .dashboard-root .bg-white,
+.dark-mode .dashboard-root .bg-\[\#FFFFFF\],
+[data-theme="dark"] .dashboard-root .bg-\[\#FFFFFF\],
+.dark-mode .dashboard-root .bg-surface-0,
+[data-theme="dark"] .dashboard-root .bg-surface-0 {
   background-color: var(--dark-surface-2) !important;
   color: var(--dark-text-primary) !important;
   border-color: var(--dark-border) !important;
 }
 
-.dark-mode .bg-surface-100,
-[data-theme="dark"] .bg-surface-100 {
+.dark-mode .dashboard-root .bg-surface-100,
+[data-theme="dark"] .dashboard-root .bg-surface-100 {
   background-color: var(--dark-surface-2) !important;
   color: var(--dark-text-primary) !important;
   border-color: var(--dark-border) !important;
 }
 
-.dark-mode .bg-surface-200,
-[data-theme="dark"] .bg-surface-200 {
+.dark-mode .dashboard-root .bg-surface-200,
+[data-theme="dark"] .dashboard-root .bg-surface-200 {
   background-color: var(--dark-surface-3) !important;
   color: var(--dark-text-primary) !important;
 }
 
-/* --- Layer 0: Page background patches --- */
-.dark-mode .bg-surface-50,
-[data-theme="dark"] .bg-surface-50,
-.dark-mode .bg-slate-50,
-[data-theme="dark"] .bg-slate-50,
-.dark-mode .bg-gray-50,
-[data-theme="dark"] .bg-gray-50 {
+/* --- Layer 0: Page background patches (Strictly Dashboard Scoped) --- */
+.dark-mode .dashboard-root .bg-surface-50,
+[data-theme="dark"] .dashboard-root .bg-surface-50,
+.dark-mode .dashboard-root .bg-slate-50,
+[data-theme="dark"] .dashboard-root .bg-slate-50,
+.dark-mode .dashboard-root .bg-gray-50,
+[data-theme="dark"] .dashboard-root .bg-gray-50 {
   background-color: #050810 !important;
   color: var(--dark-text-primary) !important;
 }
 
 /* ══════════════════════════════════════════════════════
-   TEXT HIERARCHY — 4 levels of contrast
+   TEXT HIERARCHY — 4 levels of contrast (Dashboard Scoped)
    ══════════════════════════════════════════════════════ */
 
 /* Level 1: Primary text (headings, important values) */
-.dark-mode .text-ink-900,
-[data-theme="dark"] .text-ink-900,
-.dark-mode .text-ink-800,
-[data-theme="dark"] .text-ink-800,
-.dark-mode .text-ink-700,
-[data-theme="dark"] .text-ink-700,
-.dark-mode .text-slate-900,
-[data-theme="dark"] .text-slate-900,
-.dark-mode .text-slate-800,
-[data-theme="dark"] .text-slate-800,
-.dark-mode .text-slate-700,
-[data-theme="dark"] .text-slate-700,
-.dark-mode .text-charcoal,
-[data-theme="dark"] .text-charcoal,
-.dark-mode .text-gray-900,
-[data-theme="dark"] .text-gray-900,
-.dark-mode .text-gray-800,
-[data-theme="dark"] .text-gray-800,
-.dark-mode .text-\[\#202124\],
-[data-theme="dark"] .text-\[\#202124\] {
+.dark-mode .dashboard-root .text-ink-900,
+[data-theme="dark"] .dashboard-root .text-ink-900,
+.dark-mode .dashboard-root .text-ink-800,
+[data-theme="dark"] .dashboard-root .text-ink-800,
+.dark-mode .dashboard-root .text-ink-700,
+[data-theme="dark"] .dashboard-root .text-ink-700,
+.dark-mode .dashboard-root .text-slate-900,
+[data-theme="dark"] .dashboard-root .text-slate-900,
+.dark-mode .dashboard-root .text-slate-800,
+[data-theme="dark"] .dashboard-root .text-slate-800,
+.dark-mode .dashboard-root .text-slate-700,
+[data-theme="dark"] .dashboard-root .text-slate-700,
+.dark-mode .dashboard-root .text-charcoal,
+[data-theme="dark"] .dashboard-root .text-charcoal,
+.dark-mode .dashboard-root .text-gray-900,
+[data-theme="dark"] .dashboard-root .text-gray-900,
+.dark-mode .dashboard-root .text-gray-800,
+[data-theme="dark"] .dashboard-root .text-gray-800,
+.dark-mode .dashboard-root .text-\[\#202124\],
+[data-theme="dark"] .dashboard-root .text-\[\#202124\] {
   color: var(--dark-text-primary) !important;
 }
 
 /* Level 2: Secondary text (body, descriptions) */
-.dark-mode .text-ink-600,
-[data-theme="dark"] .text-ink-600,
-.dark-mode .text-slate-600,
-[data-theme="dark"] .text-slate-600 {
+.dark-mode .dashboard-root .text-ink-600,
+[data-theme="dark"] .dashboard-root .text-ink-600,
+.dark-mode .dashboard-root .text-slate-600,
+[data-theme="dark"] .dashboard-root .text-slate-600 {
   color: var(--dark-text-secondary) !important;
 }
 
 /* Level 3: Tertiary text (labels, captions) */
-.dark-mode .text-ink-500,
-[data-theme="dark"] .text-ink-500,
-.dark-mode .text-ink-400,
-[data-theme="dark"] .text-ink-400,
-.dark-mode .text-slate-500,
-[data-theme="dark"] .text-slate-500,
-.dark-mode .text-slate-400,
-[data-theme="dark"] .text-slate-400,
-.dark-mode .text-slate-300,
-[data-theme="dark"] .text-slate-300 {
+.dark-mode .dashboard-root .text-ink-500,
+[data-theme="dark"] .dashboard-root .text-ink-500,
+.dark-mode .dashboard-root .text-ink-400,
+[data-theme="dark"] .dashboard-root .text-ink-400,
+.dark-mode .dashboard-root .text-slate-500,
+[data-theme="dark"] .dashboard-root .text-slate-500,
+.dark-mode .dashboard-root .text-slate-400,
+[data-theme="dark"] .dashboard-root .text-slate-400,
+.dark-mode .dashboard-root .text-slate-300,
+[data-theme="dark"] .dashboard-root .text-slate-300 {
   color: var(--dark-text-tertiary) !important;
 }
 
 /* ══════════════════════════════════════════════════════
-   BORDERS — Subtle depth indicators
+   BORDERS — Subtle depth indicators (Dashboard Scoped)
    ══════════════════════════════════════════════════════ */
-.dark-mode .border-surface-200,
-[data-theme="dark"] .border-surface-200,
-.dark-mode .border-surface-100,
-[data-theme="dark"] .border-surface-100,
-.dark-mode .border-slate-200,
-[data-theme="dark"] .border-slate-200,
-.dark-mode .border-gray-200,
-[data-theme="dark"] .border-gray-200,
-.dark-mode .border-\[\#dadce0\],
-[data-theme="dark"] .border-\[\#dadce0\] {
+.dark-mode .dashboard-root .border-surface-200,
+[data-theme="dark"] .dashboard-root .border-surface-200,
+.dark-mode .dashboard-root .border-surface-100,
+[data-theme="dark"] .dashboard-root .border-surface-100,
+.dark-mode .dashboard-root .border-slate-200,
+[data-theme="dark"] .dashboard-root .border-slate-200,
+.dark-mode .dashboard-root .border-gray-200,
+[data-theme="dark"] .dashboard-root .border-gray-200,
+.dark-mode .dashboard-root .border-\[\#dadce0\],
+[data-theme="dark"] .dashboard-root .border-\[\#dadce0\] {
   border-color: var(--dark-border) !important;
 }
 
-.dark-mode .border-slate-100,
-[data-theme="dark"] .border-slate-100 {
+.dark-mode .dashboard-root .border-slate-100,
+[data-theme="dark"] .dashboard-root .border-slate-100 {
   border-color: rgba(255, 255, 255, 0.05) !important;
 }
 
-.dark-mode .border-slate-300,
-[data-theme="dark"] .border-slate-300 {
+.dark-mode .dashboard-root .border-slate-300,
+[data-theme="dark"] .dashboard-root .border-slate-300 {
   border-color: var(--dark-border-strong) !important;
 }
 
 /* ══════════════════════════════════════════════════════
-   INTERACTIVE ELEMENTS — Dark mode polish
+   INTERACTIVE ELEMENTS — Dark mode polish (Dashboard Scoped)
    ══════════════════════════════════════════════════════ */
 
 /* Buttons */
-.dark-mode .btn-ghost,
-[data-theme="dark"] .btn-ghost {
+.dark-mode .dashboard-root .btn-ghost,
+[data-theme="dark"] .dashboard-root .btn-ghost {
   color: var(--dark-text-secondary) !important;
 }
-.dark-mode .btn-ghost:hover,
-[data-theme="dark"] .btn-ghost:hover {
+.dark-mode .dashboard-root .btn-ghost:hover,
+[data-theme="dark"] .dashboard-root .btn-ghost:hover {
   background: rgba(255, 255, 255, 0.05) !important;
   color: var(--dark-text-primary) !important;
   border-color: var(--dark-border) !important;
 }
 
-.dark-mode .btn-glass,
-[data-theme="dark"] .btn-glass {
+.dark-mode .dashboard-root .btn-glass,
+[data-theme="dark"] .dashboard-root .btn-glass {
   background: rgba(255, 255, 255, 0.06) !important;
   border-color: var(--dark-border) !important;
   color: var(--dark-text-secondary) !important;
 }
-.dark-mode .btn-glass:hover,
-[data-theme="dark"] .btn-glass:hover {
+.dark-mode .dashboard-root .btn-glass:hover,
+[data-theme="dark"] .dashboard-root .btn-glass:hover {
   background: rgba(255, 255, 255, 0.1) !important;
   border-color: var(--dark-border-strong) !important;
 }
 
-.dark-mode .btn-primary,
-[data-theme="dark"] .btn-primary {
+.dark-mode .dashboard-root .btn-primary,
+[data-theme="dark"] .dashboard-root .btn-primary {
   box-shadow: 0 2px 8px rgba(0, 56, 255, 0.35), 0 0 20px rgba(0, 56, 255, 0.1) !important;
 }
 
 /* Inputs */
-.dark-mode .input-glass,
-[data-theme="dark"] .input-glass {
+.dark-mode .dashboard-root .input-glass,
+[data-theme="dark"] .dashboard-root .input-glass {
   background: rgba(10, 16, 32, 0.6) !important;
   border-color: var(--dark-border) !important;
   color: var(--dark-text-primary) !important;
 }
-.dark-mode .input-glass::placeholder,
-[data-theme="dark"] .input-glass::placeholder {
+.dark-mode .dashboard-root .input-glass::placeholder,
+[data-theme="dark"] .dashboard-root .input-glass::placeholder {
   color: var(--dark-text-tertiary) !important;
 }
-.dark-mode .input-glass:focus,
-[data-theme="dark"] .input-glass:focus {
+.dark-mode .dashboard-root .input-glass:focus,
+[data-theme="dark"] .dashboard-root .input-glass:focus {
   border-color: #3B6FFF !important;
   box-shadow: 0 0 0 3px rgba(59, 111, 255, 0.2), 0 0 20px rgba(59, 111, 255, 0.08) !important;
   background: rgba(10, 16, 32, 0.8) !important;
 }
 
 /* Toggle */
-.dark-mode .toggle-track,
-[data-theme="dark"] .toggle-track {
+.dark-mode .dashboard-root .toggle-track,
+[data-theme="dark"] .dashboard-root .toggle-track {
   background: rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Sidebar & Header */
-.dark-mode aside,
-[data-theme="dark"] aside,
-.dark-mode header,
-[data-theme="dark"] header {
+.dark-mode .dashboard-root aside,
+[data-theme="dark"] .dashboard-root aside,
+.dark-mode .dashboard-root header,
+[data-theme="dark"] .dashboard-root header {
   border-color: var(--dark-border) !important;
 }
 
 /* ══════════════════════════════════════════════════════
-   BACKGROUND SLATE OVERRIDES — Depth-aware
+   BACKGROUND SLATE OVERRIDES — Depth-aware (Dashboard Scoped)
    ══════════════════════════════════════════════════════ */
-.dark-mode .bg-slate-50,
-[data-theme="dark"] .bg-slate-50 { background-color: rgba(10, 16, 32, 0.5) !important; }
-.dark-mode .bg-slate-100,
-[data-theme="dark"] .bg-slate-100 { background-color: rgba(16, 24, 44, 0.7) !important; }
-.dark-mode .bg-slate-50\/50,
-[data-theme="dark"] .bg-slate-50\/50 { background-color: rgba(10, 16, 32, 0.5) !important; }
+.dark-mode .dashboard-root .bg-slate-50,
+[data-theme="dark"] .dashboard-root .bg-slate-50 { background-color: rgba(10, 16, 32, 0.5) !important; }
+.dark-mode .dashboard-root .bg-slate-100,
+[data-theme="dark"] .dashboard-root .bg-slate-100 { background-color: rgba(16, 24, 44, 0.7) !important; }
+.dark-mode .dashboard-root .bg-slate-50\/50,
+[data-theme="dark"] .dashboard-root .bg-slate-50\/50 { background-color: rgba(10, 16, 32, 0.5) !important; }
 
 /* Hover states */
-.dark-mode .hover\:bg-slate-50:hover,
-[data-theme="dark"] .hover\:bg-slate-50:hover { background-color: rgba(16, 24, 44, 0.6) !important; }
-.dark-mode .hover\:bg-slate-100:hover,
-[data-theme="dark"] .hover\:bg-slate-100:hover { background-color: rgba(16, 24, 44, 0.8) !important; }
-.dark-mode .hover\:bg-slate-200:hover,
-[data-theme="dark"] .hover\:bg-slate-200:hover { background-color: rgba(22, 32, 56, 0.9) !important; }
-.dark-mode .hover\:text-slate-700:hover,
-[data-theme="dark"] .hover\:text-slate-700:hover { color: var(--dark-text-primary) !important; }
+.dark-mode .dashboard-root .hover\:bg-slate-50:hover,
+[data-theme="dark"] .dashboard-root .hover\:bg-slate-50:hover { background-color: rgba(16, 24, 44, 0.6) !important; }
+.dark-mode .dashboard-root .hover\:bg-slate-100:hover,
+[data-theme="dark"] .dashboard-root .hover\:bg-slate-100:hover { background-color: rgba(16, 24, 44, 0.8) !important; }
+.dark-mode .dashboard-root .hover\:bg-slate-200:hover,
+[data-theme="dark"] .dashboard-root .hover\:bg-slate-200:hover { background-color: rgba(22, 32, 56, 0.9) !important; }
+.dark-mode .dashboard-root .hover\:text-slate-700:hover,
+[data-theme="dark"] .dashboard-root .hover\:text-slate-700:hover { color: var(--dark-text-primary) !important; }
 
 /* Dividers */
-.dark-mode .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
-[data-theme="dark"] .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+.dark-mode .dashboard-root .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+[data-theme="dark"] .dashboard-root .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
   border-color: rgba(255, 255, 255, 0.04) !important;
 }
 
 /* Modals */
-.dark-mode .bg-black\/40,
-[data-theme="dark"] .bg-black\/40,
-.dark-mode .bg-black\/50,
-[data-theme="dark"] .bg-black\/50 {
+.dark-mode .dashboard-root .bg-black\/40,
+[data-theme="dark"] .dashboard-root .bg-black\/40,
+.dark-mode .dashboard-root .bg-black\/50,
+[data-theme="dark"] .dashboard-root .bg-black\/50 {
   background-color: rgba(0, 0, 0, 0.7) !important;
 }
 
@@ -2178,5 +2318,25 @@ html[data-theme="light"],
   animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
+/* ══════════════════════════════════════════════════════
+   LENIS ULTRA-SMOOTH INERTIAL SCROLLING RULES
+   ══════════════════════════════════════════════════════ */
+html.lenis, html.lenis body {
+  height: auto;
+}
 
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
 
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}

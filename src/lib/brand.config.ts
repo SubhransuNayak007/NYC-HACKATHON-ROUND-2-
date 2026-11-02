@@ -16,8 +16,8 @@ export const BRAND_CONFIG = {
   description:
     "Turn customer inquiries, social comments, and WhatsApp chats across YouTube, Instagram, and WhatsApp into closed sales, instant support, and delighted customers on autopilot.",
   foundingYear: 2026,
-  supportEmail: "subhransu.nayak.418@gmail.com",
-  salesEmail: "subhransu.nayak.418@gmail.com",
+  supportEmail: "support@quickreply.ai",
+  salesEmail: "sales@quickreply.ai",
   url: "https://quickreply.ai",
   appUrl: "https://app.quickreply.ai",
 
@@ -72,18 +72,18 @@ export const BRAND_CONFIG = {
     ],
     company: [
       { label: "About Us", href: "/about" },
-      { label: "Security & Privacy", href: "/about" },
-      { label: "Terms of Service", href: "/about" },
-      { label: "Contact Support", href: "mailto:subhransu.nayak.418@gmail.com" },
+      { label: "Security & Privacy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Contact Support", href: "mailto:support@quickreply.ai" },
     ],
   },
 
   platforms: [
     {
       id: "whatsapp",
-      name: "WhatsApp Business",
-      badge: "Baileys + Meta API",
-      desc: "Instant 1-scan QR device pairing or official Meta Cloud API. Zero ban-risk architecture.",
+      name: "WhatsApp Business Platform",
+      badge: "Official Meta Cloud API",
+      desc: "Native Meta WhatsApp Cloud API with 24-hour service window compliance, interactive catalog templates, and instant auto-replies.",
     },
     {
       id: "instagram",

@@ -50,6 +50,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.fbcdn.net" },
       { protocol: "https", hostname: "*.githubusercontent.com" },
       { protocol: "https", hostname: "*.vercel.app" },
+      { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
 
@@ -60,6 +61,27 @@ const nextConfig: NextConfig = {
       {
         source: "/signup",
         destination: "/register",
+        permanent: true,
+      },
+      // Canonicalize duplicate feature routes to prevent broken links
+      {
+        source: "/features/auto-dm",
+        destination: "/features/comment-to-dm",
+        permanent: true,
+      },
+      {
+        source: "/features/knowledge-base",
+        destination: "/features/catalog-rag",
+        permanent: true,
+      },
+      {
+        source: "/features/campaigns",
+        destination: "/features/scheduler",
+        permanent: true,
+      },
+      {
+        source: "/features/chat-widget",
+        destination: "/features/storefront-widget",
         permanent: true,
       },
     ];

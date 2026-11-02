@@ -12,7 +12,7 @@
  */
 
 import { ActionFirewall } from "../firewall/ActionFirewall";
-import { getWhatsAppWebSessionProvider } from "@/channels/whatsapp/WhatsAppProviderFactory";
+import { getWhatsAppProvider } from "@/channels/whatsapp/WhatsAppProviderFactory";
 import { getDB, type DBData } from "@/database/db";
 import { VerifiableAuditLedger } from "../audit/VerifiableAuditLedger";
 
@@ -28,14 +28,14 @@ export class ZeroDashboardEngine {
     details: Record<string, any>;
   }): Promise<{ success: boolean; error?: string }> {
     const db = await getDB();
-    const ownerPhone = process.env.OWNER_WHATSAPP_PHONE;
+    const ownerPhone = process.env.OWNER_WHATSAPP_PHONE || (db as any).settings?.supportPhone || (db as any).waSettings?.supportPhone;
 
     if (!ownerPhone) {
       console.warn("[ZeroDashboard] No owner phone configured to receive alert.");
       return { success: false, error: "No owner phone configured." };
     }
 
-    const wa = getWhatsAppWebSessionProvider();
+    const wa = getWhatsAppProvider();
     const text = [
       `🔔 *QuickReply Business Alert*`,
       `*${alert.title}*`,
@@ -59,7 +59,7 @@ export class ZeroDashboardEngine {
    */
   static async handleOwnerInboundReply(fromPhone: string, text: string): Promise<boolean> {
     const db = await getDB();
-    const ownerPhone = (process.env.OWNER_WHATSAPP_PHONE || "").replace(/\D/g, "");
+    const ownerPhone = (process.env.OWNER_WHATSAPP_PHONE || (db as any).settings?.supportPhone || (db as any).waSettings?.supportPhone || "").replace(/\D/g, "");
     const senderClean = fromPhone.replace(/\D/g, "");
 
     // Only process if sender is the verified owner phone
@@ -75,7 +75,7 @@ export class ZeroDashboardEngine {
       if (!token) return false;
 
       const resolution = ActionFirewall.resolveApproval(token.toLowerCase());
-      const wa = getWhatsAppWebSessionProvider();
+      const wa = getWhatsAppProvider();
 
       if (resolution.approved && resolution.proposal) {
         // Execute approved proposal
@@ -94,7 +94,7 @@ export class ZeroDashboardEngine {
       const token = parts[1];
       if (token) {
         ActionFirewall.resolveApproval(token.toLowerCase()); // Clears token
-        const wa = getWhatsAppWebSessionProvider();
+        const wa = getWhatsAppProvider();
         await wa.sendMessage(fromPhone, `🛑 *Action Rejected*: Token ${token} has been cancelled.`);
         return true;
       }

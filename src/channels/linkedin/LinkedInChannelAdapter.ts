@@ -104,12 +104,12 @@ export class LinkedInChannelAdapter implements IChannel {
     if (!active) return { success: false, error: "LinkedIn account not connected" };
 
     const actorUrn = active.orgId.startsWith("urn:li:") ? active.orgId : `urn:li:organization:${active.orgId}`;
-    const result = await this.client.replyToComment(postUrn, commentText, actorUrn, active.token);
+    const result = await this.client.replyToComment(active.token, postUrn, commentText, actorUrn);
 
     return {
       success: result.success,
       messageId: result.commentUrn,
-      error: result.error,
+      error: result.error ? result.error.message : undefined,
     };
   }
 
@@ -124,11 +124,14 @@ export class LinkedInChannelAdapter implements IChannel {
       ? active.orgId
       : `urn:li:organization:${active.orgId}`;
 
-    const result = await this.client.createCompanyPost(orgUrn, content, active.token);
+    const result = await this.client.createPost(active.token, {
+      authorUrn: orgUrn,
+      commentary: content,
+    });
     return {
       success: result.success,
       messageId: result.postUrn,
-      error: result.error,
+      error: result.error ? result.error.message : undefined,
     };
   }
 

@@ -33,13 +33,13 @@ export const RATE_LIMITS = {
   /** YouTube comment polling (heavy operation) */
   YOUTUBE_POLL: {
     windowMs: 60 * 1000,       // 1 minute
-    maxRequests: 10,
+    maxRequests: 60,
     keyPrefix: "rl:yt-poll",
   },
   /** Reply posting */
   REPLY: {
     windowMs: 60 * 1000,       // 1 minute
-    maxRequests: 30,
+    maxRequests: 120,
     keyPrefix: "rl:reply",
   },
   /** Authentication endpoints (per IP) */
@@ -57,8 +57,20 @@ export const RATE_LIMITS = {
   /** Comment creation / reply posting per channel */
   CHANNEL: {
     windowMs: 60 * 1000,       // 1 minute
-    maxRequests: 60,
+    maxRequests: 300,
     keyPrefix: "rl:channel",
+  },
+  /** OAuth initiation (prevent OAuth abuse) */
+  OAUTH_INITIATE: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 5,
+    keyPrefix: "rl:oauth-init",
+  },
+  /** AI generation (resource-intensive) */
+  AI_GENERATE: {
+    windowMs: 60 * 1000, // 1 minute
+    maxRequests: 20,
+    keyPrefix: "rl:ai-gen",
   },
 } satisfies Record<string, RateLimitConfig>;
 
@@ -139,6 +151,10 @@ function checkMemoryRateLimit(
   key: string,
   config: RateLimitConfig
 ): { allowed: boolean; remaining: number; resetMs: number } {
+  if (process.env.NODE_ENV !== "production") {
+    return { allowed: true, remaining: 9999, resetMs: config.windowMs };
+  }
+
   cleanupMemoryStore();
 
   const now = Date.now();

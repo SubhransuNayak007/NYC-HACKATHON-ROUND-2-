@@ -26,6 +26,15 @@ export async function GET(req: NextRequest) {
   }
 
   // 1. Line chart: Auto-replies sent per day (last 30 days) from real timestamps
+  // High-performance single-pass O(N) frequency aggregation
+  const replyCountsByDate = new Map<string, number>();
+  for (const c of db.comments) {
+    if (c.status === "replied" && c.replyFiredAt) {
+      const dateKey = c.replyFiredAt.split("T")[0];
+      replyCountsByDate.set(dateKey, (replyCountsByDate.get(dateKey) || 0) + 1);
+    }
+  }
+
   const repliesPerDay = [];
   const today = new Date();
   
@@ -33,13 +42,8 @@ export async function GET(req: NextRequest) {
     const d = new Date();
     d.setDate(today.getDate() - i);
     const dateLabel = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    
-    // Filter comments replied on this day
     const dayStartStr = d.toISOString().split("T")[0];
-    const repliesOnDay = db.comments.filter((c) => {
-      if (c.status !== "replied" || !c.replyFiredAt) return false;
-      return c.replyFiredAt.split("T")[0] === dayStartStr;
-    }).length;
+    const repliesOnDay = replyCountsByDate.get(dayStartStr) || 0;
 
     repliesPerDay.push({ date: dateLabel, replies: repliesOnDay });
   }
@@ -170,5 +174,7 @@ export async function GET(req: NextRequest) {
       ragReplies: db.comments.filter((c) => c.matchedRuleId?.startsWith("rag_")).length,
       ragCategories: [...new Set((db.faqs || []).map((f) => f.category))].length
     }
+  }, {
+    headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" }
   });
 }

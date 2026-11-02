@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { MessageSquare, X, Send, Bot } from "lucide-react";
 
 export function ChatWithUsWidget() {
   const pathname = usePathname();
+  const widgetRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Array<{ sender: "ai" | "user"; text: string }>>([
     {
@@ -15,6 +16,30 @@ export function ChatWithUsWidget() {
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+
+  // Close widget on Escape key or outside click
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (widgetRef.current && !widgetRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   const isAuthPage =
     pathname?.startsWith("/login") ||
@@ -58,14 +83,19 @@ export function ChatWithUsWidget() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9995] font-sans">
+    <div ref={widgetRef} className="fixed bottom-6 right-6 z-[9995] font-sans">
       {/* Floating Chat Modal */}
       {isOpen && (
-        <div className="mb-3 w-[min(360px,calc(100vw-2rem))] bg-white rounded-3xl shadow-2xl border border-black/10 overflow-hidden flex flex-col h-[460px] animate-in fade-in slide-in-from-bottom-5 duration-200">
-          {/* Header */}
-          <div className="bg-[#161616] text-white p-4 flex items-center justify-between">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="QuickReply AI Assistant Chat"
+          className="mb-3 w-[min(360px,calc(100vw-2rem))] bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-black/10 overflow-hidden flex flex-col h-[480px] max-h-[calc(100dvh-6rem)] animate-in fade-in slide-in-from-bottom-5 duration-200"
+        >
+          {/* Header with Liquid Glass Dark style */}
+          <div className="bg-[#161616]/95 backdrop-blur-md text-white p-4 flex items-center justify-between border-b border-white/10 shadow-xs">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-[#EE7D60] text-white flex items-center justify-center font-bold text-xs">
+              <div className="w-8 h-8 rounded-full bg-[#EE7D60] text-white flex items-center justify-center font-bold text-xs shadow-xs">
                 <Bot className="w-4 h-4" />
               </div>
               <div>
@@ -78,14 +108,15 @@ export function ChatWithUsWidget() {
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10 cursor-pointer"
+              aria-label="Close assistant chat"
+              className="text-slate-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Messages Body */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAF8F5] text-xs">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAF8F5]/80 text-xs">
             {messages.map((m, i) => (
               <div
                 key={i}
@@ -94,7 +125,7 @@ export function ChatWithUsWidget() {
                 <div
                   className={`p-3 rounded-2xl max-w-[85%] leading-relaxed ${
                     m.sender === "user"
-                      ? "bg-[#EE7D60] text-white rounded-tr-xs"
+                      ? "bg-[#EE7D60] text-white rounded-tr-xs shadow-xs font-medium"
                       : "bg-white text-[#161616] rounded-tl-xs shadow-2xs border border-black/5"
                   }`}
                 >
@@ -114,16 +145,18 @@ export function ChatWithUsWidget() {
           </div>
 
           {/* Quick Prompts */}
-          <div className="px-3 py-2 bg-white border-t border-black/5 flex gap-1.5 overflow-x-auto text-[11px]">
+          <div className="px-3 py-2 bg-white/90 border-t border-black/5 flex gap-1.5 overflow-x-auto text-[11px]">
             <button
+              type="button"
               onClick={() => handleSend("How does credit pricing work?")}
-              className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 whitespace-nowrap cursor-pointer"
+              className="liquid-glass-control px-2.5 py-1 rounded-full text-slate-700 whitespace-nowrap cursor-pointer hover:text-[#EE7D60] transition-colors"
             >
               Pricing info?
             </button>
             <button
+              type="button"
               onClick={() => handleSend("How does Instagram Auto DM work?")}
-              className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 whitespace-nowrap cursor-pointer"
+              className="liquid-glass-control px-2.5 py-1 rounded-full text-slate-700 whitespace-nowrap cursor-pointer hover:text-[#EE7D60] transition-colors"
             >
               Auto DM info?
             </button>
@@ -135,19 +168,21 @@ export function ChatWithUsWidget() {
               e.preventDefault();
               handleSend();
             }}
-            className="p-3 bg-white border-t border-black/5 flex items-center gap-2"
+            className="p-3 bg-white/95 border-t border-black/5 flex items-center gap-2"
           >
             <input
               type="text"
               placeholder="Ask a question..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs text-[#161616] placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EE7D60]"
+              aria-label="Message to assistant"
+              className="flex-1 px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs text-[#161616] placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EE7D60]"
             />
             <button
               type="submit"
               disabled={!input.trim()}
-              className="w-8 h-8 rounded-xl bg-[#EE7D60] text-white flex items-center justify-center hover:bg-[#D96549] transition-colors disabled:opacity-40 shrink-0 cursor-pointer"
+              aria-label="Send message"
+              className="w-8 h-8 rounded-xl bg-[#EE7D60] text-white flex items-center justify-center hover:bg-[#D96549] transition-colors disabled:opacity-40 shrink-0 cursor-pointer shadow-xs"
             >
               <Send className="w-3.5 h-3.5" />
             </button>
@@ -159,15 +194,18 @@ export function ChatWithUsWidget() {
       <div className="flex items-center gap-2">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white text-[#161616] text-xs font-bold shadow-md hover:bg-slate-50 border border-black/5 transition-all cursor-pointer select-none"
+          aria-expanded={isOpen}
+          aria-label={isOpen ? "Close QuickReply Assistant" : "Chat with QuickReply Assistant"}
+          className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full liquid-glass-control text-[#161616] text-xs font-bold hover:bg-white/80 transition-all cursor-pointer select-none"
         >
-          <span>Chat with us</span>
+          <span>{isOpen ? "Close chat" : "Chat with us"}</span>
         </button>
 
         <button
           onClick={() => setIsOpen(!isOpen)}
+          aria-expanded={isOpen}
           className="w-13 h-13 rounded-2xl bg-[#EE7D60] hover:bg-[#D96549] text-white flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
-          aria-label="Chat with us"
+          aria-label={isOpen ? "Close chat window" : "Open chat window"}
         >
           {isOpen ? (
             <X className="w-6 h-6" />

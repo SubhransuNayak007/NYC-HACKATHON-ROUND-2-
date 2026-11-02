@@ -17,14 +17,14 @@ import {
   Users,
   Filter,
 } from "lucide-react";
-import { MySamparkHeader } from "@/frontend/components/landing/MySamparkHeader";
-import { MySamparkFooter } from "@/frontend/components/landing/MySamparkFooter";
+import { Navbar } from "@/frontend/components/landing/Navbar";
+import { Footer } from "@/frontend/components/landing/Footer";
 import { UnifiedInboxMockup } from "@/frontend/components/landing/graphics/UnifiedInboxMockup";
 
 export default function UnifiedInboxFeaturePage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F6F0] text-[#161616] selection:bg-[#EE7D60]/20 font-sans">
-      <MySamparkHeader />
+      <Navbar />
 
       <main className="flex-1 pt-28 pb-24">
         {/* Hero Section */}
@@ -161,7 +161,7 @@ export default function UnifiedInboxFeaturePage() {
         </section>
       </main>
 
-      <MySamparkFooter />
+      <Footer />
     </div>
   );
 }

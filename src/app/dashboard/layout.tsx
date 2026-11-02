@@ -5,6 +5,7 @@ import Sidebar from "@/frontend/components/Sidebar";
 import Header from "@/frontend/components/Header";
 import CommandPalette from "@/frontend/components/CommandPalette";
 import PageTransition from "@/frontend/components/ui/PageTransition";
+import { DashboardScrollProvider } from "@/frontend/components/providers/DashboardScrollProvider";
 import { useUIStore } from "@/frontend/store";
 import { useAutoRefresh } from "@/frontend/hooks/useAuth";
 import { AnimatePresence, motion } from "framer-motion";
@@ -74,7 +75,7 @@ export default function DashboardLayout({
   }, []);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden overflow-x-hidden bg-surface-50 font-sans">
+    <div className="dashboard-root flex h-screen w-full overflow-hidden overflow-x-hidden bg-surface-50 font-sans">
       {/* Animated background blobs */}
       <div className="blob-container">
         <div className="blob blob-navy w-[500px] h-[500px] -top-40 -left-40 animate-float" />
@@ -86,18 +87,16 @@ export default function DashboardLayout({
       <Sidebar />
 
       {/* 2. Main content area */}
-      <div className={`flex flex-col flex-1 h-full min-w-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] relative z-10 ${
+      <div className={`flex flex-col flex-1 h-screen max-h-screen min-h-0 min-w-0 overflow-hidden relative z-10 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         sidebarCollapsed ? "md:pl-[72px]" : "md:pl-[72px] lg:pl-[260px]"
       }`}>
         {/* Top Header */}
         <Header />
 
-        {/* Scrollable Canvas area */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar flex flex-col">
-          <div className="max-w-[1400px] w-full mx-auto page-enter flex-1 flex flex-col">
-            <PageTransition>{children}</PageTransition>
-          </div>
-        </main>
+        {/* Scrollable Canvas area with Ultra-Smooth Lenis Container Physics */}
+        <DashboardScrollProvider>
+          <PageTransition>{children}</PageTransition>
+        </DashboardScrollProvider>
       </div>
 
       {/* 3. Global Command Palette Modal */}
@@ -111,7 +110,7 @@ export default function DashboardLayout({
             animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: 10, scale: 0.95, filter: 'blur(4px)' }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl px-5 py-3.5 shadow-elevated-lg max-w-sm text-sm font-semibold glass-strong
+            className={`fixed bottom-4 left-4 right-4 sm:bottom-6 sm:left-auto sm:right-6 sm:max-w-sm z-50 flex items-center gap-3 rounded-2xl px-5 py-3.5 shadow-elevated-lg max-w-full text-sm font-semibold glass-strong
               ${toast.type === "success" ? "border-mint-400/30 text-mint-600" : ""}
               ${toast.type === "error" ? "border-coral-400/30 text-coral-600" : ""}
               ${toast.type === "warning" ? "border-volt-500/30 text-volt-700" : ""}

@@ -1,12 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import {
-  CheckCircle2,
-  ArrowRight,
-  Sparkles,
-} from "lucide-react";
+import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
 import Link from "next/link";
 import {
   CommentToDMMockup,
@@ -17,228 +12,262 @@ import {
   PartnerLeaderboardMockup,
   StorefrontWidgetMockup,
 } from "./graphics";
-import {
-  heavyCardSpring,
-  appleSpring,
-  tactileButtonTap,
-} from "@/frontend/lib/physicsMotion";
-import { FlipButton } from "./FlipButton";
 
-interface FeatureCardData {
-  number: string;
-  isAccentNumber?: boolean;
+export interface OmnichannelCard {
+  num: string;
   category: string;
   title: string;
   description: string;
-  bgColor: string;
-  href: string;
-  pills: string[];
+  bullets: string[];
   ctaText: string;
-  mockup: React.ReactNode;
+  ctaHref: string;
+  bgColor: string;
+  rightMockup: React.ReactNode;
 }
 
-const FEATURE_CARDS: FeatureCardData[] = [
+export const SEVEN_ENGINE_CONFIG: Omit<OmnichannelCard, "rightMockup">[] = [
   {
-    number: "01",
-    isAccentNumber: true,
-    category: "Instagram & Facebook Automation",
+    num: "01",
+    category: "INSTAGRAM & FACEBOOK AUTOMATION",
     title: "Comment to DM, automatically",
     description:
-      'Someone comments "price" or "link" and QuickReply instantly answers publicly, then sends a private DM with the exact product, real-time inventory, and 1-click checkout.',
-    bgColor: "#FFFFFF", // 01/07: Pure White with pink accent
-    href: "/features/auto-dm",
-    pills: ["Keyword Triggers", "Public Reply + Instant DM", "Live Product Cards", "1.2s Turnaround"],
-    ctaText: "Explore Comment to DM",
-    mockup: <CommentToDMMockup />,
+      "Someone comments 'price' or 'link' and QuickReply instantly answers publicly, then sends a private DM with the exact product, real-time inventory, and 1-click checkout.",
+    bullets: ["Public + Private Reply", "Real-Time Stock Check", "1-Click Direct Checkout"],
+    ctaText: "Learn more about Comment to DM, automatically",
+    ctaHref: "/features/comment-to-dm",
+    bgColor: "#FDF2F0", // 00:17 Soft Blush
   },
   {
-    number: "02",
-    category: "AI Product Knowledge Base",
+    num: "02",
+    category: "AI PRODUCT KNOWLEDGE BASE",
     title: "Answers that come from your catalog",
     description:
       "Connect your Shopify store or upload your catalog CSV once. Price, size, stock, return policies, and shipping timelines get answered with 100% verified facts instead of AI hallucinations.",
-    bgColor: "#7FE8E3", // 02/07: Authentic Turquoise
-    href: "/features/knowledge-base",
-    pills: ["Real Stock & Sizing", "Zero AI Hallucinations", "Multi-Currency Ready", "Shopify & CSV Sync"],
-    ctaText: "Explore Catalog AI",
-    mockup: <CatalogRAGMockup />,
+    bullets: ["Real Stock & Sizing", "Zero Hallucinations", "Multi-Currency Support"],
+    ctaText: "Learn more about Answers that come from your catalog",
+    ctaHref: "/features/catalog-rag",
+    bgColor: "#F0FAF4", // 00:18 Soft Mint
   },
   {
-    number: "03",
-    category: "Automated Outreach & Campaigns",
-    title: "Campaigns that turn followers into buyers",
-    description:
-      "Re-engage high-intent commenters, send WhatsApp flash-sale drops, and turn casual profile visitors into paying repeat customers with targeted interactive message sequences.",
-    bgColor: "#52DAC6", // 03/07: Authentic Mint
-    href: "/features/campaigns",
-    pills: ["Targeted Broadcasts", "Abandoned DM Recovery", "WhatsApp Flow Funnels", "Flash Drop Triggers"],
-    ctaText: "Explore Campaigns",
-    mockup: <AnalyticsROIGraph />,
-  },
-  {
-    number: "04",
-    category: "Multi-Channel Scheduler & AI Publisher",
-    title: "Write once, post everywhere",
-    description:
-      "Compose once with tailored copy adaptation for Instagram, Facebook, LinkedIn, Telegram, and X. Set publishing dates and let our background worker post automatically.",
-    bgColor: "#FBF380", // 04/07: Authentic Pastel Yellow
-    href: "/features/campaigns",
-    pills: ["Cross-Platform Queue", "AI Caption Adaptation", "Optimal Timing Engine", "Visual Asset Preview"],
-    ctaText: "Explore Scheduler",
-    mockup: <SchedulerCalendarMockup />,
-  },
-  {
-    number: "05",
-    category: "Unified Omnichannel Inbox",
-    title: "One inbox for every conversation",
+    num: "03",
+    category: "UNIFIED MULTI-CHANNEL INBOX",
+    title: "One calm inbox for every channel",
     description:
       "Instagram DMs, WhatsApp Business, Telegram Bot messages, LinkedIn discussions, and Facebook inquiries all stream into one clean command center.",
-    bgColor: "#D6F379", // 05/07: Authentic Lime Green
-    href: "/features/unified-inbox",
-    pills: ["Omnichannel Sync", "VIP Lead Routing", "1-Click Human Handoff", "Team Collaboration"],
-    ctaText: "Explore Unified Inbox",
-    mockup: <UnifiedInboxMockup />,
+    bullets: ["Omnichannel Sync", "VIP Lead Routing", "1-Click Human Handoff"],
+    ctaText: "Learn more about One calm inbox for every channel",
+    ctaHref: "/features/unified-inbox",
+    bgColor: "#ECF8F2", // 00:19 Sage Cream
   },
   {
-    number: "06",
-    category: "Autonomous Web Chat Widget",
-    title: "Answer visitors on your website too",
+    num: "04",
+    category: "MULTI-CHANNEL SCHEDULER",
+    title: "Plan and schedule posts everywhere",
+    description:
+      "Compose once with tailored copy adaptation for Instagram, Facebook, LinkedIn, Telegram, and X. Set publishing dates and let our background worker post automatically.",
+    bullets: ["Cross-Platform Queue", "AI Caption Generator", "Optimal Timing Engine"],
+    ctaText: "Learn more about Plan and schedule posts everywhere",
+    ctaHref: "/features/scheduler",
+    bgColor: "#FEF9E6", // 00:20 Buttercream Yellow
+  },
+  {
+    num: "05",
+    category: "CONVERSION & REVENUE ANALYTICS",
+    title: "Real analytics, real ROI",
+    description:
+      "Track how many comments turned into DMs, how many DMs clicked checkout, and exact revenue attributed to autonomous replies.",
+    bullets: ["99.1% Faster Response", "Funnel Attribution", "Live GMV Ledger"],
+    ctaText: "Learn more about Real analytics",
+    ctaHref: "/features/analytics",
+    bgColor: "#FBF5E6", // 00:21 Warm Sand
+  },
+  {
+    num: "06",
+    category: "PARTNER MARKETING & AFFILIATE ENGINE",
+    title: "Turn your customers into brand partners",
+    description:
+      "Automatically issue custom referral links and discount codes inside DMs and track creator-driven sales without manual spreadsheets.",
+    bullets: ["Auto-Generated Codes", "Creator ROI Tracking", "Instant Payout Ledger"],
+    ctaText: "Learn more about Partner marketing",
+    ctaHref: "/features/partner-marketing",
+    bgColor: "#F4F1FA", // 00:21 Soft Lavender (Fixes 00:21 opacity bug!)
+  },
+  {
+    num: "07",
+    category: "AUTONOMOUS WEB CHAT WIDGET",
+    title: "Live AI sales agent on your website",
     description:
       "Embed a single line of script to add an intelligent shopping assistant to your website. Answers sizing, verifies stock in real-time, and transfers seamlessly to WhatsApp.",
-    bgColor: "#F6C15C", // 06/07: Authentic Golden Amber
-    href: "/features/chat-widget",
-    pills: ["1-Line Embed Script", "Live Cart Sync", "WhatsApp Instant Transfer", "Zero Latency Answers"],
-    ctaText: "Explore Web Chat",
-    mockup: <StorefrontWidgetMockup />,
-  },
-  {
-    number: "07",
-    category: "Partner Marketing & Affiliate Engine",
-    title: "One campaign, every partner",
-    description:
-      "Generate custom referral links and coupon codes in seconds. Let influencers and loyal customers earn commission while driving recurring sales to your store.",
-    bgColor: "#E0D8FD", // 07/07: Authentic Lavender
-    href: "/features/partner-marketing",
-    pills: ["Instant Referral Codes", "Automated Payouts", "Creator Leaderboard", "Attributed Revenue"],
-    ctaText: "Explore Partner Hub",
-    mockup: <PartnerLeaderboardMockup />,
+    bullets: ["1-Line Embed Script", "Live Cart Sync", "WhatsApp Instant Transfer"],
+    ctaText: "Learn more about Live AI sales agent on your website",
+    ctaHref: "/features/chat-widget",
+    bgColor: "#EEFBF6", // 00:22 Seafoam Mint
   },
 ];
 
-interface StackingCardProps {
-  card: FeatureCardData;
-  index: number;
-  totalCards: number;
-}
+export const SEVEN_ENGINE_CARDS = SEVEN_ENGINE_CONFIG;
 
-function StackingCardItem({ card, index, totalCards }: StackingCardProps) {
+export function OmnichannelCardHolder({ cards }: { cards: OmnichannelCard[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start start", "end start"],
+    offset: ["start start", "end end"],
   });
 
-  const isLast = index === totalCards - 1;
+  return (
+    <section id="features" className="bg-[#FAF8F5] py-24 relative">
+      <div className="mx-auto mb-16 max-w-3xl text-center px-6">
+        <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-1 text-[11px] font-bold tracking-[0.14em] uppercase">
+          ✦ THE COMPLETE OMNICHANNEL SUITE
+        </span>
+        <h2 className="mt-4 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-[#18181B] uppercase leading-none">
+          EVERYTHING IT DOES
+        </h2>
+        <p className="mt-4 text-base text-black/60 max-w-2xl mx-auto font-medium">
+          Seven purpose-built engines working in harmony to capture leads, answer
+          questions from verified inventory, and generate sales around the clock.
+        </p>
+      </div>
 
-  // Smooth physical depth scale: stacks smoothly from 1.0 down to 0.96
-  const scale = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [1, isLast ? 1 : 0.96]
+      {/* Scroll Runway for the 7-Card Holder */}
+      <div
+        ref={containerRef}
+        className="relative mx-auto max-w-[1240px] px-4 md:px-8 h-auto lg:h-[calc(7*88vh)]"
+      >
+        {cards.map((card, i) => {
+          const targetScale = 1 - (cards.length - 1 - i) * 0.03;
+          const startCompression = i / cards.length;
+
+          return (
+            <CardHolderSlot
+              key={card.num}
+              index={i}
+              total={cards.length}
+              card={card}
+              globalProgress={scrollYProgress}
+              compressionRange={[startCompression, 1]}
+              targetScale={targetScale}
+            />
+          );
+        })}
+      </div>
+    </section>
   );
+}
 
-  // Subtle physical shadow overlay for stacked cards below
-  const depthOverlayOpacity = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [0, isLast ? 0 : 0.07]
+function CardHolderSlot({
+  index,
+  total,
+  card,
+  globalProgress,
+  compressionRange,
+  targetScale,
+}: {
+  index: number;
+  total: number;
+  card: OmnichannelCard;
+  globalProgress: MotionValue<number>;
+  compressionRange: [number, number];
+  targetScale: number;
+}) {
+  const slotRef = useRef<HTMLDivElement>(null);
+  const [isDesktop, setIsDesktop] = React.useState(false);
+
+  React.useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Desktop sticky offset: 76px base + 34px lip per previous card; on mobile cards stack in natural flow
+  const slotTopPx = 76 + index * 34;
+
+  // Scale & brightness compression when newer cards stack on top (desktop only)
+  const scale = useTransform(globalProgress, compressionRange, [1, targetScale]);
+  const brightness = useTransform(
+    globalProgress,
+    compressionRange,
+    [1, 1 - (total - 1 - index) * 0.035]
   );
-
-  // Sticky top offset to preserve visible header layer
-  const topOffset = `calc(4.25rem + ${index * 12}px)`;
+  const brightnessFilter = useTransform(brightness, (b) => `brightness(${b})`);
 
   return (
     <div
-      ref={containerRef}
-      className="min-h-[75vh] sm:min-h-[85vh] lg:min-h-[92vh] flex items-start justify-center relative pb-8 sm:pb-16"
+      ref={slotRef}
+      style={{
+        top: isDesktop ? `${slotTopPx}px` : undefined,
+        zIndex: index + 10,
+      }}
+      className="relative lg:sticky flex min-h-[460px] sm:min-h-[520px] lg:h-[82vh] items-start justify-center will-change-transform mb-8 lg:mb-0"
     >
       <motion.div
         style={{
           backgroundColor: card.bgColor,
-          scale,
-          top: topOffset,
-          zIndex: index + 1,
+          scale: isDesktop ? scale : 1,
+          x: 0,
+          rotateZ: 0,
+          filter: isDesktop ? brightnessFilter : undefined,
           transformOrigin: "top center",
-          willChange: "transform",
         }}
-        initial={{ opacity: 0, y: 40, scale: 0.97 }}
-        whileInView={{ opacity: 1, y: 0, scale: 1 }}
-        viewport={{ once: true, amount: 0.12 }}
-        transition={heavyCardSpring}
-        className="w-full sticky rounded-[28px] sm:rounded-[44px] p-5 sm:p-9 lg:p-12 shadow-2xl border border-black/10 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 items-center relative"
+        className="w-full rounded-[28px] sm:rounded-[32px] border border-black/[0.08] p-5 sm:p-8 md:p-11 shadow-[0_-20px_40px_-4px_rgba(0,0,0,0.12),0_25px_60px_-15px_rgba(0,0,0,0.06)] will-change-transform overflow-hidden"
       >
-        {/* Physical depth overlay for stacked cards */}
-        <motion.div
-          className="absolute inset-0 bg-black pointer-events-none rounded-[32px] sm:rounded-[44px]"
-          style={{ opacity: depthOverlayOpacity }}
-        />
-
-        {/* Left Column: Headline, Description, Pills & Pill CTA */}
-        <div className="lg:col-span-5 space-y-6 relative z-10">
-          
-          {/* Card Number & Category Tag */}
-          <div className="flex items-center gap-3">
-            <div className="font-mono text-2xl sm:text-3xl font-black text-[#161616] tracking-tight">
-              <span>{card.number}</span>
-              <span className={card.isAccentNumber ? "text-[#EE7D60] font-bold text-xl sm:text-2xl" : "text-[#161616]/40 font-bold text-xl sm:text-2xl"}>
-                /07
-              </span>
-            </div>
-            <span className="h-4 w-px bg-black/15" />
-            <span className="text-xs font-mono font-bold tracking-wider text-[#161616]/75 uppercase">
-              {card.category}
-            </span>
-          </div>
-
-          {/* Title */}
-          <h3 className="text-3xl sm:text-4xl lg:text-[42px] font-black text-[#161616] leading-[1.15] tracking-tight">
-            {card.title}
-          </h3>
-
-          {/* Description */}
-          <p className="text-sm sm:text-base text-[#161616]/85 leading-relaxed font-medium">
-            {card.description}
-          </p>
-
-          {/* Feature Checkmark Pills */}
-          <div className="flex flex-wrap gap-2 pt-1">
-            {card.pills.map((pill) => (
-              <span
-                key={pill}
-                className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-xs text-xs font-bold text-[#161616] shadow-2xs border border-black/8"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>{pill}</span>
-              </span>
-            ))}
-          </div>
-
-          {/* Pill CTA Button with Rolling Flip Animation */}
-          <div className="pt-2">
-            <FlipButton
-              href={card.href}
-              text={card.ctaText}
-              variant="white-pill"
-              icon={true}
-            />
-          </div>
+        {/* Exposed Card-Holder Top Lip (Always visible even when stacked) */}
+        <div
+          onClick={() =>
+            slotRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+          }
+          className="mb-6 flex cursor-pointer items-center justify-between border-b border-black/[0.06] pb-3 select-none"
+        >
+          <span className="font-mono text-xs font-bold tracking-[0.14em] text-black/60 uppercase">
+            {`${card.num} // ${card.category}`}
+          </span>
+          <span className="rounded-full bg-black/[0.06] px-3 py-0.5 font-mono text-[11px] font-semibold text-black/70">
+            ENGINE {card.num} / 0{total}
+          </span>
         </div>
 
-        {/* Right Column: Interactive Mockup Graphics */}
-        <div className="lg:col-span-7 relative z-10 flex items-center justify-center">
-          <div className="w-full flex justify-center">
-            {card.mockup}
+        {/* Two-Column Card Interior (Matches 00:17 - 00:22 layout) */}
+        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
+          {/* Left Column: Copy & Bullets */}
+          <div className="lg:col-span-5 text-left">
+            <h3 className="font-sans text-3xl font-black tracking-tight text-[#18181B] sm:text-4xl md:text-[42px] uppercase md:leading-[1.08]">
+              {card.title}
+            </h3>
+            <p className="mt-4 text-[15px] leading-relaxed text-black/65 font-medium">
+              {card.description}
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-2">
+              {card.bullets.map((b) => (
+                <span
+                  key={b}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/80 px-3.5 py-1.5 text-xs font-semibold text-[#18181B] shadow-2xs"
+                >
+                  <span className="text-emerald-600 font-bold">✓</span> {b}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-8">
+              <Link href={card.ctaHref || "#"}>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#18181B] px-6 py-3.5 text-xs font-bold text-white transition-transform hover:scale-[1.03] active:scale-[0.98] shadow-md cursor-pointer"
+                >
+                  <span>{card.ctaText}</span>
+                  <span>→</span>
+                </button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Right Column: High-Craft Interactive Interior Graphic Mockup */}
+          <div className="lg:col-span-7 flex items-center justify-center overflow-hidden">
+            <div className="w-full flex justify-center transform scale-95 sm:scale-100 origin-center">
+              {card.rightMockup}
+            </div>
           </div>
         </div>
       </motion.div>
@@ -247,45 +276,38 @@ function StackingCardItem({ card, index, totalCards }: StackingCardProps) {
 }
 
 export function MySamparkEverythingItDoes() {
-  return (
-    <section className="py-20 sm:py-28 bg-[#F5F6F0] relative overflow-hidden" id="features">
-      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Header */}
-        <div className="text-center space-y-4 mb-14 sm:mb-20 max-w-4xl mx-auto">
-          
-          {/* Top Pill Tag */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-black/10 text-xs font-bold text-[#161616] shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5 text-[#EE7D60]" />
-            <span>THE COMPLETE OMNICHANNEL SUITE</span>
-          </div>
+  const cardsWithMockups: OmnichannelCard[] = [
+    {
+      ...SEVEN_ENGINE_CONFIG[0],
+      rightMockup: <CommentToDMMockup />,
+    },
+    {
+      ...SEVEN_ENGINE_CONFIG[1],
+      rightMockup: <CatalogRAGMockup />,
+    },
+    {
+      ...SEVEN_ENGINE_CONFIG[2],
+      rightMockup: <UnifiedInboxMockup />,
+    },
+    {
+      ...SEVEN_ENGINE_CONFIG[3],
+      rightMockup: <SchedulerCalendarMockup />,
+    },
+    {
+      ...SEVEN_ENGINE_CONFIG[4],
+      rightMockup: <AnalyticsROIGraph />,
+    },
+    {
+      ...SEVEN_ENGINE_CONFIG[5],
+      rightMockup: <PartnerLeaderboardMockup />,
+    },
+    {
+      ...SEVEN_ENGINE_CONFIG[6],
+      rightMockup: <StorefrontWidgetMockup />,
+    },
+  ];
 
-          {/* Headline: EVERYTHING IT [DOES.] with DOES. in amber pill #FDD871 */}
-          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-[#161616] tracking-tight uppercase leading-tight">
-            EVERYTHING IT{" "}
-            <span className="inline-flex items-center px-4 sm:px-6 py-0.5 sm:py-1 rounded-full bg-[#FDD871] text-[#161616] align-baseline">
-              DOES.
-            </span>
-          </h2>
-
-          {/* Subtitle */}
-          <p className="text-base sm:text-xl text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
-            Seven pieces of one system — from the first comment to the post that brings in the next one.
-          </p>
-        </div>
-
-        {/* 7 Stacking Cards Stream */}
-        <div className="space-y-6">
-          {FEATURE_CARDS.map((card, index) => (
-            <StackingCardItem
-              key={card.number}
-              card={card}
-              index={index}
-              totalCards={FEATURE_CARDS.length}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+  return <OmnichannelCardHolder cards={cardsWithMockups} />;
 }
+
+export default MySamparkEverythingItDoes;

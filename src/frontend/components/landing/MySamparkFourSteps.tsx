@@ -1,380 +1,362 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Check, CheckCircle2, Sparkles, ShoppingBag, ArrowRight } from "lucide-react";
-import { appleSpring, heavyCardSpring, tactileButtonTap } from "@/frontend/lib/physicsMotion";
+import React, { useRef, useState, useEffect } from "react";
+import { motion, useScroll, useTransform, useSpring, MotionValue } from "framer-motion";
 
-interface CatalogItem {
-  id: string;
-  name: string;
-  price: string;
-  image: string;
-  selected: boolean;
+export interface StepCardData {
+  step: string;
+  color: string;
+  textColor: string;
+  title: string;
+  subtitle: string;
+  mockup: React.ReactNode;
 }
 
-export function MySamparkFourSteps() {
-  // Step 1 interactive state: catalog items
-  const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([
-    {
-      id: "1",
-      name: "Vintage Biker Jacket",
-      price: "₹3,499",
-      image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=200&auto=format&fit=crop&q=80",
-      selected: true,
-    },
-    {
-      id: "2",
-      name: "Oversized Heavy Tee",
-      price: "₹1,199",
-      image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=200&auto=format&fit=crop&q=80",
-      selected: true,
-    },
-    {
-      id: "3",
-      name: "Linen Relaxed Shirt",
-      price: "₹1,699",
-      image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=200&auto=format&fit=crop&q=80",
-      selected: false,
-    },
-    {
-      id: "4",
-      name: "Street Retro Sneaker",
-      price: "₹4,299",
-      image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&auto=format&fit=crop&q=80",
-      selected: true,
-    },
-  ]);
+export const STEPS_DATA: StepCardData[] = [
+  {
+    step: "1",
+    color: "#F5BE41", // Warm Yellow (00:06)
+    textColor: "#161615",
+    title: "Make it yours",
+    subtitle: "Set your colours, your logo and your welcome message.",
+    mockup: (
+      <div className="rounded-2xl bg-white p-4 text-left shadow-xs">
+        <p className="text-[11px] font-medium text-neutral-400">Widget style</p>
+        <div className="mt-2.5 flex gap-2">
+          {["#F05A28", "#2EB67D", "#3B82F6", "#8B5CF6", "#161615"].map((c, i) => (
+            <span
+              key={c}
+              style={{ backgroundColor: c }}
+              className={`h-6 w-6 rounded-full transition-transform hover:scale-110 ${i === 0 ? "ring-2 ring-offset-2 ring-[#F05A28]" : ""}`}
+            />
+          ))}
+        </div>
+        <div className="mt-4 flex items-center gap-2.5 border-t border-neutral-100 pt-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F05A28] text-xs font-bold text-white shadow-xs">
+            Q
+          </div>
+          <div>
+            <p className="text-xs font-bold text-neutral-900">QuickReply Store</p>
+            <p className="text-[10px] text-emerald-600 font-semibold">● Online now</p>
+          </div>
+        </div>
+        <div className="mt-3 rounded-xl bg-neutral-100 px-3 py-2 text-xs text-neutral-700">
+          Hi! How can I help you today?
+        </div>
+      </div>
+    ),
+  },
+  {
+    step: "2",
+    color: "#5596F6", // Cornflower Blue (00:07)
+    textColor: "#161615",
+    title: "Add your knowledge",
+    subtitle: "Your products, your pages and your own answers.",
+    mockup: (
+      <div className="space-y-2.5 text-left">
+        <div className="rounded-2xl bg-white p-4 shadow-xs">
+          <p className="text-[11px] font-medium text-neutral-400">Knowledge</p>
+          <div className="mt-2.5 space-y-2 text-xs">
+            <div className="flex justify-between">
+              <span className="font-medium text-neutral-800">✓ Products</span>
+              <span className="text-neutral-400 font-mono">48 items</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium text-neutral-800">✓ Your pages</span>
+              <span className="text-neutral-400 font-mono">12 synced</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium text-neutral-800">✓ Your Q&A</span>
+              <span className="text-neutral-400 font-mono">19 entries</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2.5 rounded-2xl bg-white p-3 shadow-xs">
+          <div className="h-8 w-8 shrink-0 rounded-full bg-neutral-800 flex items-center justify-center text-white text-xs font-bold">
+            P
+          </div>
+          <div className="text-xs">
+            <p className="text-[10px] text-neutral-400">Priya · 2m</p>
+            <p className="font-bold text-neutral-900">Got this in size M ?</p>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    step: "3",
+    color: "#2EB67D", // Emerald Green (00:07)
+    textColor: "#FFFFFF",
+    title: "Paste one snippet",
+    subtitle: "One line on your site. Install detection confirms it.",
+    mockup: (
+      <div className="space-y-2.5 text-left text-neutral-900">
+        <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 shadow-xs">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-xs font-semibold text-neutral-800">quickreply.ai/shop</span>
+        </div>
+        <div className="rounded-2xl bg-white p-4 shadow-xs">
+          <p className="text-[10px] text-neutral-400">Paste before &lt;/body&gt;</p>
+          <code className="mt-1.5 block rounded-lg bg-neutral-100 p-2 text-[10px] font-mono text-emerald-700 select-all">
+            &lt;script src=&quot;https://quickreply.ai/w.js&quot; /&gt;
+          </code>
+          <button
+            type="button"
+            className="mt-2.5 w-full rounded-lg bg-[#2EB67D] py-1.5 text-center text-xs font-bold text-white shadow-xs transition-opacity hover:opacity-90 cursor-pointer"
+          >
+            Copy snippet
+          </button>
+        </div>
+        <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-neutral-800 shadow-xs">
+          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] text-white">
+            ✓
+          </span>
+          Install detected
+        </div>
+      </div>
+    ),
+  },
+  {
+    step: "4",
+    color: "#F05A28", // Signature Orange (00:08)
+    textColor: "#161615",
+    title: "It answers 24/7",
+    subtitle: "Every visitor gets a reply. Take over whenever you want.",
+    mockup: (
+      <div className="space-y-2 text-left">
+        {[
+          { sub: "In stock, ₹1,499", time: "now" },
+          { sub: "Ships in 24 hrs", time: "2m ago" },
+          { sub: "Size guide sent", time: "5m ago" },
+        ].map((row, idx) => (
+          <div
+            key={idx}
+            className="flex items-center justify-between rounded-2xl bg-white px-3.5 py-2.5 shadow-xs"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="h-7 w-7 rounded-full bg-neutral-200 flex items-center justify-center text-[10px] font-bold text-neutral-700">
+                💬
+              </div>
+              <div>
+                <p className="text-xs font-bold text-neutral-900">Answered {row.time}</p>
+                <p className="text-[10px] text-neutral-400">{row.sub}</p>
+              </div>
+            </div>
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] text-white">
+              ✓
+            </span>
+          </div>
+        ))}
+        <div className="flex items-center justify-between rounded-xl bg-white px-3 py-2 shadow-xs">
+          <span className="text-[11px] text-emerald-600 font-semibold">● AI is replying</span>
+          <span className="rounded-full bg-neutral-900 px-2.5 py-1 text-[10px] font-bold text-white shadow-xs">
+            Take over
+          </span>
+        </div>
+      </div>
+    ),
+  },
+];
 
-  // Step 2 interactive state: keyword triggers
-  const [triggers, setTriggers] = useState([
-    { name: "price", active: true },
-    { name: "link", active: true },
-    { name: "size", active: true },
-    { name: "buy", active: true },
-    { name: "coupon", active: false },
-    { name: "cod", active: false },
-  ]);
+function StaircaseFolderCard({
+  item,
+  index,
+  progress,
+}: {
+  item: StepCardData;
+  index: number;
+  progress: MotionValue<number>;
+}) {
+  const start = 0.06 + index * 0.14;
+  const end = start + 0.34;
 
-  // Step 3 interactive state: public reply toggle
-  const [publicReplyActive, setPublicReplyActive] = useState(true);
-  const [instantDmActive, setInstantDmActive] = useState(true);
-
-  // Step 4 interactive state: order state
-  const [orderConfirmed, setOrderConfirmed] = useState(true);
-
-  const toggleCatalogItem = (id: string) => {
-    setCatalogItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, selected: !item.selected } : item))
-    );
-  };
-
-  const toggleTrigger = (index: number) => {
-    setTriggers((prev) =>
-      prev.map((t, idx) => (idx === index ? { ...t, active: !t.active } : t))
-    );
-  };
+  const y = useTransform(progress, [start, end], ["105vh", "0vh"]);
 
   return (
-    <section className="py-24 sm:py-32 bg-[#F5F6F0] relative overflow-hidden" id="how-it-works">
-      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
-        
-         {/* Top Tag */}
-        <div className="text-center mb-16 max-w-3xl mx-auto">
-          <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold text-[#161616] bg-white border border-black/5 shadow-2xs mb-4">
+    <motion.div style={{ y }} className="will-change-transform">
+      {/* Top Folder Tab Row */}
+      <div className="relative z-10 flex items-end -mb-[1px]">
+        <div
+          style={{ backgroundColor: item.color, color: item.textColor }}
+          className="flex h-12 w-28 items-center justify-center rounded-t-[20px] font-anton text-xl tracking-wide select-none"
+        >
+          ⚡/{item.step}
+        </div>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          className="block shrink-0 -ml-[1px]"
+          aria-hidden="true"
+        >
+          <path d="M 0 0 Q 0 20 20 20 L 0 20 Z" fill={item.color} />
+        </svg>
+        <span className="sr-only">Step {item.step}</span>
+      </div>
+
+      {/* Main Folder Card Body */}
+      <div
+        style={{ backgroundColor: item.color, color: item.textColor }}
+        className="flex h-[430px] flex-col justify-between rounded-b-[28px] rounded-tr-[28px] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.08)] select-none"
+      >
+        <div className="my-auto">{item.mockup}</div>
+
+        <div className="pt-4 text-center">
+          <h3 className="text-lg font-black tracking-tight">{item.title}</h3>
+          <p className="mt-1 text-xs opacity-85 leading-relaxed">{item.subtitle}</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/**
+ * Mobile-Optimized Folder Tab Card (for < md viewports)
+ */
+function MobileFolderCard({ item }: { item: StepCardData }) {
+  return (
+    <div className="flex flex-col w-full">
+      <div className="relative z-10 flex items-end -mb-[1px]">
+        <div
+          style={{ backgroundColor: item.color, color: item.textColor }}
+          className="flex h-11 w-24 items-center justify-center rounded-t-[18px] font-anton text-lg tracking-wide select-none"
+        >
+          ⚡/{item.step}
+        </div>
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 18 18"
+          fill="none"
+          className="block shrink-0 -ml-[1px]"
+          aria-hidden="true"
+        >
+          <path d="M 0 0 Q 0 18 18 18 L 0 18 Z" fill={item.color} />
+        </svg>
+        <span className="sr-only">Step {item.step}</span>
+      </div>
+
+      <div
+        style={{ backgroundColor: item.color, color: item.textColor }}
+        className="flex h-[390px] flex-col justify-between rounded-b-[24px] rounded-tr-[24px] p-4 shadow-md select-none"
+      >
+        <div className="my-auto">{item.mockup}</div>
+        <div className="pt-3 text-center">
+          <h3 className="text-base font-black tracking-tight">{item.title}</h3>
+          <p className="mt-1 text-xs opacity-85 leading-relaxed">{item.subtitle}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Responsive 4 Steps Component:
+ * - Desktop (>= md): Sticky 320vh Staircase Scroll Cascade with Apple springs
+ * - Mobile (< md): Native touch swipe track with snap points & step indicators
+ */
+export function FourStepsCascadeSection() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 130,
+    damping: 28,
+    mass: 0.35,
+  });
+
+  const headerBlur = useTransform(smoothProgress, [0.05, 0.25], ["blur(0px)", "blur(6px)"]);
+  const headerOpacity = useTransform(smoothProgress, [0.05, 0.35], [1, 0.22]);
+  const headerScale = useTransform(smoothProgress, [0.05, 0.35], [1, 0.94]);
+
+  // Mobile Render
+  if (isMobile) {
+    return (
+      <section className="py-16 bg-[#FAF8F5] overflow-hidden">
+        <div className="text-center mb-8 px-4">
+          <span className="rounded-full border border-black/10 bg-white px-4 py-1.5 text-xs font-semibold text-neutral-700 shadow-xs">
             How it works
-          </div>
-          <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-[#161616] tracking-tight uppercase leading-tight">
-            FROM COMMENT TO SALE <br />
-            IN{" "}
-            <span className="inline-flex items-center px-4 sm:px-6 py-0.5 sm:py-1 rounded-full bg-[#E0D8FD] text-[#161616]">
-              FOUR STEPS.
+          </span>
+          <h2 className="font-anton mt-4 text-4xl tracking-tight text-[#161615] leading-[0.96]">
+            FOUR STEPS FROM QUESTION <br />
+            <span className="mt-2 inline-flex items-center gap-2">
+              TO
+              <span className="inline-block -rotate-2 rounded-[18px] bg-[#F05A28] px-4 py-0.5 text-white shadow-xs">
+                ANSWER.
+              </span>
             </span>
           </h2>
+          <p className="mt-3 text-xs text-neutral-500 font-medium">
+            About five minutes to set up. No calls, no onboarding fee.
+          </p>
         </div>
 
-        {/* 4 Interactive Folder Tabs Grid with Asymmetrical Top Cutouts */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-6 items-stretch">
-          
-          {/* FOLDER TAB 1: S/1 (Pick a post) */}
-          <div className="flex flex-col group cursor-pointer">
-            {/* Asymmetrical Top Tab */}
-            <div className="flex items-end">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-t-2xl bg-[#FBF380] border-t border-x border-black/10 font-mono font-black text-xs text-[#161616] -mb-[1px] z-10 shadow-2xs">
-                <span>S/1</span>
-                <span className="text-[10px] font-bold text-black/60 uppercase">Pick Post</span>
-              </div>
-            </div>
+        {/* Responsive Static Grid on Mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-md sm:max-w-xl mx-auto px-4">
+          {STEPS_DATA.map((item) => (
+            <MobileFolderCard key={item.step} item={item} />
+          ))}
+        </div>
+      </section>
+    );
+  }
 
-            {/* Folder Body with Asymmetrical Shape */}
-            <div className="flex-1 rounded-b-[28px] rounded-tr-[28px] bg-white border border-black/10 p-5 sm:p-6 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between">
-              <div>
-                {/* Interactive Catalog Checkmark Grid */}
-                <div className="p-3 rounded-2xl bg-[#FAF8F5] border border-black/5 mb-5 shadow-2xs">
-                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 mb-2.5">
-                    <span>Active Post Catalog</span>
-                    <span className="text-emerald-700 font-mono">
-                      {catalogItems.filter((i) => i.selected).length}/4 Selected
-                    </span>
-                  </div>
+  // Desktop Render: Sticky 320vh Staircase Cascade
+  return (
+    <section ref={containerRef} className="relative h-[320vh] bg-[#FAF8F5]">
+      <div className="sticky top-0 flex h-screen flex-col items-center justify-center overflow-hidden px-4 sm:px-6">
+        {/* Background Pinned Headline */}
+        <motion.div
+          style={{ filter: headerBlur, opacity: headerOpacity, scale: headerScale }}
+          className="pointer-events-none absolute inset-x-0 top-[18vh] sm:top-[22vh] z-0 flex flex-col items-center text-center px-4"
+        >
+          <span className="rounded-full border border-black/10 bg-white px-4 py-1.5 text-xs font-semibold text-neutral-700 shadow-xs">
+            How it works
+          </span>
+          <h2 className="font-anton mt-5 text-5xl sm:text-6xl md:text-[84px] tracking-tight text-[#161615] leading-[0.96]">
+            FOUR STEPS FROM QUESTION <br />
+            <span className="mt-2 inline-flex items-center gap-3 sm:gap-4">
+              TO
+              <span className="inline-block -rotate-2 rounded-[24px] bg-[#F05A28] px-5 sm:px-6 py-1 text-white shadow-md">
+                ANSWER.
+              </span>
+            </span>
+          </h2>
+          <p className="mt-4 text-xs sm:text-sm text-neutral-500 font-medium">
+            About five minutes to set up. No calls, no onboarding fee.
+          </p>
+        </motion.div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    {catalogItems.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleCatalogItem(item.id);
-                        }}
-                        className={`relative p-2 rounded-xl border text-left transition-all flex flex-col justify-between h-24 overflow-hidden ${
-                          item.selected
-                            ? "bg-white border-black/20 shadow-2xs ring-1 ring-emerald-500/30"
-                            : "bg-slate-100/70 border-black/5 opacity-60 hover:opacity-100"
-                        }`}
-                      >
-                        {/* Background Thumbnail */}
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          loading="lazy"
-                          decoding="async"
-                          className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
-                        />
-                        <div className="flex items-start justify-between relative z-10">
-                          <span className="text-[10px] font-bold text-[#161616] line-clamp-1">
-                            {item.name}
-                          </span>
-                          <div
-                            className={`w-4 h-4 rounded-md flex items-center justify-center transition-all ${
-                              item.selected
-                                ? "bg-emerald-500 text-white"
-                                : "border border-black/20 bg-white"
-                            }`}
-                          >
-                            {item.selected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                          </div>
-                        </div>
-                        <div className="relative z-10 text-[10px] font-black text-slate-800 font-mono">
-                          {item.price}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <h3 className="text-xl font-black text-[#161616] mb-2 tracking-tight">
-                  Pick a post
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
-                  Choose the Instagram Reel, carousel, or Facebook post you want to turn on automated sales for.
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-black/5 flex items-center justify-between text-[11px] text-slate-500 font-bold">
-                <span>Direct Meta Sync</span>
-                <span className="text-emerald-600 font-mono">Ready 🟢</span>
-              </div>
-            </div>
-          </div>
-
-          {/* FOLDER TAB 2: S/2 (Set your triggers) */}
-          <div className="flex flex-col group cursor-pointer">
-            {/* Asymmetrical Top Tab */}
-            <div className="flex items-end">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-t-2xl bg-[#7FE8E3] border-t border-x border-black/10 font-mono font-black text-xs text-[#161616] -mb-[1px] z-10 shadow-2xs">
-                <span>S/2</span>
-                <span className="text-[10px] font-bold text-black/60 uppercase">Set Triggers</span>
-              </div>
-            </div>
-
-            {/* Folder Body with Asymmetrical Shape */}
-            <div className="flex-1 rounded-b-[28px] rounded-tr-[28px] bg-white border border-black/10 p-5 sm:p-6 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between">
-              <div>
-                {/* Interactive Keyword Grid */}
-                <div className="p-3 rounded-2xl bg-[#FAF8F5] border border-black/5 mb-5 shadow-2xs space-y-2.5">
-                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-600">
-                    <span>Keyword Triggers</span>
-                    <span className="text-blue-700 font-mono">Fuzzy AI Active</span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1.5">
-                    {triggers.map((t, idx) => (
-                      <button
-                        key={t.name}
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleTrigger(idx);
-                        }}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all ${
-                          t.active
-                            ? "bg-[#161616] text-white shadow-2xs"
-                            : "bg-white border border-black/10 text-slate-600 hover:border-black/30"
-                        }`}
-                      >
-                        <span>{t.name}</span>
-                        {t.active ? (
-                          <Check className="w-2.5 h-2.5 text-emerald-400" />
-                        ) : (
-                          <span className="text-[10px] text-slate-400">+</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="p-2 rounded-xl bg-white border border-black/5 flex items-center gap-2 text-[11px] text-slate-700">
-                    <Sparkles className="w-3.5 h-3.5 text-[#EE7D60] shrink-0" />
-                    <span className="font-medium truncate">&quot;What is the price of this?&quot;</span>
-                  </div>
-                </div>
-
-                <h3 className="text-xl font-black text-[#161616] mb-2 tracking-tight">
-                  Set your keywords
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
-                  Add words like &quot;price&quot; or let our AI detect purchase intent automatically across languages.
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-black/5 flex items-center justify-between text-[11px] text-slate-500 font-bold">
-                <span>Intent AI Parser</span>
-                <span className="text-blue-600 font-mono">40+ Languages</span>
-              </div>
-            </div>
-          </div>
-
-          {/* FOLDER TAB 3: S/3 (Reply, then DM) */}
-          <div className="flex flex-col group cursor-pointer">
-            {/* Asymmetrical Top Tab */}
-            <div className="flex items-end">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-t-2xl bg-[#52DAC6] border-t border-x border-black/10 font-mono font-black text-xs text-[#161616] -mb-[1px] z-10 shadow-2xs">
-                <span>S/3</span>
-                <span className="text-[10px] font-bold text-black/60 uppercase">Auto DM</span>
-              </div>
-            </div>
-
-            {/* Folder Body with Asymmetrical Shape */}
-            <div className="flex-1 rounded-b-[28px] rounded-tr-[28px] bg-white border border-black/10 p-5 sm:p-6 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between">
-              <div>
-                {/* Interactive Reply + DM Preview */}
-                <div className="p-3 rounded-2xl bg-[#FAF8F5] border border-black/5 mb-5 shadow-2xs space-y-2">
-                  {/* Public Reply Pill */}
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPublicReplyActive(!publicReplyActive);
-                    }}
-                    className={`p-2 rounded-xl border text-[11px] transition-all cursor-pointer flex items-center justify-between ${
-                      publicReplyActive
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-900"
-                        : "bg-white border-black/5 text-slate-400 line-through"
-                    }`}
-                  >
-                    <span className="font-semibold truncate">💬 Public: &quot;Sent you a DM!&quot;</span>
-                    <span className="font-mono text-[9px] font-bold shrink-0">1.2s</span>
-                  </div>
-
-                  {/* Private DM Pill */}
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setInstantDmActive(!instantDmActive);
-                    }}
-                    className={`p-2 rounded-xl border text-[11px] transition-all cursor-pointer flex items-center justify-between ${
-                      instantDmActive
-                        ? "bg-white border-black/10 text-[#161616] shadow-2xs"
-                        : "bg-slate-50 border-black/5 text-slate-400 line-through"
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 truncate">
-                      <ShoppingBag className="w-3 h-3 text-[#EE7D60] shrink-0" />
-                      <span className="font-bold truncate">DM: Leather Jacket ₹3,499</span>
-                    </div>
-                    <span className="text-[9px] text-emerald-600 font-bold shrink-0">Live Cart</span>
-                  </div>
-                </div>
-
-                <h3 className="text-xl font-black text-[#161616] mb-2 tracking-tight">
-                  Reply, then DM
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
-                  A public comment reply to boost algorithm reach, then an instant DM with verified catalog price and link.
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-black/5 flex items-center justify-between text-[11px] text-slate-500 font-bold">
-                <span>Avg Delivery Speed</span>
-                <span className="text-emerald-600 font-mono">⚡ 1.2 sec</span>
-              </div>
-            </div>
-          </div>
-
-          {/* FOLDER TAB 4: S/4 (Customer checks out) */}
-          <div className="flex flex-col group cursor-pointer">
-            {/* Asymmetrical Top Tab */}
-            <div className="flex items-end">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-t-2xl bg-[#E0D8FD] border-t border-x border-black/10 font-mono font-black text-xs text-[#161616] -mb-[1px] z-10 shadow-2xs">
-                <span>S/4</span>
-                <span className="text-[10px] font-bold text-black/60 uppercase">Checkout</span>
-              </div>
-            </div>
-
-            {/* Folder Body with Asymmetrical Shape */}
-            <div className="flex-1 rounded-b-[28px] rounded-tr-[28px] bg-white border border-black/10 p-5 sm:p-6 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between">
-              <div>
-                {/* Interactive Receipt Confirmation */}
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOrderConfirmed(!orderConfirmed);
-                  }}
-                  className="p-3 rounded-2xl bg-[#FAF8F5] border border-black/5 mb-5 shadow-2xs space-y-2 cursor-pointer"
-                >
-                  <div className="flex items-center justify-between text-[10px] text-slate-500">
-                    <span className="font-mono">Order #QR-9402</span>
-                    <span
-                      className={`font-bold flex items-center gap-1 px-2 py-0.5 rounded-full ${
-                        orderConfirmed
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-slate-200 text-slate-600"
-                      }`}
-                    >
-                      <CheckCircle2 className="w-2.5 h-2.5" />
-                      {orderConfirmed ? "Paid Instantly" : "Pending"}
-                    </span>
-                  </div>
-
-                  <div className="flex items-baseline justify-between pt-1">
-                    <span className="text-xs text-slate-600 font-medium">Biker Jacket (M)</span>
-                    <span className="font-mono font-black text-base text-[#161616]">
-                      ₹3,499.00
-                    </span>
-                  </div>
-
-                  <div className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg font-bold flex items-center justify-between">
-                    <span>Attributed by QuickReply</span>
-                    <span>+1 Sale</span>
-                  </div>
-                </div>
-
-                <h3 className="text-xl font-black text-[#161616] mb-2 tracking-tight">
-                  Customer checks out
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
-                  They open the link, pick their size, and complete checkout while they&apos;re still warm.
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-black/5 flex items-center justify-between text-[11px] text-slate-500 font-bold">
-                <span>Checkout Conversion</span>
-                <span className="text-purple-700 font-mono">3.8x Lift 🚀</span>
-              </div>
-            </div>
-          </div>
+        {/* 4 Folder-Tab Cards Rising in Staircase Formation */}
+        <div className="relative z-10 mx-auto grid w-full max-w-[1240px] grid-cols-4 gap-5 pt-16">
+          {STEPS_DATA.map((item, idx) => (
+            <StaircaseFolderCard
+              key={item.step}
+              item={item}
+              index={idx}
+              progress={smoothProgress}
+            />
+          ))}
         </div>
       </div>
     </section>
   );
 }
+
+export const MySamparkFourSteps = FourStepsCascadeSection;
+export default MySamparkFourSteps;

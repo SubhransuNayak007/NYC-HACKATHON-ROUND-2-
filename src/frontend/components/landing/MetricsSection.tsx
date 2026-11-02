@@ -5,24 +5,24 @@ import React from "react";
 export function MetricsSection() {
   const metrics = [
     {
-      value: "< 2.5s",
+      value: "< 3s",
       label: "Average AI Latency",
-      desc: "Fastest response time in conversational commerce",
+      desc: "Fast response time with multi-provider LLM cascade",
     },
     {
-      value: "99.4%",
-      label: "Intent Classification",
-      desc: "Grounded neural classification across 19 categories",
+      value: "19+",
+      label: "Intent Categories",
+      desc: "Grounded semantic classification & rule matching",
     },
     {
-      value: "88%",
-      label: "Support Deflection",
-      desc: "Customer inquiries resolved with zero human intervention",
+      value: "Dual Mode",
+      label: "Rules + AI Routing",
+      desc: "Instant keyword rules with intelligent RAG fallback",
     },
     {
-      value: "0%",
-      label: "Simulated Data",
-      desc: "100% production-ready Baileys and Meta Graph integration",
+      value: "100%",
+      label: "Real-Time APIs",
+      desc: "Direct integration with YouTube, Meta Graph & WhatsApp",
     },
   ];
 

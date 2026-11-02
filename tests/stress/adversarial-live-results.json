@@ -1,0 +1,1096 @@
+{
+  "timestamp": "2026-11-01T08:38:44.864Z",
+  "verdict": "APPROVE",
+  "stats": {
+    "totalAssertions": 79,
+    "passedAssertions": 79,
+    "failedAssertions": 0
+  },
+  "scenarios": [
+    {
+      "scenarioKey": "Scenario A",
+      "title": "Gmail invoices -> Sheets -> Telegram alert",
+      "prompt": "When I receive an invoice in Gmail, extract the invoice number, vendor, amount and due date. Add everything to Google Sheets. If it exceeds ₹50,000, notify me on Telegram.",
+      "requests": [
+        {
+          "step": "init_conversation",
+          "endpoint": "POST /api/ai/conversations",
+          "statusCode": 200,
+          "latencyMs": 134,
+          "response": {
+            "success": true,
+            "conversation": {
+              "id": "conv_bf140dc8",
+              "tenantId": "verifier_challenger_quickreply_ai",
+              "workspaceId": "ws_verifier_challenger_quickreply_ai",
+              "title": "Live Test: Gmail invoices -> Sheets -> Telegram alert",
+              "status": "ACTIVE",
+              "createdAt": "2026-11-01T08:38:20.479Z",
+              "updatedAt": "2026-11-01T08:38:20.479Z",
+              "lastMessageAt": "2026-11-01T08:38:20.479Z"
+            }
+          }
+        },
+        {
+          "step": "send_message_and_compile",
+          "endpoint": "POST /api/ai/conversations/conv_bf140dc8/messages",
+          "statusCode": 200,
+          "latencyMs": 522,
+          "response": {
+            "specId": "wf_96d210da",
+            "name": "Automated Invoice Processing & Alert Pipeline",
+            "stepsCount": 4,
+            "dagNodesCount": 5,
+            "dagEdgesCount": 4
+          }
+        },
+        {
+          "step": "run_synthetic_test",
+          "endpoint": "POST /api/workflows/wf_96d210da/test",
+          "statusCode": 200,
+          "latencyMs": 163,
+          "response": {
+            "success": true,
+            "workflowId": "wf_96d210da",
+            "stepResultsCount": 4
+          }
+        },
+        {
+          "step": "deploy_workflow",
+          "endpoint": "POST /api/workflows/wf_96d210da/deploy",
+          "statusCode": 200,
+          "latencyMs": 731,
+          "response": {
+            "success": true,
+            "deployment": {
+              "deploymentId": "dep_n8n_084a6f3f",
+              "workflowId": "wf_96d210da",
+              "version": 1,
+              "provider": "n8n",
+              "status": "ACTIVE",
+              "externalWorkflowId": "n8n_staging_dep_n8n_084a6f3f",
+              "webhookUrl": "http://localhost:3000/api/webhooks/automation/dep_n8n_084a6f3f",
+              "deployedAt": "2026-11-01T08:38:22.791Z"
+            },
+            "workflowSpec": {
+              "id": "wf_96d210da",
+              "tenantId": "verifier_challenger_quickreply_ai",
+              "workspaceId": "ws_verifier_challenger_quickreply_ai",
+              "name": "Automated Invoice Processing & Alert Pipeline",
+              "description": "When I receive an invoice in Gmail, extract the invoice number, vendor, amount and due date. Add everything to Google Sheets. If it exceeds ₹50,000, notify me on Telegram.",
+              "businessObjective": "When I receive an invoice in Gmail, extract the invoice number, vendor, amount and due date. Add everything to Google Sheets. If it exceeds ₹50,000, notify me on Telegram.",
+              "runtimeTarget": "n8n",
+              "version": 1,
+              "status": "ACTIVE",
+              "trigger": {
+                "type": "event",
+                "appId": "gmail",
+                "triggerId": "new_email_received",
+                "config": {
+                  "event": "inbound_event"
+                }
+              },
+              "steps": [
+                {
+                  "id": "step_gmail_search",
+                  "appId": "gmail",
+                  "actionId": "search_emails",
+                  "label": "Scan Inbox for Invoices",
+                  "credentialRef": "cred_gmail_primary",
+                  "parameters": {
+                    "query": "subject:invoice has:attachment"
+                  },
+                  "dependsOn": [],
+                  "sideEffect": "SAFE_READ",
+                  "approvalRequired": false
+                },
+                {
+                  "id": "step_ai_extract",
+                  "appId": "ai_extractor",
+                  "actionId": "extract_invoice",
+                  "label": "AI Invoice Entity Extractor",
+                  "parameters": {
+                    "rawContent": "{{ $json.body }}"
+                  },
+                  "dependsOn": [
+                    "step_gmail_search"
+                  ],
+                  "sideEffect": "SAFE_READ",
+                  "approvalRequired": false
+                },
+                {
+                  "id": "step_sheets_log",
+                  "appId": "google_sheets",
+                  "actionId": "append_row",
+                  "label": "Append to Google Sheets (Invoices)",
+                  "credentialRef": "cred_sheets_primary",
+                  "parameters": {
+                    "spreadsheetId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+                    "sheetName": "Invoices",
+                    "values": {
+                      "Vendor": "{{ $json.vendor }}",
+                      "Amount": "{{ $json.amount }}",
+                      "DueDate": "{{ $json.dueDate }}",
+                      "InvoiceNum": "{{ $json.invoiceNumber }}"
+                    }
+                  },
+                  "dependsOn": [
+                    "step_ai_extract"
+                  ],
+                  "sideEffect": "REVERSIBLE",
+                  "approvalRequired": false
+                },
+                {
+                  "id": "step_telegram_alert",
+                  "appId": "telegram",
+                  "actionId": "send_message",
+                  "label": "Send High-Value Alert via Telegram",
+                  "credentialRef": "cred_telegram_bot",
+                  "parameters": {
+                    "chatId": "@MyFinanceAlerts",
+                    "text": "🚨 *High-Value Invoice Detected*\n• Vendor: `{{ $json.vendor }}`\n• Amount: *₹{{ $json.amount }}*\n• Due Date: `{{ $json.dueDate }}`"
+                  },
+                  "dependsOn": [
+                    "step_sheets_log"
+                  ],
+                  "sideEffect": "EXTERNAL_COMMUNICATION",
+                  "approvalRequired": false,
+                  "approvalCondition": "amount > 50000"
+                }
+              ],
+              "retryPolicy": {
+                "maxAttempts": 3,
+                "backoffMs": 2000,
+                "jitter": true
+              },
+              "createdAt": "2026-11-01T08:38:21.321Z",
+              "updatedAt": "2026-11-01T08:38:21.321Z",
+              "syntheticTests": [
+                {
+                  "id": "test_happy_1793522301322",
+                  "name": "Invoice Extraction & Sync Execution",
+                  "description": "Validates workflow execution with standard structured invoice inputs.",
+                  "inputPayload": {
+                    "vendor": "Acme Industrial Supplies",
+                    "invoiceNumber": "INV-2026-9041",
+                    "amount": 24500,
+                    "dueDate": "2026-11-15",
+                    "subject": "Invoice #INV-2026-9041 from Acme Industrial"
+                  },
+                  "expectedAssertions": [
+                    {
+                      "stepId": "step_gmail_search",
+                      "field": "status",
+                      "operator": "equals",
+                      "value": "SUCCESS"
+                    },
+                    {
+                      "stepId": "step_ai_extract",
+                      "field": "status",
+                      "operator": "equals",
+                      "value": "SUCCESS"
+                    },
+                    {
+                      "stepId": "step_sheets_log",
+                      "field": "status",
+                      "operator": "equals",
+                      "value": "SUCCESS"
+                    },
+                    {
+                      "stepId": "step_telegram_alert",
+                      "field": "status",
+                      "operator": "equals",
+                      "value": "SUCCESS"
+                    }
+                  ]
+                },
+                {
+                  "id": "test_threshold_1793522301322",
+                  "name": "High-Value Alert Threshold Trigger (> ₹50,000)",
+                  "description": "Validates that high volume or revenue surges trigger appropriate alerts or approval gates.",
+                  "inputPayload": {
+                    "vendor": "Global Cloud Services",
+                    "invoiceNumber": "INV-2026-8821",
+                    "amount": 78500,
+                    "dueDate": "2026-11-20",
+                    "subject": "Invoice #INV-2026-8821 from Global Cloud Services"
+                  },
+                  "expectedAssertions": [
+                    {
+                      "stepId": "step_telegram_alert",
+                      "field": "status",
+                      "operator": "equals",
+                      "value": "SUCCESS"
+                    }
+                  ]
+                },
+                {
+                  "id": "test_empty_1793522301322",
+                  "name": "Missing Fields Graceful Handling",
+                  "description": "Verifies the workflow handles incomplete email text without unhandled exceptions.",
+                  "inputPayload": {
+                    "vendor": "Unknown Sender",
+                    "subject": "No attachment present"
+                  },
+                  "expectedAssertions": [
+                    {
+                      "stepId": "step_gmail_search",
+                      "field": "status",
+                      "operator": "exists",
+                      "value": true
+                    }
+                  ]
+                }
+              ],
+              "conversationId": "conv_bf140dc8",
+              "deployedAt": "2026-11-01T08:38:22.812Z"
+            }
+          }
+        }
+      ],
+      "assertions": [],
+      "status": "SUCCESS",
+      "spec": {
+        "id": "wf_96d210da",
+        "tenantId": "verifier_challenger_quickreply_ai",
+        "workspaceId": "ws_verifier_challenger_quickreply_ai",
+        "name": "Automated Invoice Processing & Alert Pipeline",
+        "description": "When I receive an invoice in Gmail, extract the invoice number, vendor, amount and due date. Add everything to Google Sheets. If it exceeds ₹50,000, notify me on Telegram.",
+        "businessObjective": "When I receive an invoice in Gmail, extract the invoice number, vendor, amount and due date. Add everything to Google Sheets. If it exceeds ₹50,000, notify me on Telegram.",
+        "runtimeTarget": "n8n",
+        "version": 1,
+        "status": "GENERATED",
+        "trigger": {
+          "type": "event",
+          "appId": "gmail",
+          "triggerId": "new_email_received",
+          "config": {
+            "event": "inbound_event"
+          }
+        },
+        "steps": [
+          {
+            "id": "step_gmail_search",
+            "appId": "gmail",
+            "actionId": "search_emails",
+            "label": "Scan Inbox for Invoices",
+            "credentialRef": "cred_gmail_primary",
+            "parameters": {
+              "query": "subject:invoice has:attachment"
+            },
+            "dependsOn": [],
+            "sideEffect": "SAFE_READ",
+            "approvalRequired": false
+          },
+          {
+            "id": "step_ai_extract",
+            "appId": "ai_extractor",
+            "actionId": "extract_invoice",
+            "label": "AI Invoice Entity Extractor",
+            "parameters": {
+              "rawContent": "{{ $json.body }}"
+            },
+            "dependsOn": [
+              "step_gmail_search"
+            ],
+            "sideEffect": "SAFE_READ",
+            "approvalRequired": false
+          },
+          {
+            "id": "step_sheets_log",
+            "appId": "google_sheets",
+            "actionId": "append_row",
+            "label": "Append to Google Sheets (Invoices)",
+            "credentialRef": "cred_sheets_primary",
+            "parameters": {
+              "spreadsheetId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+              "sheetName": "Invoices",
+              "values": {
+                "Vendor": "{{ $json.vendor }}",
+                "Amount": "{{ $json.amount }}",
+                "DueDate": "{{ $json.dueDate }}",
+                "InvoiceNum": "{{ $json.invoiceNumber }}"
+              }
+            },
+            "dependsOn": [
+              "step_ai_extract"
+            ],
+            "sideEffect": "REVERSIBLE",
+            "approvalRequired": false
+          },
+          {
+            "id": "step_telegram_alert",
+            "appId": "telegram",
+            "actionId": "send_message",
+            "label": "Send High-Value Alert via Telegram",
+            "credentialRef": "cred_telegram_bot",
+            "parameters": {
+              "chatId": "@MyFinanceAlerts",
+              "text": "🚨 *High-Value Invoice Detected*\n• Vendor: `{{ $json.vendor }}`\n• Amount: *₹{{ $json.amount }}*\n• Due Date: `{{ $json.dueDate }}`"
+            },
+            "dependsOn": [
+              "step_sheets_log"
+            ],
+            "sideEffect": "EXTERNAL_COMMUNICATION",
+            "approvalRequired": false,
+            "approvalCondition": "amount > 50000"
+          }
+        ],
+        "retryPolicy": {
+          "maxAttempts": 3,
+          "backoffMs": 2000,
+          "jitter": true
+        },
+        "createdAt": "2026-11-01T08:38:21.321Z",
+        "updatedAt": "2026-11-01T08:38:21.321Z",
+        "syntheticTests": [
+          {
+            "id": "test_happy_1793522301322",
+            "name": "Invoice Extraction & Sync Execution",
+            "description": "Validates workflow execution with standard structured invoice inputs.",
+            "inputPayload": {
+              "vendor": "Acme Industrial Supplies",
+              "invoiceNumber": "INV-2026-9041",
+              "amount": 24500,
+              "dueDate": "2026-11-15",
+              "subject": "Invoice #INV-2026-9041 from Acme Industrial"
+            },
+            "expectedAssertions": [
+              {
+                "stepId": "step_gmail_search",
+                "field": "status",
+                "operator": "equals",
+                "value": "SUCCESS"
+              },
+              {
+                "stepId": "step_ai_extract",
+                "field": "status",
+                "operator": "equals",
+                "value": "SUCCESS"
+              },
+              {
+                "stepId": "step_sheets_log",
+                "field": "status",
+                "operator": "equals",
+                "value": "SUCCESS"
+              },
+              {
+                "stepId": "step_telegram_alert",
+                "field": "status",
+                "operator": "equals",
+                "value": "SUCCESS"
+              }
+            ]
+          },
+          {
+            "id": "test_threshold_1793522301322",
+            "name": "High-Value Alert Threshold Trigger (> ₹50,000)",
+            "description": "Validates that high volume or revenue surges trigger appropriate alerts or approval gates.",
+            "inputPayload": {
+              "vendor": "Global Cloud Services",
+              "invoiceNumber": "INV-2026-8821",
+              "amount": 78500,
+              "dueDate": "2026-11-20",
+              "subject": "Invoice #INV-2026-8821 from Global Cloud Services"
+            },
+            "expectedAssertions": [
+              {
+                "stepId": "step_telegram_alert",
+                "field": "status",
+                "operator": "equals",
+                "value": "SUCCESS"
+              }
+            ]
+          },
+          {
+            "id": "test_empty_1793522301322",
+            "name": "Missing Fields Graceful Handling",
+            "description": "Verifies the workflow handles incomplete email text without unhandled exceptions.",
+            "inputPayload": {
+              "vendor": "Unknown Sender",
+              "subject": "No attachment present"
+            },
+            "expectedAssertions": [
+              {
+                "stepId": "step_gmail_search",
+                "field": "status",
+                "operator": "exists",
+                "value": true
+              }
+            ]
+          }
+        ],
+        "conversationId": "conv_bf140dc8"
+      },
+      "deployment": {
+        "deploymentId": "dep_n8n_084a6f3f",
+        "workflowId": "wf_96d210da",
+        "version": 1,
+        "provider": "n8n",
+        "status": "ACTIVE",
+        "externalWorkflowId": "n8n_staging_dep_n8n_084a6f3f",
+        "webhookUrl": "http://localhost:3000/api/webhooks/automation/dep_n8n_084a6f3f",
+        "deployedAt": "2026-11-01T08:38:22.791Z"
+      },
+      "totalDurationMs": 2486
+    },
+    {
+      "scenarioKey": "Scenario B",
+      "title": "Stripe payments -> Slack notifications",
+      "prompt": "Every time a new payment succeeds on Stripe, post an instant notification to Slack in #sales-wins with customer name, amount, and invoice link.",
+      "requests": [
+        {
+          "step": "init_conversation",
+          "endpoint": "POST /api/ai/conversations",
+          "statusCode": 200,
+          "latencyMs": 133,
+          "response": {
+            "success": true,
+            "conversation": {
+              "id": "conv_ea3c7b5f",
+              "tenantId": "verifier_challenger_quickreply_ai",
+              "workspaceId": "ws_verifier_challenger_quickreply_ai",
+              "title": "Live Test: Stripe payments -> Slack notifications",
+              "status": "ACTIVE",
+              "createdAt": "2026-11-01T08:38:23.476Z",
+              "updatedAt": "2026-11-01T08:38:23.476Z",
+              "lastMessageAt": "2026-11-01T08:38:23.476Z"
+            }
+          }
+        },
+        {
+          "step": "send_message_and_compile",
+          "endpoint": "POST /api/ai/conversations/conv_ea3c7b5f/messages",
+          "statusCode": 200,
+          "latencyMs": 902,
+          "response": {
+            "specId": "wf_12b01e36",
+            "name": "Stripe Transaction & Payment Operations Pipeline",
+            "stepsCount": 2,
+            "dagNodesCount": 3,
+            "dagEdgesCount": 2
+          }
+        },
+        {
+          "step": "run_synthetic_test",
+          "endpoint": "POST /api/workflows/wf_12b01e36/test",
+          "statusCode": 200,
+          "latencyMs": 181,
+          "response": {
+            "success": true,
+            "workflowId": "wf_12b01e36",
+            "stepResultsCount": 2
+          }
+        },
+        {
+          "step": "deploy_workflow",
+          "endpoint": "POST /api/workflows/wf_12b01e36/deploy",
+          "statusCode": 200,
+          "latencyMs": 728,
+          "response": {
+            "success": true,
+            "deployment": {
+              "deploymentId": "dep_n8n_b295ddd8",
+              "workflowId": "wf_12b01e36",
+              "version": 1,
+              "provider": "n8n",
+              "status": "ACTIVE",
+              "externalWorkflowId": "n8n_staging_dep_n8n_b295ddd8",
+              "webhookUrl": "http://localhost:3000/api/webhooks/automation/dep_n8n_b295ddd8",
+              "deployedAt": "2026-11-01T08:38:26.181Z"
+            },
+            "workflowSpec": {
+              "id": "wf_12b01e36",
+              "tenantId": "verifier_challenger_quickreply_ai",
+              "workspaceId": "ws_verifier_challenger_quickreply_ai",
+              "name": "Stripe Transaction & Payment Operations Pipeline",
+              "description": "Every time a new payment succeeds on Stripe, post an instant notification to Slack in #sales-wins with customer name, amount, and invoice link.",
+              "businessObjective": "Every time a new payment succeeds on Stripe, post an instant notification to Slack in #sales-wins with customer name, amount, and invoice link.",
+              "runtimeTarget": "n8n",
+              "version": 1,
+              "status": "ACTIVE",
+              "trigger": {
+                "type": "manual",
+                "appId": "stripe",
+                "triggerId": "payment_succeeded",
+                "config": {
+                  "event": "inbound_event"
+                }
+              },
+              "steps": [
+                {
+                  "id": "step_stripe_parse",
+                  "appId": "stripe",
+                  "actionId": "get_charge_details",
+                  "label": "Retrieve Customer & Charge Context",
+                  "credentialRef": "cred_stripe_primary",
+                  "parameters": {
+                    "chargeId": "{{ $json.chargeId }}"
+                  },
+                  "dependsOn": [],
+                  "sideEffect": "SAFE_READ",
+                  "approvalRequired": false
+                },
+                {
+                  "id": "step_slack_post",
+                  "appId": "slack",
+                  "actionId": "post_message",
+                  "label": "Post Notification to #finance",
+                  "credentialRef": "cred_slack_primary",
+                  "parameters": {
+                    "channel": "#finance",
+                    "text": "Automation event logged: {{ $json.summary || $json.vendor }}"
+                  },
+                  "dependsOn": [
+                    "step_stripe_parse"
+                  ],
+                  "sideEffect": "EXTERNAL_COMMUNICATION",
+                  "approvalRequired": false
+                }
+              ],
+              "retryPolicy": {
+                "maxAttempts": 3,
+                "backoffMs": 2000,
+                "jitter": true
+              },
+              "createdAt": "2026-11-01T08:38:24.696Z",
+              "updatedAt": "2026-11-01T08:38:24.696Z",
+              "syntheticTests": [
+                {
+                  "id": "test_happy_1793522304696",
+                  "name": "Happy Path Sales KPI Pipeline Execution",
+                  "description": "Validates daily aggregation of sales figures and executive digest synthesis.",
+                  "inputPayload": {
+                    "total_revenue": 48500,
+                    "total_orders": 142,
+                    "avg_order_value": 341.5,
+                    "date": "2026-10-31",
+                    "managerPhone": "+1-555-0199"
+                  },
+                  "expectedAssertions": [
+                    {
+                      "stepId": "step_stripe_parse",
+                      "field": "status",
+                      "operator": "equals",
+                      "value": "SUCCESS"
+                    },
+                    {
+                      "stepId": "step_slack_post",
+                      "field": "status",
+                      "operator": "equals",
+                      "value": "SUCCESS"
+                    }
+                  ]
+                },
+                {
+                  "id": "test_threshold_1793522304696",
+                  "name": "High-Revenue Surge Alert Trigger (> $50,000)",
+                  "description": "Validates that high volume or revenue surges trigger appropriate alerts or approval gates.",
+                  "inputPayload": {
+                    "total_revenue": 92400,
+                    "total_orders": 285,
+                    "avg_order_value": 324.2,
+                    "date": "2026-10-31",
+                    "managerPhone": "+1-555-0199"
+                  },
+                  "expectedAssertions": [
+                    {
+                      "stepId": "step_slack_post",
+                      "field": "status",
+                      "operator": "equals",
+                      "value": "SUCCESS"
+                    }
+                  ]
+                },
+                {
+                  "id": "test_empty_1793522304696",
+                  "name": "Zero Sales Inactive Day Handling",
+                  "description": "Verifies the workflow handles zero sales days or empty query sets gracefully without unhandled exceptions.",
+                  "inputPayload": {
+                    "total_revenue": 0,
+                    "total_orders": 0,
+                    "avg_order_value": 0,
+                    "date": "2026-10-31",
+                    "managerPhone": "+1-555-0199"
+                  },
+                  "expectedAssertions": [
+                    {
+                      "stepId": "step_stripe_parse",
+                      "field": "status",
+                      "operator": "exists",
+                      "value": true
+                    }
+                  ]
+                }
+              ],
+              "conversationId": "conv_ea3c7b5f",
+              "deployedAt": "2026-11-01T08:38:26.201Z"
+            }
+          }
+        }
+      ],
+      "assertions": [],
+      "status": "SUCCESS",
+      "spec": {
+        "id": "wf_12b01e36",
+        "tenantId": "verifier_challenger_quickreply_ai",
+        "workspaceId": "ws_verifier_challenger_quickreply_ai",
+        "name": "Stripe Transaction & Payment Operations Pipeline",
+        "description": "Every time a new payment succeeds on Stripe, post an instant notification to Slack in #sales-wins with customer name, amount, and invoice link.",
+        "businessObjective": "Every time a new payment succeeds on Stripe, post an instant notification to Slack in #sales-wins with customer name, amount, and invoice link.",
+        "runtimeTarget": "n8n",
+        "version": 1,
+        "status": "GENERATED",
+        "trigger": {
+          "type": "manual",
+          "appId": "stripe",
+          "triggerId": "payment_succeeded",
+          "config": {
+            "event": "inbound_event"
+          }
+        },
+        "steps": [
+          {
+            "id": "step_stripe_parse",
+            "appId": "stripe",
+            "actionId": "get_charge_details",
+            "label": "Retrieve Customer & Charge Context",
+            "credentialRef": "cred_stripe_primary",
+            "parameters": {
+              "chargeId": "{{ $json.chargeId }}"
+            },
+            "dependsOn": [],
+            "sideEffect": "SAFE_READ",
+            "approvalRequired": false
+          },
+          {
+            "id": "step_slack_post",
+            "appId": "slack",
+            "actionId": "post_message",
+            "label": "Post Notification to #finance",
+            "credentialRef": "cred_slack_primary",
+            "parameters": {
+              "channel": "#finance",
+              "text": "Automation event logged: {{ $json.summary || $json.vendor }}"
+            },
+            "dependsOn": [
+              "step_stripe_parse"
+            ],
+            "sideEffect": "EXTERNAL_COMMUNICATION",
+            "approvalRequired": false
+          }
+        ],
+        "retryPolicy": {
+          "maxAttempts": 3,
+          "backoffMs": 2000,
+          "jitter": true
+        },
+        "createdAt": "2026-11-01T08:38:24.696Z",
+        "updatedAt": "2026-11-01T08:38:24.696Z",
+        "syntheticTests": [
+          {
+            "id": "test_happy_1793522304696",
+            "name": "Happy Path Sales KPI Pipeline Execution",
+            "description": "Validates daily aggregation of sales figures and executive digest synthesis.",
+            "inputPayload": {
+              "total_revenue": 48500,
+              "total_orders": 142,
+              "avg_order_value": 341.5,
+              "date": "2026-10-31",
+              "managerPhone": "+1-555-0199"
+            },
+            "expectedAssertions": [
+              {
+                "stepId": "step_stripe_parse",
+                "field": "status",
+                "operator": "equals",
+                "value": "SUCCESS"
+              },
+              {
+                "stepId": "step_slack_post",
+                "field": "status",
+                "operator": "equals",
+                "value": "SUCCESS"
+              }
+            ]
+          },
+          {
+            "id": "test_threshold_1793522304696",
+            "name": "High-Revenue Surge Alert Trigger (> $50,000)",
+            "description": "Validates that high volume or revenue surges trigger appropriate alerts or approval gates.",
+            "inputPayload": {
+              "total_revenue": 92400,
+              "total_orders": 285,
+              "avg_order_value": 324.2,
+              "date": "2026-10-31",
+              "managerPhone": "+1-555-0199"
+            },
+            "expectedAssertions": [
+              {
+                "stepId": "step_slack_post",
+                "field": "status",
+                "operator": "equals",
+                "value": "SUCCESS"
+              }
+            ]
+          },
+          {
+            "id": "test_empty_1793522304696",
+            "name": "Zero Sales Inactive Day Handling",
+            "description": "Verifies the workflow handles zero sales days or empty query sets gracefully without unhandled exceptions.",
+            "inputPayload": {
+              "total_revenue": 0,
+              "total_orders": 0,
+              "avg_order_value": 0,
+              "date": "2026-10-31",
+              "managerPhone": "+1-555-0199"
+            },
+            "expectedAssertions": [
+              {
+                "stepId": "step_stripe_parse",
+                "field": "status",
+                "operator": "exists",
+                "value": true
+              }
+            ]
+          }
+        ],
+        "conversationId": "conv_ea3c7b5f"
+      },
+      "deployment": {
+        "deploymentId": "dep_n8n_b295ddd8",
+        "workflowId": "wf_12b01e36",
+        "version": 1,
+        "provider": "n8n",
+        "status": "ACTIVE",
+        "externalWorkflowId": "n8n_staging_dep_n8n_b295ddd8",
+        "webhookUrl": "http://localhost:3000/api/webhooks/automation/dep_n8n_b295ddd8",
+        "deployedAt": "2026-11-01T08:38:26.181Z"
+      },
+      "totalDurationMs": 2875
+    },
+    {
+      "scenarioKey": "Scenario C",
+      "title": "Arbitrary Business Logic: Webhook -> AI Discount -> SMS Alert",
+      "prompt": "Monitor inbound webhook events from Shopify, calculate dynamic customer discount using AI logic based on purchase history, and dispatch a personalized SMS alert via Twilio.",
+      "requests": [
+        {
+          "step": "init_conversation",
+          "endpoint": "POST /api/ai/conversations",
+          "statusCode": 200,
+          "latencyMs": 169,
+          "response": {
+            "success": true,
+            "conversation": {
+              "id": "conv_78c841ad",
+              "tenantId": "verifier_challenger_quickreply_ai",
+              "workspaceId": "ws_verifier_challenger_quickreply_ai",
+              "title": "Live Test: Arbitrary Business Logic: Webhook -> AI Discount -> SMS Alert",
+              "status": "ACTIVE",
+              "createdAt": "2026-11-01T08:38:26.896Z",
+              "updatedAt": "2026-11-01T08:38:26.896Z",
+              "lastMessageAt": "2026-11-01T08:38:26.896Z"
+            }
+          }
+        },
+        {
+          "step": "send_message_and_compile",
+          "endpoint": "POST /api/ai/conversations/conv_78c841ad/messages",
+          "statusCode": 200,
+          "latencyMs": 746,
+          "response": {
+            "specId": "wf_039775f0",
+            "name": "Intelligent Business Automation Workflow",
+            "stepsCount": 3,
+            "dagNodesCount": 4,
+            "dagEdgesCount": 3
+          }
+        },
+        {
+          "step": "run_synthetic_test",
+          "endpoint": "POST /api/workflows/wf_039775f0/test",
+          "statusCode": 200,
+          "latencyMs": 4019,
+          "response": {
+            "success": true,
+            "workflowId": "wf_039775f0",
+            "stepResultsCount": 3
+          }
+        },
+        {
+          "step": "deploy_workflow",
+          "endpoint": "POST /api/workflows/wf_039775f0/deploy",
+          "statusCode": 200,
+          "latencyMs": 158,
+          "response": {
+            "success": true,
+            "deployment": {
+              "deploymentId": "dep_n8n_d3bc7a36",
+              "workflowId": "wf_039775f0",
+              "version": 1,
+              "provider": "n8n",
+              "status": "ACTIVE",
+              "externalWorkflowId": "n8n_staging_dep_n8n_d3bc7a36",
+              "webhookUrl": "http://localhost:3000/api/webhooks/automation/dep_n8n_d3bc7a36",
+              "deployedAt": "2026-11-01T08:38:42.252Z"
+            },
+            "workflowSpec": {
+              "id": "wf_039775f0",
+              "tenantId": "verifier_challenger_quickreply_ai",
+              "workspaceId": "ws_verifier_challenger_quickreply_ai",
+              "name": "Intelligent Business Automation Workflow",
+              "description": "Monitor inbound webhook events from Shopify, calculate dynamic customer discount using AI logic based on purchase history, and dispatch a personalized SMS alert via Twilio.",
+              "businessObjective": "Monitor inbound webhook events from Shopify, calculate dynamic customer discount using AI logic based on purchase history, and dispatch a personalized SMS alert via Twilio.",
+              "runtimeTarget": "n8n",
+              "version": 1,
+              "status": "ACTIVE",
+              "trigger": {
+                "type": "manual",
+                "appId": "custom_webhook",
+                "triggerId": "webhook_received",
+                "config": {
+                  "event": "inbound_event"
+                }
+              },
+              "steps": [
+                {
+                  "id": "step_ingest_payload",
+                  "appId": "custom_webhook",
+                  "actionId": "parse_incoming_data",
+                  "label": "Ingest & Validate Payload",
+                  "parameters": {
+                    "payload": "{{ $json }}"
+                  },
+                  "dependsOn": [],
+                  "sideEffect": "SAFE_READ",
+                  "approvalRequired": false
+                },
+                {
+                  "id": "step_ai_transform",
+                  "appId": "ai_extractor",
+                  "actionId": "apply_business_logic",
+                  "label": "AI Business Logic & Transformation",
+                  "parameters": {
+                    "objective": "Monitor inbound webhook events from Shopify, calculate dynamic customer discount using AI logic based on purchase history, and dispatch a personalized SMS alert via Twilio."
+                  },
+                  "dependsOn": [
+                    "step_ingest_payload"
+                  ],
+                  "sideEffect": "SAFE_READ",
+                  "approvalRequired": false
+                },
+                {
+                  "id": "step_deliver_output",
+                  "appId": "webhook",
+                  "actionId": "post_transformed_result",
+                  "label": "Dispatch Output to Destination",
+                  "parameters": {
+                    "destination": "target_system"
+                  },
+                  "dependsOn": [
+                    "step_ai_transform"
+                  ],
+                  "sideEffect": "EXTERNAL_COMMUNICATION",
+                  "approvalRequired": false
+                }
+              ],
+              "retryPolicy": {
+                "maxAttempts": 3,
+                "backoffMs": 2000,
+                "jitter": true
+              },
+              "createdAt": "2026-11-01T08:38:27.967Z",
+              "updatedAt": "2026-11-01T08:38:27.967Z",
+              "syntheticTests": [
+                {
+                  "id": "test_happy_1793522307967",
+                  "name": "Invoice Extraction & Sync Execution",
+                  "description": "Validates workflow execution with standard structured invoice inputs.",
+                  "inputPayload": {
+                    "vendor": "Acme Industrial Supplies",
+                    "invoiceNumber": "INV-2026-9041",
+                    "amount": 24500,
+                    "dueDate": "2026-11-15",
+                    "subject": "Invoice #INV-2026-9041 from Acme Industrial"
+                  },
+                  "expectedAssertions": [
+                    {
+                      "stepId": "step_ingest_payload",
+                      "field": "status",
+                      "operator": "equals",
+                      "value": "SUCCESS"
+                    },
+                    {
+                      "stepId": "step_ai_transform",
+                      "field": "status",
+                      "operator": "equals",
+                      "value": "SUCCESS"
+                    },
+                    {
+                      "stepId": "step_deliver_output",
+                      "field": "status",
+                      "operator": "equals",
+                      "value": "SUCCESS"
+                    }
+                  ]
+                },
+                {
+                  "id": "test_empty_1793522307967",
+                  "name": "Missing Fields Graceful Handling",
+                  "description": "Verifies the workflow handles incomplete email text without unhandled exceptions.",
+                  "inputPayload": {
+                    "vendor": "Unknown Sender",
+                    "subject": "No attachment present"
+                  },
+                  "expectedAssertions": [
+                    {
+                      "stepId": "step_ingest_payload",
+                      "field": "status",
+                      "operator": "exists",
+                      "value": true
+                    }
+                  ]
+                }
+              ],
+              "conversationId": "conv_78c841ad",
+              "deployedAt": "2026-11-01T08:38:42.274Z"
+            }
+          }
+        }
+      ],
+      "assertions": [],
+      "status": "SUCCESS",
+      "spec": {
+        "id": "wf_039775f0",
+        "tenantId": "verifier_challenger_quickreply_ai",
+        "workspaceId": "ws_verifier_challenger_quickreply_ai",
+        "name": "Intelligent Business Automation Workflow",
+        "description": "Monitor inbound webhook events from Shopify, calculate dynamic customer discount using AI logic based on purchase history, and dispatch a personalized SMS alert via Twilio.",
+        "businessObjective": "Monitor inbound webhook events from Shopify, calculate dynamic customer discount using AI logic based on purchase history, and dispatch a personalized SMS alert via Twilio.",
+        "runtimeTarget": "n8n",
+        "version": 1,
+        "status": "GENERATED",
+        "trigger": {
+          "type": "manual",
+          "appId": "custom_webhook",
+          "triggerId": "webhook_received",
+          "config": {
+            "event": "inbound_event"
+          }
+        },
+        "steps": [
+          {
+            "id": "step_ingest_payload",
+            "appId": "custom_webhook",
+            "actionId": "parse_incoming_data",
+            "label": "Ingest & Validate Payload",
+            "parameters": {
+              "payload": "{{ $json }}"
+            },
+            "dependsOn": [],
+            "sideEffect": "SAFE_READ",
+            "approvalRequired": false
+          },
+          {
+            "id": "step_ai_transform",
+            "appId": "ai_extractor",
+            "actionId": "apply_business_logic",
+            "label": "AI Business Logic & Transformation",
+            "parameters": {
+              "objective": "Monitor inbound webhook events from Shopify, calculate dynamic customer discount using AI logic based on purchase history, and dispatch a personalized SMS alert via Twilio."
+            },
+            "dependsOn": [
+              "step_ingest_payload"
+            ],
+            "sideEffect": "SAFE_READ",
+            "approvalRequired": false
+          },
+          {
+            "id": "step_deliver_output",
+            "appId": "webhook",
+            "actionId": "post_transformed_result",
+            "label": "Dispatch Output to Destination",
+            "parameters": {
+              "destination": "target_system"
+            },
+            "dependsOn": [
+              "step_ai_transform"
+            ],
+            "sideEffect": "EXTERNAL_COMMUNICATION",
+            "approvalRequired": false
+          }
+        ],
+        "retryPolicy": {
+          "maxAttempts": 3,
+          "backoffMs": 2000,
+          "jitter": true
+        },
+        "createdAt": "2026-11-01T08:38:27.967Z",
+        "updatedAt": "2026-11-01T08:38:27.967Z",
+        "syntheticTests": [
+          {
+            "id": "test_happy_1793522307967",
+            "name": "Invoice Extraction & Sync Execution",
+            "description": "Validates workflow execution with standard structured invoice inputs.",
+            "inputPayload": {
+              "vendor": "Acme Industrial Supplies",
+              "invoiceNumber": "INV-2026-9041",
+              "amount": 24500,
+              "dueDate": "2026-11-15",
+              "subject": "Invoice #INV-2026-9041 from Acme Industrial"
+            },
+            "expectedAssertions": [
+              {
+                "stepId": "step_ingest_payload",
+                "field": "status",
+                "operator": "equals",
+                "value": "SUCCESS"
+              },
+              {
+                "stepId": "step_ai_transform",
+                "field": "status",
+                "operator": "equals",
+                "value": "SUCCESS"
+              },
+              {
+                "stepId": "step_deliver_output",
+                "field": "status",
+                "operator": "equals",
+                "value": "SUCCESS"
+              }
+            ]
+          },
+          {
+            "id": "test_empty_1793522307967",
+            "name": "Missing Fields Graceful Handling",
+            "description": "Verifies the workflow handles incomplete email text without unhandled exceptions.",
+            "inputPayload": {
+              "vendor": "Unknown Sender",
+              "subject": "No attachment present"
+            },
+            "expectedAssertions": [
+              {
+                "stepId": "step_ingest_payload",
+                "field": "status",
+                "operator": "exists",
+                "value": true
+              }
+            ]
+          }
+        ],
+        "conversationId": "conv_78c841ad"
+      },
+      "deployment": {
+        "deploymentId": "dep_n8n_d3bc7a36",
+        "workflowId": "wf_039775f0",
+        "version": 1,
+        "provider": "n8n",
+        "status": "ACTIVE",
+        "externalWorkflowId": "n8n_staging_dep_n8n_d3bc7a36",
+        "webhookUrl": "http://localhost:3000/api/webhooks/automation/dep_n8n_d3bc7a36",
+        "deployedAt": "2026-11-01T08:38:42.252Z"
+      },
+      "totalDurationMs": 15561
+    }
+  ]
+}

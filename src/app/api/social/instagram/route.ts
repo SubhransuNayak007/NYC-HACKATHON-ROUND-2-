@@ -44,29 +44,42 @@ export async function GET() {
     const allNewComments: SocialComment[] = [];
     const existingIds = new Set((db.socialComments || []).filter(c => c.platform === "instagram").map(c => c.id));
 
-    for (const media of mediaItems.slice(0, 3)) {
-      const commRes = await fetch(
-        `${IG_API}/${media.id}/comments?fields=id,text,username,timestamp&limit=20&access_token=${token}`
-      );
-      if (!commRes.ok) continue;
+    // Concurrently fetch comments across media items using Promise.all
+    const commentBatches = await Promise.all(
+      mediaItems.slice(0, 3).map(async (media) => {
+        try {
+          const commRes = await fetch(
+            `${IG_API}/${media.id}/comments?fields=id,text,username,timestamp&limit=20&access_token=${token}`
+          );
+          if (!commRes.ok) return [];
 
-      const commData = await commRes.json();
-      for (const c of (commData.data || [])) {
-        if (existingIds.has(c.id)) continue;
+          const commData = await commRes.json();
+          const items: SocialComment[] = [];
+          for (const c of (commData.data || [])) {
+            if (existingIds.has(c.id)) continue;
 
-        allNewComments.push({
-          id: c.id,
-          platform: "instagram",
-          accountId: acct.id,
-          author: c.username || "Unknown",
-          text: c.text || "",
-          postId: media.id,
-          postTitle: media.caption?.slice(0, 80) || "Instagram Post",
-          postUrl: media.permalink,
-          publishedAt: c.timestamp,
-          status: "pending",
-        });
-      }
+            items.push({
+              id: c.id,
+              platform: "instagram",
+              accountId: acct.id,
+              author: c.username || "Unknown",
+              text: c.text || "",
+              postId: media.id,
+              postTitle: media.caption?.slice(0, 80) || "Instagram Post",
+              postUrl: media.permalink,
+              publishedAt: c.timestamp,
+              status: "pending",
+            });
+          }
+          return items;
+        } catch {
+          return [];
+        }
+      })
+    );
+
+    for (const batch of commentBatches) {
+      allNewComments.push(...batch);
     }
 
     // Save new comments to DB

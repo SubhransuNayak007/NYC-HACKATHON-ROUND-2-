@@ -18,35 +18,30 @@ export default function SectionHeader({
   icon: Icon,
   title,
   subtitle,
-  iconBg = "bg-navy-500/8",
-  iconColor = "text-navy-500",
+  iconBg = "bg-navy-500/10 dark:bg-navy-500/20",
+  iconColor = "text-navy-600 dark:text-navy-400",
   action,
   className = "",
 }: SectionHeaderProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className={`flex items-start justify-between gap-4 ${className}`}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      className={`flex items-center justify-between gap-4 ${className}`}
     >
-      <div className="flex items-center gap-3">
-        <div className={`h-9 w-9 shrink-0 rounded-xl ${iconBg} flex items-center justify-center`}>
-          <Icon className={`h-4 w-4 ${iconColor}`} />
+      <div className="flex items-center gap-3.5">
+        <div className={`h-10 w-10 shrink-0 rounded-xl ${iconBg} flex items-center justify-center border border-black/5 dark:border-white/10 shadow-xs`}>
+          <Icon className={`h-5 w-5 ${iconColor}`} />
         </div>
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink-800 tracking-tight">
-            {title.split(" ").map((word, i) => {
-              const isLast = i === title.split(" ").length - 1;
-              return isLast ? (
-                <span key={i} className="gradient-text">{word} </span>
-              ) : (
-                <span key={i}>{word} </span>
-              );
-            })}
+          <h1 className="font-sans text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+            {title}
           </h1>
           {subtitle && (
-            <p className="text-sm text-ink-500 mt-0.5">{subtitle}</p>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-normal">
+              {subtitle}
+            </p>
           )}
         </div>
       </div>

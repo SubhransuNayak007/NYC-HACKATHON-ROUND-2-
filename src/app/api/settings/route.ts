@@ -3,11 +3,16 @@ import { getDB, saveDB, logActivity, WorkspaceMember } from "@/database/db";
 
 export async function GET() {
   const db = await getDB();
-  return NextResponse.json({
-    workspace: db.workspace,
-    activityLogs: db.activityLogs,
-    userSession: db.userSession
-  });
+  return NextResponse.json(
+    {
+      workspace: db.workspace,
+      activityLogs: db.activityLogs,
+      userSession: db.userSession
+    },
+    {
+      headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=120" }
+    }
+  );
 }
 
 export async function PUT(req: NextRequest) {

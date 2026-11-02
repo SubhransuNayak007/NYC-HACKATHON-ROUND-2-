@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -11,109 +11,145 @@ import {
   Zap,
   Heart,
   MessageCircle,
+  Sparkles,
 } from "lucide-react";
-import { appleSpring, tactileButtonTap } from "@/frontend/lib/physicsMotion";
-import { FlipButton } from "./FlipButton";
+import { useCardTiltPhysics } from "@/frontend/lib/physicsMotion";
 
-const ROTATING_WORDS = ["COMMENT", "STORIES", "CHAT", "POST", "DM"];
+export const HERO_WORDS = ["POST", "COMMENT", "REEL", "STORY", "DM"];
 
-/**
- * HeroTiltCard with real-time 3D inertial gyro parallax & cursor sheen physics.
- * Default desktop state has subtle rotational offset; hovering smoothly scales to 1.04 and straightens to rotate 0.
- */
+export function HeroRotatingHeadline() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % HERO_WORDS.length);
+    }, 2400);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <h1 className="mx-auto max-w-5xl lg:max-w-6xl text-center text-4xl sm:text-5xl md:text-[68px] font-black tracking-tight text-[#18181B] md:leading-[1.08] select-none uppercase">
+      <span className="inline-block sm:whitespace-nowrap">INTELLIGENT AUTO-REPLIES</span> <br />
+      <span className="inline-flex items-center gap-3 sm:gap-4 flex-wrap justify-center">
+        <span>FOR EVERY</span>
+        <motion.span
+          layout
+          transition={{ type: "spring", stiffness: 350, damping: 28 }}
+          className="relative inline-flex items-center justify-center overflow-hidden rounded-full bg-[#FAD0B8] px-6 sm:px-8 py-1 sm:py-1.5 text-[#C85A32] shadow-inner min-w-[240px] sm:min-w-[320px] md:min-w-[420px] max-w-full"
+        >
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={HERO_WORDS[index]}
+              initial={{ y: 40, opacity: 0, rotateX: -65 }}
+              animate={{ y: 0, opacity: 1, rotateX: 0 }}
+              exit={{ y: -40, opacity: 0, rotateX: 65 }}
+              transition={{ type: "spring", stiffness: 320, damping: 26 }}
+              className="inline-block font-black whitespace-nowrap text-center"
+            >
+              {HERO_WORDS[index]}
+            </motion.span>
+          </AnimatePresence>
+        </motion.span>
+      </span>
+    </h1>
+  );
+}
+
+const subscribeResize = (callback: () => void) => {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("resize", callback);
+  return () => window.removeEventListener("resize", callback);
+};
+
+const getIsMobile = () => (typeof window !== "undefined" ? window.innerWidth < 1024 : false);
+const getIsMobileServer = () => true;
+
+const subscribeReducedMotion = (callback: () => void) => {
+  if (typeof window === "undefined") return () => {};
+  const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+  media.addEventListener("change", callback);
+  return () => media.removeEventListener("change", callback);
+};
+
+const getReducedMotion = () =>
+  typeof window !== "undefined"
+    ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    : false;
+const getReducedMotionServer = () => false;
+
 function HeroTiltCard({
   children,
   bgColor,
   initialRotate,
   staggerDelay,
+  fanOffset = 0,
   minHeight = "min-h-[440px]",
 }: {
   children: React.ReactNode;
   bgColor: string;
   initialRotate: number;
   staggerDelay: number;
+  fanOffset?: number;
   minHeight?: string;
 }) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0, glareX: 50, glareY: 50 });
-  const [isMobile, setIsMobile] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const { cardRef, tilt, handlePointerMove, handlePointerLeave } = useCardTiltPhysics(8, 10);
+  const isMobile = useSyncExternalStore(subscribeResize, getIsMobile, getIsMobileServer);
+  const isDesktop = useSyncExternalStore(
+    subscribeResize,
+    () => (typeof window !== "undefined" ? window.innerWidth >= 1024 : true),
+    () => false
+  );
+  const reducedMotion = useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotion,
+    getReducedMotionServer
+  );
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (isMobile) return;
-    const el = cardRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
-
-    const rX = Math.max(-10, Math.min(10, (0.5 - y) * 16));
-    const rY = Math.max(-10, Math.min(10, (x - 0.5) * 16));
-
-    setTilt({
-      rotateX: rX,
-      rotateY: rY,
-      glareX: x * 100,
-      glareY: y * 100,
-    });
-  };
-
-  const handlePointerEnter = () => {
-    if (!isMobile) setIsHovered(true);
-  };
-
-  const handlePointerLeave = () => {
-    setIsHovered(false);
-    setTilt({ rotateX: 0, rotateY: 0, glareX: 50, glareY: 50 });
-  };
-
-  const effectiveRotate = isMobile || isHovered ? 0 : initialRotate;
+  const safeFanOffset = reducedMotion || isMobile || !isDesktop ? 0 : fanOffset;
+  const effectiveRotate = reducedMotion || isMobile || !isDesktop ? 0 : initialRotate;
 
   return (
     <motion.div
       ref={cardRef}
-      initial={{ opacity: 1, y: 0, rotate: effectiveRotate }}
-      animate={{
+      initial={{
+        opacity: 0,
+        y: 50,
+        x: safeFanOffset,
+        rotateZ: 0,
+        scale: 0.92,
+      }}
+      whileInView={{
         opacity: 1,
         y: 0,
-        rotate: effectiveRotate,
-        scale: isHovered ? 1.04 : 1,
-        rotateX: isHovered ? tilt.rotateX : 0,
-        rotateY: isHovered ? tilt.rotateY : 0,
-        zIndex: isHovered ? 30 : 1,
+        x: 0,
+        rotateZ: effectiveRotate,
+        scale: 1,
       }}
+      viewport={{ once: true, amount: 0.15 }}
       transition={{
         type: "spring",
-        stiffness: 260,
-        damping: 22,
-        mass: 0.8,
+        stiffness: 160,
+        damping: 24,
+        delay: staggerDelay,
       }}
       onPointerMove={handlePointerMove}
-      onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeave}
-      className={`group relative rounded-[28px] ${bgColor} p-4 sm:p-5 text-left shadow-md border border-black/5 flex flex-col justify-between ${minHeight} cursor-pointer select-none transition-shadow duration-300 hover:shadow-2xl overflow-hidden`}
+      className={`group relative rounded-[28px] ${bgColor} p-4 sm:p-5 text-left shadow-md border border-black/6 flex flex-col justify-between ${minHeight} select-none transition-shadow duration-300 hover:shadow-2xl overflow-hidden will-change-transform`}
       style={{
-        transformStyle: "preserve-3d",
-        perspective: 1000,
+        transformStyle: reducedMotion || isMobile ? "flat" : "preserve-3d",
+        transformPerspective: reducedMotion || isMobile ? undefined : 1000,
+        rotateZ: effectiveRotate + (reducedMotion || isMobile ? 0 : tilt.rotateY * 0.25),
+        rotateX: reducedMotion || isMobile ? 0 : tilt.rotateX,
+        rotateY: reducedMotion || isMobile ? 0 : tilt.rotateY,
       }}
     >
-      {/* Glare / Sheen Reflection Layer */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-[28px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20"
+        className="pointer-events-none absolute inset-0 rounded-[28px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"
         style={{
-          background: `radial-gradient(circle at ${tilt.glareX}% ${tilt.glareY}%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 60%)`,
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%)",
         }}
       />
-
       <div className="relative z-10 flex flex-col justify-between h-full">
         {children}
       </div>
@@ -121,105 +157,213 @@ function HeroTiltCard({
   );
 }
 
-export function MySamparkHero() {
-  const [wordIndex, setWordIndex] = useState(0);
+function HeroHoverVideoPlayer({
+  videoSrc,
+  posterSrc,
+  alt,
+  heightClass = "h-44",
+  topRightBadge,
+  bottomOverlay,
+  loading = "lazy",
+  fetchPriority,
+  width,
+  height,
+}: {
+  videoSrc: string;
+  posterSrc: string;
+  alt: string;
+  heightClass?: string;
+  topRightBadge?: React.ReactNode;
+  bottomOverlay?: React.ReactNode;
+  loading?: "eager" | "lazy";
+  fetchPriority?: "high" | "low" | "auto";
+  width?: number;
+  height?: number;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setWordIndex((prev) => (prev + 1) % ROTATING_WORDS.length);
-    }, 2400);
-    return () => clearInterval(interval);
-  }, []);
+  const startPlayback = () => {
+    setIsHovered(true);
+    if (videoRef.current) {
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setIsPlaying(true))
+          .catch(() => {});
+      }
+    }
+  };
+
+  const stopPlayback = () => {
+    setIsHovered(false);
+    setIsPlaying(false);
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  };
 
   return (
-    <section className="relative pt-20 pb-12 md:pt-24 md:pb-16 overflow-hidden bg-[#F5F6F0]">
+    <div
+      onMouseEnter={startPlayback}
+      onMouseLeave={stopPlayback}
+      className={`relative rounded-2xl overflow-hidden shadow-xs group/img bg-slate-950 cursor-pointer select-none mb-3.5 ${heightClass}`}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={posterSrc}
+        alt={alt}
+        width={width || 400}
+        height={height || 176}
+        loading={loading}
+        fetchPriority={fetchPriority}
+        decoding="async"
+        className={`w-full h-full object-cover transition-transform duration-500 ${
+          isHovered ? "scale-105" : "scale-100"
+        }`}
+      />
+
+      <video
+        ref={videoRef}
+        src={videoSrc}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 pointer-events-none ${
+          isPlaying ? "opacity-100" : "opacity-0"
+        }`}
+      />
+
+      {topRightBadge || (
+        <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full liquid-glass-control text-[10px] font-bold text-[#161616] flex items-center gap-1.5 shadow-sm transition-all pointer-events-none">
+          {isPlaying ? (
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+              <span className="text-emerald-800 font-extrabold">Playing</span>
+            </>
+          ) : (
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#EE7D60] animate-pulse" />
+              <span>Hover to play</span>
+            </>
+          )}
+        </div>
+      )}
+
+      {bottomOverlay}
+    </div>
+  );
+}
+
+export function MySamparkHero() {
+  const [card1Active, setCard1Active] = useState(false);
+  const [card2Bought, setCard2Bought] = useState(false);
+  const [commentCount, setCommentCount] = useState(84);
+  const [activeComments, setActiveComments] = useState<string[]>([]);
+  const [heroReplyState, setHeroReplyState] = useState<"idle" | "simulating" | "sent">("idle");
+  const heroTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const triggerLinenComment = () => {
+    if (heroReplyState === "simulating") return;
+
+    if (heroReplyState === "sent") {
+      if (heroTimerRef.current) clearTimeout(heroTimerRef.current);
+      setHeroReplyState("idle");
+      return;
+    }
+
+    setHeroReplyState("simulating");
+    setCommentCount((c) => c + 1);
+    setActiveComments((prev) => [
+      `@priya.style: Need size chart for LINEN dress!`,
+      ...prev.slice(0, 1),
+    ]);
+
+    if (heroTimerRef.current) clearTimeout(heroTimerRef.current);
+
+    heroTimerRef.current = setTimeout(() => {
+      setHeroReplyState("sent");
+      heroTimerRef.current = setTimeout(() => {
+        setHeroReplyState("idle");
+      }, 4000);
+    }, 900);
+  };
+
+  return (
+    <section className="relative z-10 isolate pt-24 pb-20 sm:pt-28 md:pt-32 md:pb-28 overflow-hidden bg-[#F5F6F0]">
       <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
         
-        {/* 1. Massive Editorial Headline with Rotating Keyword in Coral/Amber Pill */}
-        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-[70px] font-black text-[#161616] tracking-[-0.03em] leading-[1.12] max-w-5xl mx-auto mb-4 uppercase select-none">
-          INTELLIGENT AUTO-REPLIES <br className="hidden sm:block" />
-          FOR EVERY{" "}
-          <span className="inline-flex items-center justify-center min-w-[160px] sm:min-w-[240px] lg:min-w-[290px] h-[46px] sm:h-[62px] lg:h-[70px] px-4 sm:px-7 py-1 rounded-full bg-[#EE7D60] text-white shadow-md align-middle overflow-hidden -rotate-1 hover:rotate-0 transition-transform duration-300">
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={wordIndex}
-                initial={false}
-                animate={{ y: 0, opacity: 1, scale: 1 }}
-                exit={{ y: -28, opacity: 0, scale: 0.92 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 400,
-                  damping: 28,
-                }}
-                className="inline-block tracking-tight text-white font-black text-2xl sm:text-4xl lg:text-5xl"
-              >
-                {ROTATING_WORDS[wordIndex]}
-              </motion.span>
-            </AnimatePresence>
-          </span>
-        </h1>
+        {/* 3D Rotating Word Switcher Headline */}
+        <HeroRotatingHeadline />
 
-        {/* 2. Subtitle with Exact Live Copy */}
-        <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed mb-6 font-medium">
+        {/* Subtitle */}
+        <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed mb-6 mt-4 font-medium">
           QuickReply answers every comment and DM with the real price from your own catalog — then schedules your posts
           across every platform and keeps the whole conversation in one inbox.
         </p>
 
-        {/* 3. Dual Pill CTA Buttons with Signature 3D Rolling Flip Animations */}
+        {/* Dual CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-10">
-          <FlipButton
-            href="/register"
-            text="Start free"
-            variant="primary-black"
-            className="w-full sm:w-auto justify-center"
-          />
+          <Link href="/register" className="group inline-flex items-center select-none w-full sm:w-auto justify-center">
+            <div className="relative inline-flex items-center gap-3.5 rounded-full bg-[#161616] hover:bg-black p-2 pr-7 sm:pr-8 text-white shadow-[0_12px_24px_-6px_rgba(0,0,0,0.25)] hover:shadow-[0_16px_32px_-6px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-md transition-all duration-150 ease-out cursor-pointer">
+              <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white text-black shadow-xs overflow-hidden relative">
+                <span className="relative inline-flex items-center justify-center overflow-hidden shrink-0 w-4 h-4 sm:w-5 sm:h-5 text-[#161616]">
+                  <ArrowRight className="w-full h-full transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] group-hover:translate-x-full" />
+                  <ArrowRight className="w-full h-full absolute inset-0 transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] -translate-x-full group-hover:translate-x-0" />
+                </span>
+              </div>
+              <span className="text-sm sm:text-base font-bold tracking-tight">Start for free</span>
+            </div>
+          </Link>
 
-          <FlipButton
-            href="/demo"
-            text="Book a demo"
-            variant="outline-white"
-            icon={true}
-            className="w-full sm:w-auto justify-center"
-          />
+          <Link href="/demo" className="group inline-flex items-center select-none w-full sm:w-auto justify-center">
+            <div className="liquid-glass-control inline-flex items-center justify-center gap-2.5 px-7 py-3.5 sm:py-4 rounded-full text-sm sm:text-base font-bold text-[#161616] hover:bg-white/90 transition-all duration-150 ease-out cursor-pointer">
+              <span className="relative inline-flex items-center justify-center overflow-hidden shrink-0 w-4 h-4 text-[#161616]">
+                <ArrowRight className="w-full h-full transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] group-hover:translate-x-full" />
+                <ArrowRight className="w-full h-full absolute inset-0 transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] -translate-x-full group-hover:translate-x-0" />
+              </span>
+              <span>Book a demo</span>
+            </div>
+          </Link>
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════
-            HERO 4-CARD STAGE WITH 3D INERTIAL TILT PHYSICS
-            Responsive: 1 col on mobile, 2 col on tablet, 4 col on desktop
-            Desktop: Rotational offsets (-5°, +3°, -4°, +5°) straightening to 0° on hover (scale: 1.04)
+            HERO 4-CARD INTERACTIVE FAN DECK (00:12–00:13)
+            Cards fan out from a tight hand into an elegant arc
             ═══════════════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-2 items-end max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-3 items-end max-w-6xl mx-auto [perspective:1200px] overflow-x-clip sm:overflow-visible">
           
-          {/* ─────────────────────────────────────────────────────────────
-              CARD 1 (#fcd98c / yellow pastel): Shopper asking availability with price reply
-              ───────────────────────────────────────────────────────────── */}
-          <HeroTiltCard bgColor="bg-[#fcd98c]" initialRotate={-5} staggerDelay={0} minHeight="min-h-[440px]">
+          {/* Card 1: Carolina Herrera / Zara Luxury Fashion - Sand/Gold */}
+          <HeroTiltCard bgColor="bg-[#fcd98c]" initialRotate={-4} fanOffset={-60} staggerDelay={0}>
             <div>
-              {/* Shopper Photo */}
-              <div className="relative rounded-2xl overflow-hidden mb-3.5 shadow-xs group/img">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80"
-                  alt="Live Shopper"
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-44 object-cover group-hover/img:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-xs text-[10px] font-bold text-white flex items-center gap-1.5 shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Live Shopper
-                </div>
-                <div className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-xs text-[10px] font-extrabold text-[#161616] shadow-xs">
-                  Zara Silk Midi Dress
-                </div>
-              </div>
+              <HeroHoverVideoPlayer
+                posterSrc="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80"
+                videoSrc="/videos/fashion_reel.mp4"
+                alt="Carolina Herrera Silk Midi Dress"
+                heightClass="h-44"
+                loading="eager"
+                fetchPriority="high"
+                width={400}
+                height={176}
+                bottomOverlay={
+                  <div className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-lg liquid-glass-control text-[10px] font-extrabold text-[#161616] shadow-xs">
+                    Carolina Herrera · Silk Midi
+                  </div>
+                }
+              />
 
-              {/* Conversational DM Bubbles */}
               <div className="space-y-2 text-xs">
-                <div className="p-3 rounded-2xl bg-white text-[#161616] shadow-xs max-w-[88%] font-medium border border-black/5 leading-snug">
+                <button
+                  type="button"
+                  onClick={() => setCard1Active(!card1Active)}
+                  className="w-full text-left p-3 rounded-2xl bg-white text-[#161616] shadow-xs font-medium border border-black/5 leading-snug hover:bg-slate-50 transition-colors cursor-pointer"
+                >
                   Do you have this in size M?
-                </div>
-                <div className="p-3 rounded-2xl bg-[#161616] text-white shadow-md ml-auto max-w-[92%] font-medium space-y-1">
+                </button>
+                <div className="p-3 rounded-2xl bg-[#161616] text-white shadow-md ml-auto max-w-[95%] font-medium space-y-1">
                   <div className="flex items-center gap-1 text-[#FDD871] text-[11px] font-bold">
                     <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                     <span>QuickReply AI · In Stock</span>
@@ -241,13 +385,10 @@ export function MySamparkHero() {
             </div>
           </HeroTiltCard>
 
-          {/* ─────────────────────────────────────────────────────────────
-              CARD 2 (#feebed / pink pastel): Instagram DM modal (sneaker.store, size & price reply)
-              ───────────────────────────────────────────────────────────── */}
-          <HeroTiltCard bgColor="bg-[#feebed]" initialRotate={3} staggerDelay={0.1} minHeight="min-h-[440px]">
+          {/* Card 2: Sneaker Store - Soft Pink / Rose */}
+          <HeroTiltCard bgColor="bg-[#feebed]" initialRotate={-1.5} fanOffset={-20} staggerDelay={0.1}>
             <div>
-              {/* Instagram DM Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-black/8 mb-3 bg-white/70 backdrop-blur-xs -mx-4 -mt-4 sm:-mx-5 sm:-mt-5 p-3.5 rounded-t-[26px]">
+              <div className="flex items-center justify-between pb-3 border-b border-black/8 mb-3 liquid-glass-control -mx-4 -mt-4 sm:-mx-5 sm:-mt-5 p-3.5 rounded-t-[26px]">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white flex items-center justify-center text-xs font-bold shadow-xs p-[1.5px]">
                     <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-rose-500">
@@ -270,32 +411,40 @@ export function MySamparkHero() {
                 </span>
               </div>
 
-              {/* DM Message Thread & Product Embed Card */}
               <div className="space-y-2.5 text-xs py-1">
                 <div className="p-2.5 rounded-2xl bg-white text-[#161616] max-w-[90%] font-medium shadow-xs border border-black/5">
                   Hi! Is the Nike Air Max 270 available in size 9?
                 </div>
-
-                {/* Product Embed Card in DM */}
                 <div className="p-3 rounded-2xl bg-white border border-black/8 shadow-md space-y-2 ml-auto max-w-[96%]">
                   <div className="flex items-center gap-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=160&auto=format&fit=crop&q=80"
                       alt="Nike Air Max 270"
+                      width={52}
+                      height={52}
                       loading="lazy"
                       decoding="async"
                       className="w-13 h-13 rounded-xl object-cover border border-black/10 shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="font-bold text-xs text-[#161616] truncate">Air Max 270 'Red'</div>
+                      <div className="font-bold text-xs text-[#161616] truncate">Air Max 270 &apos;Red&apos;</div>
                       <div className="text-[11px] text-slate-500">Size 9 (UK/India) · 3 left</div>
                       <div className="text-xs font-black text-rose-600">₹8,999</div>
                     </div>
                   </div>
-                  <div className="w-full py-1.5 rounded-xl bg-[#161616] text-white font-bold text-center text-[11px] shadow-xs hover:bg-black transition-colors flex items-center justify-center gap-1.5">
-                    <span>⚡ Buy Now (1-Click)</span>
-                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setCard2Bought(!card2Bought)}
+                    className={`w-full py-2 px-3 rounded-xl font-bold text-center text-[11px] flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none ${
+                      card2Bought
+                        ? "bg-emerald-600 text-white shadow-[0_2px_0_#065f46] translate-y-0.5"
+                        : "bg-[#161616] text-white shadow-[0_4px_0_#000,0_6px_12px_rgba(0,0,0,0.15)] active:translate-y-1 active:shadow-[0_1px_0_#000] hover:bg-black"
+                    }`}
+                  >
+                    <span>{card2Bought ? "✅ 1-Click DM Sent!" : "⚡ Buy Now (1-Click)"}</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -308,33 +457,30 @@ export function MySamparkHero() {
             </div>
           </HeroTiltCard>
 
-          {/* ─────────────────────────────────────────────────────────────
-              CARD 3 (#dacaf4 / purple pastel): Business owner laptop dashboard (1,248 conversations)
-              ───────────────────────────────────────────────────────────── */}
-          <HeroTiltCard bgColor="bg-[#dacaf4]" initialRotate={-4} staggerDelay={0.2} minHeight="min-h-[440px]">
+          {/* Card 3: Subhransu Nayak Analytics - Soft Lavender */}
+          <HeroTiltCard bgColor="bg-[#dacaf4]" initialRotate={1.5} fanOffset={20} staggerDelay={0.2}>
             <div>
-              {/* Business Owner Portrait */}
-              <div className="relative rounded-2xl overflow-hidden mb-3 shadow-xs group/img">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80"
-                  alt="Arjun Sharma"
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-36 object-cover group-hover/img:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-3">
-                  <div>
-                    <div className="text-white text-xs font-bold flex items-center gap-1.5">
-                      <span>Arjun Sharma</span>
-                      <CheckCircle2 className="w-3.5 h-3.5 text-sky-400 fill-sky-400/20" />
+              <HeroHoverVideoPlayer
+                posterSrc="/images/subhransu-nayak.jpg"
+                videoSrc="/videos/yeti_mascot_clean.mp4"
+                alt="Subhransu Nayak - CEO & Founder"
+                heightClass="h-44"
+                loading="lazy"
+                width={400}
+                height={176}
+                bottomOverlay={
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent p-3 pt-8 flex items-end pointer-events-none">
+                    <div>
+                      <div className="text-white text-xs font-bold flex items-center gap-1.5 drop-shadow-sm">
+                        <span>Subhransu Nayak</span>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-400 fill-sky-400/20" />
+                      </div>
+                      <div className="text-[10px] text-slate-300 font-medium drop-shadow-xs">CEO &amp; Founder · QuickReply</div>
                     </div>
-                    <div className="text-[10px] text-slate-300 font-medium">Founder · Footwear DTC</div>
                   </div>
-                </div>
-              </div>
+                }
+              />
 
-              {/* Metric Panel with 1,248 Volume & Graph */}
               <div className="bg-white rounded-2xl p-3.5 shadow-sm space-y-2.5 border border-black/5">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-[#161616] flex items-center gap-1.5">
@@ -345,26 +491,24 @@ export function MySamparkHero() {
                     +34% this wk
                   </span>
                 </div>
-
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-black text-[#161616] tracking-tight">1,248</span>
                   <span className="text-[11px] font-bold text-slate-500">auto-handled</span>
                 </div>
-
-                {/* Sparkline Volume Bar Graph */}
                 <div className="h-10 w-full flex items-end gap-1 pt-1 bg-purple-50/50 p-1.5 rounded-xl">
-                  {[28, 42, 58, 35, 75, 62, 90, 115, 80, 130, 155, 184].map((h, i) => (
+                  {[45, 65, 80, 110, 95, 140, 120, 175, 160, 190, 145, 180].map((v, i) => (
                     <div
                       key={i}
-                      className="flex-1 bg-purple-400 hover:bg-purple-600 rounded-t-xs transition-colors cursor-pointer"
-                      style={{ height: `${(h / 190) * 100}%` }}
-                      title={`Hour ${i * 2}:00 - ${h} replies`}
+                      className="flex-1 bg-purple-500 rounded-t-sm transition-all duration-300 hover:bg-purple-700"
+                      style={{ height: `${(v / 190) * 100}%` }}
+                      title={`Hour ${i * 2}:00 - ${v} replies`}
                     />
                   ))}
                 </div>
-
                 <div className="text-[10px] text-slate-500 flex justify-between font-medium pt-0.5">
-                  <span>Avg latency: <strong className="text-[#161616]">1.2s</strong></span>
+                  <span>
+                    Avg latency: <strong className="text-[#161616]">1.2s</strong>
+                  </span>
                   <span className="text-emerald-600 font-bold">100% accurate</span>
                 </div>
               </div>
@@ -378,12 +522,9 @@ export function MySamparkHero() {
             </div>
           </HeroTiltCard>
 
-          {/* ─────────────────────────────────────────────────────────────
-              CARD 4 (#f2f9f7 / light mint): Facebook post with automatic pricing comment reply
-              ───────────────────────────────────────────────────────────── */}
-          <HeroTiltCard bgColor="bg-[#f2f9f7]" initialRotate={5} staggerDelay={0.3} minHeight="min-h-[440px]">
+          {/* Card 4: Urban Threads - Mint / Green */}
+          <HeroTiltCard bgColor="bg-[#f2f9f7]" initialRotate={4} fanOffset={60} staggerDelay={0.3}>
             <div>
-              {/* Facebook Post Card */}
               <div className="bg-white rounded-2xl p-3 shadow-sm space-y-2 border border-black/5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -395,48 +536,78 @@ export function MySamparkHero() {
                       <div className="text-[9px] text-slate-400 font-medium">Sponsored · Active Campaign</div>
                     </div>
                   </div>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 </div>
 
                 <div className="text-[11px] text-slate-700 leading-snug font-medium">
                   Summer Linen Drop 🌿 Breathable, lightweight &amp; crafted for warm days.
                 </div>
 
-                <div className="relative rounded-xl overflow-hidden h-24 border border-black/5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&auto=format&fit=crop&q=80"
-                    alt="Summer Linen Collection"
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                <HeroHoverVideoPlayer
+                  posterSrc="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&auto=format&fit=crop&q=80"
+                  videoSrc="/videos/campaign_reel.mp4"
+                  alt="Summer Linen Collection"
+                  heightClass="h-24"
+                  loading="lazy"
+                  width={300}
+                  height={96}
+                />
 
                 <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-black/5">
                   <span className="flex items-center gap-1 text-rose-500 font-bold">
                     <Heart className="w-3 h-3 fill-current" /> 1.4k
                   </span>
                   <span className="flex items-center gap-1 font-semibold text-slate-600">
-                    <MessageCircle className="w-3 h-3" /> 84 comments
+                    <MessageCircle className="w-3 h-3" /> {commentCount} comments
                   </span>
                 </div>
               </div>
 
-              {/* Comment to DM Automation Trigger Box */}
-              <div className="p-3 rounded-2xl bg-white text-[#161616] text-xs font-medium mt-2.5 border border-black/5 shadow-xs space-y-1.5">
+              <div className="p-3 rounded-2xl bg-white text-[#161616] text-xs font-medium mt-2.5 border border-black/5 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 font-bold text-[11px]">
                     <Zap className="w-3.5 h-3.5 text-emerald-600 fill-current" />
-                    Trigger: <code className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded-md font-mono text-[10px]">"LINEN"</code>
+                    Trigger: <code className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded-md font-mono text-[10px]">&quot;LINEN&quot;</code>
                   </span>
                   <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">
-                    98 DMs sent
+                    {commentCount + 14} DMs sent
                   </span>
                 </div>
-                <div className="text-[10px] text-slate-600 bg-slate-50 p-2 rounded-xl border border-black/5 leading-tight">
-                  <strong className="text-[#161616]">Auto-DM:</strong> "Sent real catalog price &amp; 15% VIP link to your inbox! ✨"
-                </div>
+
+                {activeComments.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-2 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-[10px] text-emerald-800 leading-tight space-y-1"
+                  >
+                    <div className="font-semibold text-emerald-950">{activeComments[0]}</div>
+                    <div className="text-emerald-700">⚡ Auto-Replied: &quot;Check your DMs! 15% VIP link sent ✨&quot;</div>
+                  </motion.div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={triggerLinenComment}
+                  disabled={heroReplyState === "simulating"}
+                  className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-black disabled:opacity-75 text-white font-bold text-[11px] shadow-[0_4px_0_#000,0_6px_12px_rgba(0,0,0,0.18)] active:translate-y-1 active:shadow-[0_1px_0_#000] border-b-2 border-black/50 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed select-none"
+                >
+                  {heroReplyState === "simulating" ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Simulating 0.9s turnaround...</span>
+                    </>
+                  ) : heroReplyState === "sent" ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-emerald-400">Auto-Reply Sent! (Click to Reset)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5 text-[#FDD871]" />
+                      <span>Click to Test Auto-Reply</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
 
@@ -453,3 +624,4 @@ export function MySamparkHero() {
   );
 }
 
+export default MySamparkHero;

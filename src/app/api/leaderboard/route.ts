@@ -31,6 +31,8 @@ export async function GET(req: NextRequest) {
       period,
       rewards: LEADERBOARD_REWARDS,
       shouldRun: shouldRunLeaderboard(period),
+    }, {
+      headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=120" }
     });
   } catch (error) {
     console.error("[Leaderboard API] Error:", error);

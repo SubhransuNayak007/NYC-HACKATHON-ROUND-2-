@@ -1,15 +1,31 @@
-import { NextRequest, NextResponse } from "next/server";
-import { MetaApiClient } from "@/channels/instagram/MetaApiClient";
-import { getDB, saveDB } from "@/database/db";
-import { processWhatsAppMessage } from "@/backend/wa_engine";
-import { broadcastEvent } from "@/backend/socket";
-import { v4 as uuidv4 } from "uuid";
+/**
+ * ============================================================================
+ *  QuickReply — Meta Instagram Webhook Ingestion API
+ *  src/app/api/webhooks/instagram/route.ts
+ *
+ *  Complies with Meta Graph API Webhook Specification:
+ *   1. GET: Hub challenge verification with timing-safe comparison.
+ *   2. POST: High-throughput HMAC-SHA256 signature verification.
+ *   3. Returns immediate HTTP 200 OK (prevents Meta webhook retries).
+ *   4. Dispatches async event processing to InstagramWorkerRuntime.
+ * ============================================================================
+ */
 
-const metaClient = new MetaApiClient();
+import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
+import { MetaApiClient } from "@/channels/instagram/MetaApiClient";
+import { InstagramWorkerRuntime } from "@/channels/instagram/InstagramWorkerRuntime";
+import { getDB } from "@/database/db";
+
+export const dynamic = "force-dynamic";
+
+function safeCompare(a: string, b: string): boolean {
+  if (!a || !b || a.length !== b.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
 /**
- * GET /api/webhooks/instagram
- * Meta Webhook Verification Endpoint
+ * GET — Meta Webhook Verification
  */
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
@@ -17,111 +33,100 @@ export async function GET(req: NextRequest) {
   const token = searchParams.get("hub.verify_token");
   const challenge = searchParams.get("hub.challenge");
 
-  const verified = metaClient.verifyWebhookChallenge(mode, token, challenge);
-  if (verified) {
-    console.log("[Instagram Webhook] Challenge verified successfully");
-    return new NextResponse(verified, { status: 200, headers: { "Content-Type": "text/plain" } });
+  const expectedToken =
+    process.env.META_WEBHOOK_VERIFY_TOKEN ||
+    process.env.INSTAGRAM_WEBHOOK_VERIFY_TOKEN ||
+    "quickreply_meta_webhook_secret_token";
+
+  if (mode === "subscribe" && token && safeCompare(token, expectedToken)) {
+    return new NextResponse(challenge, {
+      status: 200,
+      headers: { "Content-Type": "text/plain" },
+    });
   }
 
-  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  return NextResponse.json({ error: "Forbidden: Invalid verify token" }, { status: 403 });
 }
 
 /**
- * POST /api/webhooks/instagram
- * Ingests Real Instagram DMs and Comments
+ * POST — Inbound Meta Webhook Receiver
  */
 export async function POST(req: NextRequest) {
+  const signature = req.headers.get("x-hub-signature-256");
+  const rawBody = await req.text();
+
+  const metaClient = new MetaApiClient();
+  const isValid = metaClient.validateWebhookSignature(rawBody, signature);
+
+  if (!isValid && process.env.NODE_ENV === "production") {
+    console.error("[Meta Webhook] Invalid HMAC-SHA256 signature rejected.");
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  }
+
+  let payload: any;
   try {
-    const rawBody = await req.text();
-    const signature = req.headers.get("x-hub-signature-256");
+    payload = JSON.parse(rawBody);
+  } catch {
+    return NextResponse.json({ error: "Malformed JSON" }, { status: 400 });
+  }
 
-    // Signature Validation (if secret is configured)
-    if (process.env.META_APP_SECRET && !metaClient.validateWebhookSignature(rawBody, signature)) {
-      console.warn("[Instagram Webhook] Invalid signature rejected");
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
+  // Process asynchronously without blocking Meta's 200 OK acknowledgment
+  (async () => {
+    try {
+      if (payload.object === "instagram" || payload.object === "page") {
+        for (const entry of payload.entry || []) {
+          const entryAccountId = entry.id;
 
-    const payload = JSON.parse(rawBody);
-
-    // Process Entries
-    const entries = payload.entry || [];
-    for (const entry of entries) {
-      // 1. Direct Messages
-      if (entry.messaging) {
-        for (const msg of entry.messaging) {
-          if (msg.message?.is_echo) continue; // Ignore own echoes
-          const from = msg.sender?.id;
-          const text = msg.message?.text || "";
-          if (!from || !text) continue;
-
+          // Dynamically resolve tenant from database
           const db = await getDB();
-          const convId = `ig_${from}`;
+          const connection = (db.instagramConnections || []).find(
+            (c) =>
+              c.instagramAccountId === entryAccountId ||
+              c.facebookPageId === entryAccountId ||
+              c.id === entryAccountId
+          );
 
-          const aiResult = await processWhatsAppMessage({
-            waMessageId: msg.message?.mid || uuidv4(),
-            conversationId: convId,
-            customerPhone: from,
-            customerName: `Instagram User (${from})`,
-            text,
-            timestamp: new Date(msg.timestamp || Date.now()).toISOString(),
-            db,
-            organizationId: "org_default",
-          });
+          const resolvedTenant = connection?.tenantId || "subhransu.nayak.418@gmail.com";
+          const resolvedWorkspace = connection?.workspaceId || "ws_default";
 
-          // Save messages to DB
-          if (aiResult.newMessages && aiResult.newMessages.length > 0) {
-            if (!db.waMessages) db.waMessages = [];
-            db.waMessages.push(...aiResult.newMessages);
-          }
-          await saveDB(db);
-
-          broadcastEvent("instagram.message_received", {
-            from,
-            text,
-            timestamp: new Date().toISOString(),
-            reply: aiResult.responseText,
-          });
-        }
-      }
-
-      // 2. Comments
-      if (entry.changes) {
-        for (const change of entry.changes) {
-          if (change.field === "comments" && change.value) {
-            const comment = change.value;
-            const db = await getDB();
-            if (!db.socialComments) db.socialComments = [];
-
-            const commentId = comment.id;
-            const existing = db.socialComments.find((c) => c.id === commentId);
-            if (!existing) {
-              db.socialComments.push({
-                id: commentId,
-                platform: "instagram",
-                accountId: entry.id,
-                author: comment.from?.username || "Instagram User",
-                text: comment.text || "",
-                postId: comment.media?.id || "media_unknown",
-                postTitle: "Instagram Post",
-                publishedAt: new Date().toISOString(),
-                status: "pending",
+          // Process Direct Messages
+          for (const messaging of entry.messaging || []) {
+            if (messaging.message && !messaging.message.is_echo) {
+              await InstagramWorkerRuntime.processMessage({
+                tenantId: resolvedTenant,
+                workspaceId: resolvedWorkspace,
+                providerMessageId: messaging.message.mid || `msg_${Date.now()}`,
+                senderId: messaging.sender?.id || "unknown",
+                recipientId: messaging.recipient?.id || entryAccountId || "unknown",
+                text: messaging.message.text || "",
+                timestamp: messaging.timestamp || Date.now(),
+                isEcho: messaging.message.is_echo,
               });
-              await saveDB(db);
+            }
+          }
 
-              broadcastEvent("instagram.comment_received", {
-                commentId,
-                author: comment.from?.username,
-                text: comment.text,
+          // Process Comments & Changes
+          for (const change of entry.changes || []) {
+            if (change.field === "comments" && change.value) {
+              await InstagramWorkerRuntime.processComment({
+                tenantId: resolvedTenant,
+                workspaceId: resolvedWorkspace,
+                providerCommentId: change.value.id || `comm_${Date.now()}`,
+                postId: change.value.media?.id || "unknown",
+                authorId: change.value.from?.id || "unknown",
+                authorUsername: change.value.from?.username || "instagram_user",
+                text: change.value.text || "",
+                timestamp: Date.now(),
               });
             }
           }
         }
       }
+    } catch (workerErr) {
+      console.error("[Meta Webhook] Background runtime worker exception:", workerErr);
     }
+  })();
 
-    return NextResponse.json({ success: true }, { status: 200 });
-  } catch (err) {
-    console.error("[Instagram Webhook] Error processing event:", err);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
-  }
+  // Return immediate 200 OK acknowledgment to Meta
+  return NextResponse.json({ success: true, received: true });
 }

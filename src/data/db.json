@@ -1,0 +1,3246 @@
+{
+  "workspace": {
+    "name": "My Workspace",
+    "members": [],
+    "settings": {
+      "dailyReplyQuota": 500,
+      "blockedUsers": [],
+      "spamProtection": true,
+      "slackWebhook": "",
+      "emailDigest": "weekly",
+      "negativeKeywords": "scam, refund, disappointed, hate, fake, bot, report",
+      "globalReplyConfig": {
+        "replyToAll": false,
+        "tags": "",
+        "template": "Thank you for commenting!"
+      }
+    }
+  },
+  "channels": [],
+  "templates": [],
+  "rules": [],
+  "comments": [],
+  "activityLogs": [],
+  "userSession": {
+    "email": "",
+    "name": "Creator",
+    "tier": "free",
+    "repliesToday": 0,
+    "lastResetDate": "2026-11-02",
+    "username": "creator_zznjty"
+  },
+  "coupons": [],
+  "faqs": [],
+  "topCommenters": [],
+  "engagementHourly": [],
+  "roiData": {
+    "repliesThisWeek": 0,
+    "hoursSavedThisWeek": 0,
+    "hourlyRate": 25,
+    "moneySavedThisWeek": 0,
+    "repliesThisMonth": 0,
+    "hoursSavedThisMonth": 0,
+    "moneySavedThisMonth": 0,
+    "allTimeReplies": 0,
+    "allTimeHoursSaved": 0,
+    "allTimeMoneySaved": 0
+  },
+  "automationChains": [],
+  "followUpSequences": [],
+  "webhookTriggers": [],
+  "commentAssignments": [],
+  "commentNotes": [],
+  "approvalWorkflows": [],
+  "templateVersions": [],
+  "replyEdits": [],
+  "replyEffectiveness": [],
+  "suggestedRules": [],
+  "suggestedFAQs": [],
+  "notificationLog": [],
+  "milestones": [],
+  "quotaWarnings": [],
+  "socialAccounts": [],
+  "socialComments": [],
+  "videoQueue": [],
+  "systemEvents": [
+    {
+      "id": "hb-1793646765668",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 945,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T19:12:45.668Z"
+    },
+    {
+      "id": "hb-1793646705668",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 1124,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T19:11:45.668Z"
+    },
+    {
+      "id": "hb-1793646645157",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 1091,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T19:10:45.157Z"
+    },
+    {
+      "id": "hb-1793646585156",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 1054,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T19:09:45.156Z"
+    },
+    {
+      "id": "hb-1793646525149",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 979,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T19:08:45.149Z"
+    },
+    {
+      "id": "hb-1793646465151",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 1069,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T19:07:45.151Z"
+    },
+    {
+      "id": "hb-1793646405151",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 912,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T19:06:45.151Z"
+    },
+    {
+      "id": "hb-1793646345135",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 814,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T19:05:45.135Z"
+    },
+    {
+      "id": "hb-1793646285134",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 829,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T19:04:45.134Z"
+    },
+    {
+      "id": "hb-1793646225129",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 789,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T19:03:45.129Z"
+    },
+    {
+      "id": "hb-1793646165130",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 757,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T19:02:45.130Z"
+    },
+    {
+      "id": "hb-1793646105129",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 722,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T19:01:45.129Z"
+    },
+    {
+      "id": "hb-1793646045123",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 712,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T19:00:45.123Z"
+    },
+    {
+      "id": "hb-1793645985115",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 685,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T18:59:45.115Z"
+    },
+    {
+      "id": "hb-1793645925111",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 647,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T18:58:45.111Z"
+    },
+    {
+      "id": "hb-1793645865102",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 702,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T18:57:45.102Z"
+    },
+    {
+      "id": "hb-1793645805091",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 665,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T18:56:45.091Z"
+    },
+    {
+      "id": "hb-1793645745084",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 712,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T18:55:45.084Z"
+    },
+    {
+      "id": "hb-1793645685067",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 695,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T18:54:45.067Z"
+    },
+    {
+      "id": "hb-1793645625053",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 681,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T18:53:45.053Z"
+    },
+    {
+      "id": "hb-1793645565028",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 778,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T18:52:45.028Z"
+    },
+    {
+      "id": "hb-1793645505027",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 828,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T18:51:45.027Z"
+    },
+    {
+      "id": "hb-1793645445069",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 11640,
+        "memoryMB": 331,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-02T18:50:45.069Z"
+    },
+    {
+      "id": "hb-1793544843724",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3286,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T14:54:03.724Z"
+    },
+    {
+      "id": "hb-1793529890222",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3334,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T10:44:50.222Z"
+    },
+    {
+      "id": "hb-1793525874925",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3415,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:37:54.925Z"
+    },
+    {
+      "id": "hb-1793525778684",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3380,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:36:18.684Z"
+    },
+    {
+      "id": "hb-1793525718676",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3343,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:35:18.676Z"
+    },
+    {
+      "id": "hb-1793525658669",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3308,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:34:18.669Z"
+    },
+    {
+      "id": "hb-1793525598666",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3430,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:33:18.666Z"
+    },
+    {
+      "id": "hb-1793525538652",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3591,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:32:18.652Z"
+    },
+    {
+      "id": "hb-1793525478645",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3561,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:31:18.645Z"
+    },
+    {
+      "id": "hb-1793525418643",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3433,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:30:18.643Z"
+    },
+    {
+      "id": "hb-1793525358635",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3380,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:29:18.635Z"
+    },
+    {
+      "id": "hb-1793525298631",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3633,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:28:18.631Z"
+    },
+    {
+      "id": "hb-1793525238632",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3523,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:27:18.632Z"
+    },
+    {
+      "id": "hb-1793525178620",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3486,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:26:18.620Z"
+    },
+    {
+      "id": "hb-1793525118607",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3447,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:25:18.607Z"
+    },
+    {
+      "id": "hb-1793525058593",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3410,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:24:18.593Z"
+    },
+    {
+      "id": "hb-1793524998579",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3372,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:23:18.579Z"
+    },
+    {
+      "id": "hb-1793524938576",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3338,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:22:18.576Z"
+    },
+    {
+      "id": "hb-1793524878571",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3449,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:21:18.571Z"
+    },
+    {
+      "id": "hb-1793524818560",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3410,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:20:18.560Z"
+    },
+    {
+      "id": "hb-1793524758553",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3253,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:19:18.553Z"
+    },
+    {
+      "id": "hb-1793524698574",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3220,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:18:18.574Z"
+    },
+    {
+      "id": "hb-1793524638553",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3332,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:17:18.553Z"
+    },
+    {
+      "id": "hb-1793524578543",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3220,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:16:18.543Z"
+    },
+    {
+      "id": "hb-1793524518541",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3247,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:15:18.541Z"
+    },
+    {
+      "id": "hb-1793524458527",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3220,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:14:18.527Z"
+    },
+    {
+      "id": "hb-1793524398526",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3126,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:13:18.525Z"
+    },
+    {
+      "id": "hb-1793524338519",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3257,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:12:18.519Z"
+    },
+    {
+      "id": "hb-1793524278512",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3353,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:11:18.512Z"
+    },
+    {
+      "id": "hb-1793524218506",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3261,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:10:18.506Z"
+    },
+    {
+      "id": "hb-1793524158496",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3233,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:09:18.496Z"
+    },
+    {
+      "id": "hb-1793524098493",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3205,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:08:18.493Z"
+    },
+    {
+      "id": "hb-1793524038483",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3417,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:07:18.483Z"
+    },
+    {
+      "id": "hb-1793523978475",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3380,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:06:18.475Z"
+    },
+    {
+      "id": "hb-1793523918462",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3344,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:05:18.462Z"
+    },
+    {
+      "id": "hb-1793523858448",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3305,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:04:18.448Z"
+    },
+    {
+      "id": "hb-1793523798437",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3269,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:03:18.437Z"
+    },
+    {
+      "id": "hb-1793523738424",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3234,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:02:18.424Z"
+    },
+    {
+      "id": "hb-1793523678410",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3248,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:01:18.410Z"
+    },
+    {
+      "id": "hb-1793523618037",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3243,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T09:00:18.037Z"
+    },
+    {
+      "id": "hb-1793523558011",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3171,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:59:18.011Z"
+    },
+    {
+      "id": "hb-1793523497997",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3241,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:58:17.997Z"
+    },
+    {
+      "id": "hb-1793523437990",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3198,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:57:17.990Z"
+    },
+    {
+      "id": "hb-1793523377986",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3381,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:56:17.986Z"
+    },
+    {
+      "id": "hb-1793523317986",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3189,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:55:17.986Z"
+    },
+    {
+      "id": "hb-1793523257984",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3373,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:54:17.984Z"
+    },
+    {
+      "id": "hb-1793523197978",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3360,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:53:17.978Z"
+    },
+    {
+      "id": "hb-1793523137965",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3263,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:52:17.965Z"
+    },
+    {
+      "id": "hb-1793523077953",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3226,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:51:17.953Z"
+    },
+    {
+      "id": "hb-1793523017948",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3194,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:50:17.948Z"
+    },
+    {
+      "id": "hb-1793522957940",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3187,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:49:17.940Z"
+    },
+    {
+      "id": "hb-1793522897929",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3206,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:48:17.929Z"
+    },
+    {
+      "id": "hb-1793522837935",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2930,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:47:17.935Z"
+    },
+    {
+      "id": "hb-1793522777918",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3180,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:46:17.918Z"
+    },
+    {
+      "id": "hb-1793522717906",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3103,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:45:17.906Z"
+    },
+    {
+      "id": "hb-1793522657897",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3066,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:44:17.897Z"
+    },
+    {
+      "id": "hb-1793522597896",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3029,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:43:17.896Z"
+    },
+    {
+      "id": "hb-1793522537896",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2994,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:42:17.896Z"
+    },
+    {
+      "id": "hb-1793522477882",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3070,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:41:17.882Z"
+    },
+    {
+      "id": "hb-1793522417879",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3208,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:40:17.879Z"
+    },
+    {
+      "id": "hb-1793522357872",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3076,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:39:17.871Z"
+    },
+    {
+      "id": "hb-1793522297857",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3207,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:38:17.857Z"
+    },
+    {
+      "id": "hb-1793522237854",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2970,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:37:17.854Z"
+    },
+    {
+      "id": "hb-1793522177847",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2917,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:36:17.847Z"
+    },
+    {
+      "id": "hb-1793522117847",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2796,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:35:17.847Z"
+    },
+    {
+      "id": "hb-1793522057844",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3038,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:34:17.844Z"
+    },
+    {
+      "id": "hb-1793521997834",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 3035,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:33:17.834Z"
+    },
+    {
+      "id": "hb-1793521937832",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2926,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:32:17.832Z"
+    },
+    {
+      "id": "hb-1793521877825",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2618,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:31:17.825Z"
+    },
+    {
+      "id": "hb-1793521817625",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2527,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:30:17.625Z"
+    },
+    {
+      "id": "hb-1793521757616",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2412,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:29:17.616Z"
+    },
+    {
+      "id": "hb-1793521697521",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2302,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:28:17.521Z"
+    },
+    {
+      "id": "hb-1793521637507",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2447,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:27:17.507Z"
+    },
+    {
+      "id": "hb-1793521577494",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2399,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:26:17.494Z"
+    },
+    {
+      "id": "hb-1793521517481",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2368,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:25:17.481Z"
+    },
+    {
+      "id": "hb-1793521457466",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2313,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:24:17.466Z"
+    },
+    {
+      "id": "hb-1793521397460",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2484,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:23:17.460Z"
+    },
+    {
+      "id": "hb-1793521337450",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2414,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:22:17.450Z"
+    },
+    {
+      "id": "hb-1793521277440",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2387,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:21:17.440Z"
+    },
+    {
+      "id": "hb-1793521217426",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2349,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:20:17.426Z"
+    },
+    {
+      "id": "hb-1793521157414",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2301,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:19:17.414Z"
+    },
+    {
+      "id": "hb-1793521097399",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2519,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:18:17.399Z"
+    },
+    {
+      "id": "hb-1793521037394",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2447,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:17:17.394Z"
+    },
+    {
+      "id": "hb-1793520977379",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2340,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:16:17.379Z"
+    },
+    {
+      "id": "hb-1793520917372",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2462,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:15:17.372Z"
+    },
+    {
+      "id": "hb-1793520857371",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2185,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:14:17.371Z"
+    },
+    {
+      "id": "hb-1793520797247",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2388,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:13:17.247Z"
+    },
+    {
+      "id": "hb-1793520737233",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2363,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:12:17.233Z"
+    },
+    {
+      "id": "hb-1793520677235",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2257,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:11:17.235Z"
+    },
+    {
+      "id": "hb-1793520616977",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2251,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:10:16.977Z"
+    },
+    {
+      "id": "hb-1793520556691",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2159,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:09:16.691Z"
+    },
+    {
+      "id": "hb-1793520496690",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2131,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:08:16.690Z"
+    },
+    {
+      "id": "hb-1793520436678",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2160,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:07:16.678Z"
+    },
+    {
+      "id": "hb-1793520376679",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2066,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:06:16.679Z"
+    },
+    {
+      "id": "hb-1793520316670",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1972,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:05:16.670Z"
+    },
+    {
+      "id": "hb-1793520256660",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1983,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:04:16.660Z"
+    },
+    {
+      "id": "hb-1793520196656",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1928,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:03:16.656Z"
+    },
+    {
+      "id": "hb-1793520136655",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1963,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:02:16.655Z"
+    },
+    {
+      "id": "hb-1793520076648",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1909,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:01:16.648Z"
+    },
+    {
+      "id": "hb-1793520016645",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1920,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T08:00:16.644Z"
+    },
+    {
+      "id": "hb-1793519956638",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1918,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:59:16.638Z"
+    },
+    {
+      "id": "hb-1793519896625",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1940,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:58:16.625Z"
+    },
+    {
+      "id": "hb-1793519836611",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1992,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:57:16.611Z"
+    },
+    {
+      "id": "hb-1793519776597",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1850,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:56:16.597Z"
+    },
+    {
+      "id": "hb-1793519716590",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1853,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:55:16.590Z"
+    },
+    {
+      "id": "hb-1793519656583",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1912,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:54:16.583Z"
+    },
+    {
+      "id": "hb-1793519596572",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1849,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:53:16.572Z"
+    },
+    {
+      "id": "hb-1793519536570",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1878,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:52:16.570Z"
+    },
+    {
+      "id": "hb-1793519476561",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1849,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:51:16.561Z"
+    },
+    {
+      "id": "hb-1793519416549",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1876,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:50:16.549Z"
+    },
+    {
+      "id": "hb-1793519356542",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1849,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:49:16.542Z"
+    },
+    {
+      "id": "hb-1793519296542",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1874,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:48:16.542Z"
+    },
+    {
+      "id": "hb-1793519236535",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1848,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:47:16.535Z"
+    },
+    {
+      "id": "hb-1793519176528",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1876,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:46:16.528Z"
+    },
+    {
+      "id": "hb-1793519116527",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1850,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:45:16.527Z"
+    },
+    {
+      "id": "hb-1793519056518",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1917,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:44:16.518Z"
+    },
+    {
+      "id": "hb-1793518996512",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1930,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:43:16.512Z"
+    },
+    {
+      "id": "hb-1793518936502",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1856,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:42:16.502Z"
+    },
+    {
+      "id": "hb-1793518876497",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1836,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:41:16.497Z"
+    },
+    {
+      "id": "hb-1793518816498",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1805,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:40:16.498Z"
+    },
+    {
+      "id": "hb-1793518756497",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1828,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:39:16.497Z"
+    },
+    {
+      "id": "hb-1793518696483",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1808,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:38:16.483Z"
+    },
+    {
+      "id": "hb-1793518636472",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1906,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:37:16.472Z"
+    },
+    {
+      "id": "hb-1793518576459",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1867,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:36:16.459Z"
+    },
+    {
+      "id": "hb-1793518516455",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1871,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:35:16.455Z"
+    },
+    {
+      "id": "hb-1793518456453",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1806,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:34:16.453Z"
+    },
+    {
+      "id": "hb-1793518396439",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1924,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:33:16.439Z"
+    },
+    {
+      "id": "hb-1793518336434",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1884,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:32:16.434Z"
+    },
+    {
+      "id": "hb-1793518276421",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1842,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:31:16.421Z"
+    },
+    {
+      "id": "hb-1793518216419",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1845,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:30:16.419Z"
+    },
+    {
+      "id": "hb-1793518156407",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1998,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:29:16.407Z"
+    },
+    {
+      "id": "hb-1793518096403",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2162,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:28:16.403Z"
+    },
+    {
+      "id": "hb-1793518036401",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2094,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:27:16.401Z"
+    },
+    {
+      "id": "hb-1793517976389",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2054,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:26:16.389Z"
+    },
+    {
+      "id": "hb-1793517916383",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2001,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:25:16.383Z"
+    },
+    {
+      "id": "hb-1793517856379",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2131,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:24:16.379Z"
+    },
+    {
+      "id": "hb-1793517796365",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2095,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:23:16.365Z"
+    },
+    {
+      "id": "hb-1793517736366",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2060,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:22:16.366Z"
+    },
+    {
+      "id": "hb-1793517676359",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2046,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:21:16.359Z"
+    },
+    {
+      "id": "hb-1793517616345",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2000,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:20:16.345Z"
+    },
+    {
+      "id": "hb-1793517556340",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2039,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:19:16.340Z"
+    },
+    {
+      "id": "hb-1793517496330",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2038,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:18:16.330Z"
+    },
+    {
+      "id": "hb-1793517436334",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1968,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:17:16.334Z"
+    },
+    {
+      "id": "hb-1793517376320",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 2002,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:16:16.320Z"
+    },
+    {
+      "id": "hb-1793517316321",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1958,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:15:16.321Z"
+    },
+    {
+      "id": "hb-1793517256319",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1892,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:14:16.319Z"
+    },
+    {
+      "id": "hb-1793517196319",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1681,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:13:16.319Z"
+    },
+    {
+      "id": "hb-1793517136310",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1751,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:12:16.310Z"
+    },
+    {
+      "id": "hb-1793517076301",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1932,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:11:16.301Z"
+    },
+    {
+      "id": "hb-1793517016294",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1898,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:10:16.294Z"
+    },
+    {
+      "id": "hb-1793516956294",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1863,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:09:16.294Z"
+    },
+    {
+      "id": "hb-1793516896286",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1794,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:08:16.286Z"
+    },
+    {
+      "id": "hb-1793516836295",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1757,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:07:16.295Z"
+    },
+    {
+      "id": "hb-1793516776277",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1956,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:06:16.277Z"
+    },
+    {
+      "id": "hb-1793516716274",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1764,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:05:16.274Z"
+    },
+    {
+      "id": "hb-1793516656265",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1955,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:04:16.265Z"
+    },
+    {
+      "id": "hb-1793516596255",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1909,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:03:16.255Z"
+    },
+    {
+      "id": "hb-1793516536256",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1636,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:02:16.256Z"
+    },
+    {
+      "id": "hb-1793516475916",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1401,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:01:15.916Z"
+    },
+    {
+      "id": "hb-1793516415916",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1340,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T07:00:15.916Z"
+    },
+    {
+      "id": "hb-1793516355909",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1221,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:59:15.909Z"
+    },
+    {
+      "id": "hb-1793516295901",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1209,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:58:15.901Z"
+    },
+    {
+      "id": "hb-1793516235900",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1162,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:57:15.900Z"
+    },
+    {
+      "id": "hb-1793516175897",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1114,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:56:15.897Z"
+    },
+    {
+      "id": "hb-1793516115890",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1145,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:55:15.890Z"
+    },
+    {
+      "id": "hb-1793516055881",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1179,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:54:15.881Z"
+    },
+    {
+      "id": "hb-1793515995881",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1044,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:53:15.881Z"
+    },
+    {
+      "id": "hb-1793515935871",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1072,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:52:15.871Z"
+    },
+    {
+      "id": "hb-1793515875858",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1121,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:51:15.858Z"
+    },
+    {
+      "id": "hb-1793515815314",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1080,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:50:15.314Z"
+    },
+    {
+      "id": "hb-1793515755306",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1050,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:49:15.306Z"
+    },
+    {
+      "id": "hb-1793515695295",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 1032,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:48:15.295Z"
+    },
+    {
+      "id": "hb-1793515635191",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 901,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:47:15.191Z"
+    },
+    {
+      "id": "hb-1793515575141",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 857,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:46:15.141Z"
+    },
+    {
+      "id": "hb-1793515515140",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 789,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:45:15.140Z"
+    },
+    {
+      "id": "hb-1793515455137",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 735,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:44:15.136Z"
+    },
+    {
+      "id": "hb-1793515395129",
+      "type": "cron_tick",
+      "message": "System heartbeat — 24/7 engine active",
+      "metadata": {
+        "pid": 9796,
+        "memoryMB": 708,
+        "quotaUsed": 0
+      },
+      "timestamp": "2026-11-01T06:43:15.129Z"
+    }
+  ],
+  "systemStatus": {
+    "lastCronRunAt": "2026-11-02T19:12:45.668Z",
+    "lastDiscoveryRunAt": "2026-11-02T18:50:50.091Z",
+    "lastPollRunAt": null,
+    "startedAt": "2026-07-28T09:44:58.809Z",
+    "youtubeQuotaUsedToday": 0,
+    "quotaDate": "2026-11-02"
+  },
+  "pipelineTraces": [],
+  "waConversations": [],
+  "waMessages": [],
+  "waCustomers": [],
+  "waProducts": [
+    {
+      "id": "prod_blue_shirt",
+      "name": "Blue Oxford Shirt XL",
+      "price": 1299,
+      "salePrice": 1099,
+      "currency": "INR",
+      "stock": 5,
+      "isActive": true,
+      "createdAt": "2026-08-16T13:35:06.765Z",
+      "updatedAt": "2026-08-16T13:35:06.765Z"
+    }
+  ],
+  "waOrders": [],
+  "waKnowledgeSources": [],
+  "waSettings": {
+    "enabled": true,
+    "autoReply": true,
+    "mode": "full_auto",
+    "confidenceThreshold": 0.75,
+    "brandVoice": {
+      "tone": "friendly",
+      "responseLength": "medium",
+      "emojiUsage": "minimal",
+      "language": "auto"
+    },
+    "businessHours": {
+      "timezone": "Asia/Kolkata",
+      "schedule": [
+        {
+          "day": 0,
+          "open": "09:00",
+          "close": "18:00",
+          "closed": true
+        },
+        {
+          "day": 1,
+          "open": "09:00",
+          "close": "18:00",
+          "closed": false
+        },
+        {
+          "day": 2,
+          "open": "09:00",
+          "close": "18:00",
+          "closed": false
+        },
+        {
+          "day": 3,
+          "open": "09:00",
+          "close": "18:00",
+          "closed": false
+        },
+        {
+          "day": 4,
+          "open": "09:00",
+          "close": "18:00",
+          "closed": false
+        },
+        {
+          "day": 5,
+          "open": "09:00",
+          "close": "18:00",
+          "closed": false
+        },
+        {
+          "day": 6,
+          "open": "09:00",
+          "close": "18:00",
+          "closed": true
+        }
+      ],
+      "holidays": [],
+      "outsideHoursMessage": "Thanks for reaching out! Our team is currently offline. I can still help with common questions, and a team member will respond during business hours."
+    },
+    "escalationRules": {
+      "onAngerDetected": true,
+      "onLegalThreat": true,
+      "onLowConfidence": true,
+      "onExplicitRequest": true,
+      "onHighValue": false,
+      "onPaymentDispute": true,
+      "confidenceThreshold": 0.65
+    },
+    "maxFollowups": 3,
+    "quietHoursStart": "22:00",
+    "quietHoursEnd": "08:00",
+    "spamProtection": true,
+    "maxMessagesPerHourPerCustomer": 10
+  },
+  "waAnalyticsEvents": [],
+  "mcpTools": [],
+  "waQuickReplies": [],
+  "agiLearnedComments": [],
+  "keywordAlerts": [
+    {
+      "id": "ka_default_refund",
+      "keyword": "refund",
+      "type": "negative",
+      "platforms": [
+        "all"
+      ],
+      "isActive": true,
+      "caseSensitive": false,
+      "alertViaWhatsApp": false,
+      "alertViaDashboard": true,
+      "matchCount": 0,
+      "createdAt": "2026-08-16T17:15:40.155Z",
+      "recentMatches": []
+    },
+    {
+      "id": "ka_default_scam",
+      "keyword": "scam",
+      "type": "negative",
+      "platforms": [
+        "all"
+      ],
+      "isActive": true,
+      "caseSensitive": false,
+      "alertViaWhatsApp": false,
+      "alertViaDashboard": true,
+      "matchCount": 0,
+      "createdAt": "2026-08-16T17:15:40.155Z",
+      "recentMatches": []
+    },
+    {
+      "id": "ka_default_fraud",
+      "keyword": "fraud",
+      "type": "negative",
+      "platforms": [
+        "all"
+      ],
+      "isActive": true,
+      "caseSensitive": false,
+      "alertViaWhatsApp": false,
+      "alertViaDashboard": true,
+      "matchCount": 0,
+      "createdAt": "2026-08-16T17:15:40.155Z",
+      "recentMatches": []
+    },
+    {
+      "id": "ka_default_broken",
+      "keyword": "broken",
+      "type": "negative",
+      "platforms": [
+        "all"
+      ],
+      "isActive": true,
+      "caseSensitive": false,
+      "alertViaWhatsApp": false,
+      "alertViaDashboard": true,
+      "matchCount": 0,
+      "createdAt": "2026-08-16T17:15:40.155Z",
+      "recentMatches": []
+    },
+    {
+      "id": "ka_default_love_this",
+      "keyword": "love this",
+      "type": "positive",
+      "platforms": [
+        "all"
+      ],
+      "isActive": true,
+      "caseSensitive": false,
+      "alertViaWhatsApp": false,
+      "alertViaDashboard": true,
+      "matchCount": 0,
+      "createdAt": "2026-08-16T17:15:40.155Z",
+      "recentMatches": []
+    },
+    {
+      "id": "ka_default_recommend",
+      "keyword": "recommend",
+      "type": "positive",
+      "platforms": [
+        "all"
+      ],
+      "isActive": true,
+      "caseSensitive": false,
+      "alertViaWhatsApp": false,
+      "alertViaDashboard": true,
+      "matchCount": 0,
+      "createdAt": "2026-08-16T17:15:40.155Z",
+      "recentMatches": []
+    },
+    {
+      "id": "ka_1786900540167_idbe8",
+      "keyword": "test_ai_agent",
+      "type": "brand",
+      "platforms": [
+        "all"
+      ],
+      "isActive": true,
+      "caseSensitive": false,
+      "alertViaWhatsApp": false,
+      "alertViaDashboard": true,
+      "matchCount": 0,
+      "createdAt": "2026-08-16T17:15:40.167Z",
+      "recentMatches": []
+    }
+  ],
+  "agiLearningCycles": [],
+  "agiVideoContexts": [],
+  "audienceKnowledge": {
+    "topQuestions": [
+      {
+        "question": "How do I connect my Instagram professional account?",
+        "frequency": 2,
+        "lastSeen": "2026-08-16T17:15:27.332Z"
+      }
+    ],
+    "recurringPraises": [],
+    "recurringComplaints": [
+      {
+        "topic": "delivery",
+        "frequency": 2,
+        "urgency": "low",
+        "exampleComment": "The delivery tracking link was broken for my last order."
+      }
+    ],
+    "featureRequests": [],
+    "audienceLanguagePatterns": [],
+    "sentimentTrend": [
+      {
+        "date": "2026-08-16",
+        "score": 0.13333333333333333,
+        "commentCount": 6
+      }
+    ],
+    "topTestimonials": [
+      {
+        "text": "This AI auto reply system doubled our conversion rate in 3 days! Best tool ever.",
+        "author": "Vikram Malhotra",
+        "likes": 45,
+        "platform": "instagram",
+        "commentId": "c_t1"
+      },
+      {
+        "text": "This AI auto reply system doubled our conversion rate in 3 days! Best tool ever.",
+        "author": "Vikram Malhotra",
+        "likes": 45,
+        "platform": "instagram",
+        "commentId": "c_t1"
+      }
+    ],
+    "competitorMentions": [],
+    "totalCommentsProcessed": 6,
+    "lastUpdated": "2026-08-16T17:15:27.339Z"
+  },
+  "businessKnowledgeItems": [
+    {
+      "id": "fact_1786901311983_smiym",
+      "tenantId": "My Workspace",
+      "category": "PRODUCT_KNOWLEDGE",
+      "epistemicType": "FACT",
+      "content": "Product X official price is ₹1,799 with 340 units in stock.",
+      "source": "database_truth",
+      "createdAt": "2026-08-16T17:28:31.983Z",
+      "observedAt": "2026-08-16T17:28:31.983Z",
+      "confidence": 1,
+      "evidence": [
+        "Live Inventory DB",
+        "Product Catalog"
+      ],
+      "status": "ACTIVE",
+      "version": 1,
+      "structuredFacts": {
+        "sku": "PROD-X",
+        "price": 1799,
+        "stock": 340
+      }
+    },
+    {
+      "id": "inf_1786901311989_5sir7",
+      "tenantId": "My Workspace",
+      "category": "CUSTOMER_KNOWLEDGE",
+      "epistemicType": "INFERENCE",
+      "content": "Customers from Western region are more likely to ask for tracking links.",
+      "source": "ai_inference",
+      "createdAt": "2026-08-16T17:28:31.989Z",
+      "observedAt": "2026-08-16T17:28:31.989Z",
+      "confidence": 0.82,
+      "evidence": [
+        "14 regional comment inquiries"
+      ],
+      "status": "ACTIVE",
+      "version": 1
+    },
+    {
+      "id": "fact_1786901332669_1e1hj",
+      "tenantId": "My Workspace",
+      "category": "PRODUCT_KNOWLEDGE",
+      "epistemicType": "FACT",
+      "content": "Product X official price is ₹1,799 with 340 units in stock.",
+      "source": "database_truth",
+      "createdAt": "2026-08-16T17:28:52.669Z",
+      "observedAt": "2026-08-16T17:28:52.669Z",
+      "confidence": 1,
+      "evidence": [
+        "Live Inventory DB",
+        "Product Catalog"
+      ],
+      "status": "ACTIVE",
+      "version": 1,
+      "structuredFacts": {
+        "sku": "PROD-X",
+        "price": 1799,
+        "stock": 340
+      }
+    },
+    {
+      "id": "inf_1786901332674_691dm",
+      "tenantId": "My Workspace",
+      "category": "CUSTOMER_KNOWLEDGE",
+      "epistemicType": "INFERENCE",
+      "content": "Customers from Western region are more likely to ask for tracking links.",
+      "source": "ai_inference",
+      "createdAt": "2026-08-16T17:28:52.674Z",
+      "observedAt": "2026-08-16T17:28:52.674Z",
+      "confidence": 0.82,
+      "evidence": [
+        "14 regional comment inquiries"
+      ],
+      "status": "ACTIVE",
+      "version": 1
+    },
+    {
+      "id": "fact_1786903309155_e3uqa",
+      "tenantId": "My Workspace",
+      "category": "PRODUCT_KNOWLEDGE",
+      "epistemicType": "FACT",
+      "content": "Product X official price is ₹1,799 with 340 units in stock.",
+      "source": "database_truth",
+      "createdAt": "2026-08-16T18:01:49.155Z",
+      "observedAt": "2026-08-16T18:01:49.155Z",
+      "confidence": 1,
+      "evidence": [
+        "Live Inventory DB",
+        "Product Catalog"
+      ],
+      "status": "ACTIVE",
+      "version": 1,
+      "structuredFacts": {
+        "sku": "PROD-X",
+        "price": 1799,
+        "stock": 340
+      }
+    },
+    {
+      "id": "inf_1786903309163_g16l5",
+      "tenantId": "My Workspace",
+      "category": "CUSTOMER_KNOWLEDGE",
+      "epistemicType": "INFERENCE",
+      "content": "Customers from Western region are more likely to ask for tracking links.",
+      "source": "ai_inference",
+      "createdAt": "2026-08-16T18:01:49.163Z",
+      "observedAt": "2026-08-16T18:01:49.163Z",
+      "confidence": 0.82,
+      "evidence": [
+        "14 regional comment inquiries"
+      ],
+      "status": "ACTIVE",
+      "version": 1
+    },
+    {
+      "id": "fact_1786903362741_xej52",
+      "tenantId": "My Workspace",
+      "category": "PRODUCT_KNOWLEDGE",
+      "epistemicType": "FACT",
+      "content": "Product X official price is ₹1,799 with 340 units in stock.",
+      "source": "database_truth",
+      "createdAt": "2026-08-16T18:02:42.741Z",
+      "observedAt": "2026-08-16T18:02:42.741Z",
+      "confidence": 1,
+      "evidence": [
+        "Live Inventory DB",
+        "Product Catalog"
+      ],
+      "status": "ACTIVE",
+      "version": 1,
+      "structuredFacts": {
+        "sku": "PROD-X",
+        "price": 1799,
+        "stock": 340
+      }
+    },
+    {
+      "id": "inf_1786903362748_fx970",
+      "tenantId": "My Workspace",
+      "category": "CUSTOMER_KNOWLEDGE",
+      "epistemicType": "INFERENCE",
+      "content": "Customers from Western region are more likely to ask for tracking links.",
+      "source": "ai_inference",
+      "createdAt": "2026-08-16T18:02:42.748Z",
+      "observedAt": "2026-08-16T18:02:42.748Z",
+      "confidence": 0.82,
+      "evidence": [
+        "14 regional comment inquiries"
+      ],
+      "status": "ACTIVE",
+      "version": 1
+    },
+    {
+      "id": "fact_1786903396542_jq7ys",
+      "tenantId": "My Workspace",
+      "category": "PRODUCT_KNOWLEDGE",
+      "epistemicType": "FACT",
+      "content": "Product X official price is ₹1,799 with 340 units in stock.",
+      "source": "database_truth",
+      "createdAt": "2026-08-16T18:03:16.542Z",
+      "observedAt": "2026-08-16T18:03:16.542Z",
+      "confidence": 1,
+      "evidence": [
+        "Live Inventory DB",
+        "Product Catalog"
+      ],
+      "status": "ACTIVE",
+      "version": 1,
+      "structuredFacts": {
+        "sku": "PROD-X",
+        "price": 1799,
+        "stock": 340
+      }
+    },
+    {
+      "id": "inf_1786903396547_62hay",
+      "tenantId": "My Workspace",
+      "category": "CUSTOMER_KNOWLEDGE",
+      "epistemicType": "INFERENCE",
+      "content": "Customers from Western region are more likely to ask for tracking links.",
+      "source": "ai_inference",
+      "createdAt": "2026-08-16T18:03:16.547Z",
+      "observedAt": "2026-08-16T18:03:16.547Z",
+      "confidence": 0.82,
+      "evidence": [
+        "14 regional comment inquiries"
+      ],
+      "status": "ACTIVE",
+      "version": 1
+    },
+    {
+      "id": "fact_1786903729635_kmmp9",
+      "tenantId": "My Workspace",
+      "category": "PRODUCT_KNOWLEDGE",
+      "epistemicType": "FACT",
+      "content": "Product X official price is ₹1,799 with 340 units in stock.",
+      "source": "database_truth",
+      "createdAt": "2026-08-16T18:08:49.635Z",
+      "observedAt": "2026-08-16T18:08:49.635Z",
+      "confidence": 1,
+      "evidence": [
+        "Live Inventory DB",
+        "Product Catalog"
+      ],
+      "status": "ACTIVE",
+      "version": 1,
+      "structuredFacts": {
+        "sku": "PROD-X",
+        "price": 1799,
+        "stock": 340
+      }
+    },
+    {
+      "id": "inf_1786903729641_57mff",
+      "tenantId": "My Workspace",
+      "category": "CUSTOMER_KNOWLEDGE",
+      "epistemicType": "INFERENCE",
+      "content": "Customers from Western region are more likely to ask for tracking links.",
+      "source": "ai_inference",
+      "createdAt": "2026-08-16T18:08:49.641Z",
+      "observedAt": "2026-08-16T18:08:49.641Z",
+      "confidence": 0.82,
+      "evidence": [
+        "14 regional comment inquiries"
+      ],
+      "status": "ACTIVE",
+      "version": 1
+    },
+    {
+      "id": "fact_1786903773781_k9jie",
+      "tenantId": "My Workspace",
+      "category": "PRODUCT_KNOWLEDGE",
+      "epistemicType": "FACT",
+      "content": "Product X official price is ₹1,799 with 340 units in stock.",
+      "source": "database_truth",
+      "createdAt": "2026-08-16T18:09:33.780Z",
+      "observedAt": "2026-08-16T18:09:33.780Z",
+      "confidence": 1,
+      "evidence": [
+        "Live Inventory DB",
+        "Product Catalog"
+      ],
+      "status": "ACTIVE",
+      "version": 1,
+      "structuredFacts": {
+        "sku": "PROD-X",
+        "price": 1799,
+        "stock": 340
+      }
+    },
+    {
+      "id": "inf_1786903773786_ky4fj",
+      "tenantId": "My Workspace",
+      "category": "CUSTOMER_KNOWLEDGE",
+      "epistemicType": "INFERENCE",
+      "content": "Customers from Western region are more likely to ask for tracking links.",
+      "source": "ai_inference",
+      "createdAt": "2026-08-16T18:09:33.786Z",
+      "observedAt": "2026-08-16T18:09:33.786Z",
+      "confidence": 0.82,
+      "evidence": [
+        "14 regional comment inquiries"
+      ],
+      "status": "ACTIVE",
+      "version": 1
+    },
+    {
+      "id": "fact_1786904942287_li3ql",
+      "tenantId": "My Workspace",
+      "category": "PRODUCT_KNOWLEDGE",
+      "epistemicType": "FACT",
+      "content": "Product X official price is ₹1,799 with 340 units in stock.",
+      "source": "database_truth",
+      "createdAt": "2026-08-16T18:29:02.287Z",
+      "observedAt": "2026-08-16T18:29:02.287Z",
+      "confidence": 1,
+      "evidence": [
+        "Live Inventory DB",
+        "Product Catalog"
+      ],
+      "status": "ACTIVE",
+      "version": 1,
+      "structuredFacts": {
+        "sku": "PROD-X",
+        "price": 1799,
+        "stock": 340
+      }
+    },
+    {
+      "id": "inf_1786904942293_zbzrr",
+      "tenantId": "My Workspace",
+      "category": "CUSTOMER_KNOWLEDGE",
+      "epistemicType": "INFERENCE",
+      "content": "Customers from Western region are more likely to ask for tracking links.",
+      "source": "ai_inference",
+      "createdAt": "2026-08-16T18:29:02.293Z",
+      "observedAt": "2026-08-16T18:29:02.293Z",
+      "confidence": 0.82,
+      "evidence": [
+        "14 regional comment inquiries"
+      ],
+      "status": "ACTIVE",
+      "version": 1
+    },
+    {
+      "id": "fact_1786906387021_rw271",
+      "tenantId": "My Workspace",
+      "category": "PRODUCT_KNOWLEDGE",
+      "epistemicType": "FACT",
+      "content": "Product X official price is ₹1,799 with 340 units in stock.",
+      "source": "database_truth",
+      "createdAt": "2026-08-16T18:53:07.021Z",
+      "observedAt": "2026-08-16T18:53:07.021Z",
+      "confidence": 1,
+      "evidence": [
+        "Live Inventory DB",
+        "Product Catalog"
+      ],
+      "status": "ACTIVE",
+      "version": 1,
+      "structuredFacts": {
+        "sku": "PROD-X",
+        "price": 1799,
+        "stock": 340
+      }
+    },
+    {
+      "id": "inf_1786906387033_nfu3h",
+      "tenantId": "My Workspace",
+      "category": "CUSTOMER_KNOWLEDGE",
+      "epistemicType": "INFERENCE",
+      "content": "Customers from Western region are more likely to ask for tracking links.",
+      "source": "ai_inference",
+      "createdAt": "2026-08-16T18:53:07.033Z",
+      "observedAt": "2026-08-16T18:53:07.033Z",
+      "confidence": 0.82,
+      "evidence": [
+        "14 regional comment inquiries"
+      ],
+      "status": "ACTIVE",
+      "version": 1
+    },
+    {
+      "id": "fact_1786939971475_mc9a0",
+      "tenantId": "My Workspace",
+      "category": "PRODUCT_KNOWLEDGE",
+      "epistemicType": "FACT",
+      "content": "Product X official price is ₹1,799 with 340 units in stock.",
+      "source": "database_truth",
+      "createdAt": "2026-08-17T04:12:51.475Z",
+      "observedAt": "2026-08-17T04:12:51.475Z",
+      "confidence": 1,
+      "evidence": [
+        "Live Inventory DB",
+        "Product Catalog"
+      ],
+      "status": "ACTIVE",
+      "version": 1,
+      "structuredFacts": {
+        "sku": "PROD-X",
+        "price": 1799,
+        "stock": 340
+      }
+    },
+    {
+      "id": "inf_1786939971479_60s12",
+      "tenantId": "My Workspace",
+      "category": "CUSTOMER_KNOWLEDGE",
+      "epistemicType": "INFERENCE",
+      "content": "Customers from Western region are more likely to ask for tracking links.",
+      "source": "ai_inference",
+      "createdAt": "2026-08-17T04:12:51.479Z",
+      "observedAt": "2026-08-17T04:12:51.479Z",
+      "confidence": 0.82,
+      "evidence": [
+        "14 regional comment inquiries"
+      ],
+      "status": "ACTIVE",
+      "version": 1
+    }
+  ],
+  "feedbackSignalClusters": [
+    {
+      "id": "fsc_1786901312049_do0h",
+      "title": "Delivery Speed & Fulfillment Delay",
+      "category": "delivery",
+      "frequency": 10,
+      "customerCount": 10,
+      "channels": [
+        "whatsapp",
+        "instagram"
+      ],
+      "trend": "increasing",
+      "severity": "high",
+      "estimatedRevenueImpact": 45000,
+      "recommendedAction": "Review regional logistics partner SLA and update shipping tracking notifications",
+      "confidence": 0.91,
+      "evidenceQuotes": [
+        {
+          "commentId": "cd1",
+          "author": "Rohit",
+          "text": "My courier delivery is late and tracking link is not working.",
+          "platform": "whatsapp",
+          "date": "2026-08-16T17:28:32.041Z"
+        },
+        {
+          "commentId": "cd2",
+          "author": "Sneha",
+          "text": "Why is shipping taking 8 days? Very slow delivery service.",
+          "platform": "instagram",
+          "date": "2026-08-16T17:28:32.041Z"
+        },
+        {
+          "commentId": "cd1",
+          "author": "Rohit",
+          "text": "My courier delivery is late and tracking link is not working.",
+          "platform": "whatsapp",
+          "date": "2026-08-16T17:28:52.724Z"
+        },
+        {
+          "commentId": "cd2",
+          "author": "Sneha",
+          "text": "Why is shipping taking 8 days? Very slow delivery service.",
+          "platform": "instagram",
+          "date": "2026-08-16T17:28:52.724Z"
+        },
+        {
+          "commentId": "cd1",
+          "author": "Rohit",
+          "text": "My courier delivery is late and tracking link is not working.",
+          "platform": "whatsapp",
+          "date": "2026-08-16T18:01:49.209Z"
+        },
+        {
+          "commentId": "cd2",
+          "author": "Sneha",
+          "text": "Why is shipping taking 8 days? Very slow delivery service.",
+          "platform": "instagram",
+          "date": "2026-08-16T18:01:49.209Z"
+        },
+        {
+          "commentId": "cd1",
+          "author": "Rohit",
+          "text": "My courier delivery is late and tracking link is not working.",
+          "platform": "whatsapp",
+          "date": "2026-08-16T18:02:42.783Z"
+        },
+        {
+          "commentId": "cd2",
+          "author": "Sneha",
+          "text": "Why is shipping taking 8 days? Very slow delivery service.",
+          "platform": "instagram",
+          "date": "2026-08-16T18:02:42.783Z"
+        },
+        {
+          "commentId": "cd1",
+          "author": "Rohit",
+          "text": "My courier delivery is late and tracking link is not working.",
+          "platform": "whatsapp",
+          "date": "2026-08-16T18:03:16.577Z"
+        },
+        {
+          "commentId": "cd2",
+          "author": "Sneha",
+          "text": "Why is shipping taking 8 days? Very slow delivery service.",
+          "platform": "instagram",
+          "date": "2026-08-16T18:03:16.577Z"
+        }
+      ],
+      "firstObservedAt": "2026-08-16T17:28:32.049Z",
+      "lastObservedAt": "2026-08-16T18:03:16.583Z",
+      "status": "open"
+    }
+  ],
+  "videoContextGraphs": [
+    {
+      "id": "vg_1786939971489_4jbr",
+      "videoId": "v_bi_test",
+      "platform": "youtube",
+      "title": "How to Automate Multi-Channel Business Communications",
+      "durationSeconds": 60,
+      "summary": "Video titled \"How to Automate Multi-Channel Business Communications\" covers step-by-step implementation and key benefits.",
+      "segments": [
+        {
+          "timeRange": "0-3s",
+          "purpose": "hook",
+          "description": "Visual hook & problem statement for \"How to Automate Multi-Channel Business Commun\"",
+          "claimsMade": [
+            "Instant solution preview",
+            "High engagement question"
+          ],
+          "onScreenText": "How to Automate Multi-Channel Business Communicati",
+          "sentiment": "enthusiastic"
+        },
+        {
+          "timeRange": "3-7s",
+          "purpose": "product_intro",
+          "description": "Introduction of core product/service architecture",
+          "claimsMade": [
+            "Primary value proposition introduction"
+          ],
+          "sentiment": "neutral"
+        },
+        {
+          "timeRange": "7-14s",
+          "purpose": "demonstration",
+          "description": "Step-by-step product walkthrough or feature demonstration",
+          "claimsMade": [
+            "Fast setup",
+            "Zero technical complexity"
+          ],
+          "sentiment": "positive"
+        },
+        {
+          "timeRange": "14-18s",
+          "purpose": "benefit",
+          "description": "Customer outcome & ROI proof",
+          "claimsMade": [
+            "Saves time & boosts conversion",
+            "Verified reliability"
+          ],
+          "sentiment": "positive"
+        },
+        {
+          "timeRange": "18-21s",
+          "purpose": "cta",
+          "description": "Call to action: link in bio, comment keyword for DM link, or subscribe",
+          "claimsMade": [
+            "Special launch offer available"
+          ],
+          "onScreenText": "Comment 'LINK' or visit bio",
+          "sentiment": "urgent"
+        }
+      ],
+      "claimsMade": [
+        "Delivers seamless automation for How to Automate Multi-Channel ",
+        "100% verified integration & instant onboarding"
+      ],
+      "productsFeatured": [
+        "QuickReply OS"
+      ],
+      "cta": "Comment 'LINK' for instant automated WhatsApp demo",
+      "performanceDNA": {
+        "retentionAt3s": 72.4,
+        "completionRate": 41.2,
+        "commentsCount": 28,
+        "sharesCount": 14,
+        "leadsGenerated": 19,
+        "attributedRevenue": 38500
+      },
+      "unansweredAudienceQuestions": [],
+      "createdAt": "2026-08-17T04:12:51.489Z",
+      "updatedAt": "2026-08-17T04:12:51.489Z"
+    }
+  ],
+  "contentGapItems": [
+    {
+      "id": "cg_1786901332702_ajfw",
+      "topic": "Audience Clarifications for \"How to Automate Multi-Channel \"",
+      "customerQuestionCount": 18,
+      "missingInContentIds": [
+        "v_bi_test"
+      ],
+      "recommendedContentType": "tutorial_video",
+      "recommendedHeadline": "Everything Explained: How to Automate Multi-Channel Busin FAQ",
+      "priority": "urgent",
+      "estimatedConversionLift": "+18% direct message checkout conversion",
+      "detectedAt": "2026-08-16T17:28:52.702Z",
+      "status": "pending"
+    }
+  ],
+  "humanEditSignals": [],
+  "autonomyConfig": {
+    "currentLevel": 3,
+    "confidenceThresholds": {
+      "autoSend": 0.85,
+      "draftForReview": 0.65,
+      "escalateToHuman": 0.4
+    },
+    "hardPolicies": {
+      "neverMentionDiscountsWithoutApproval": true,
+      "neverPromiseRefundsAutonomously": true,
+      "neverRecommendOutOfStockProducts": true,
+      "escalateLegalThreatsImmediately": true,
+      "escalateAngryVIPCustomers": true,
+      "customRules": []
+    },
+    "circuitBreaker": {
+      "tripped": false,
+      "reason": "Spike in delivery complaints detected",
+      "lastTrippedAt": "2026-08-17T04:12:51.544Z",
+      "downgradedToLevel": 2
+    }
+  },
+  "businessDigitalTwin": {
+    "organizationName": "My Workspace",
+    "revenueSummary": {
+      "yesterdayRevenue": 42300,
+      "weekToDateRevenue": 284500,
+      "growthPercentage": 14.2,
+      "attributedChannels": [
+        {
+          "channel": "WhatsApp",
+          "revenue": 154000,
+          "percentage": 54.1
+        },
+        {
+          "channel": "Instagram",
+          "revenue": 98500,
+          "percentage": 34.6
+        },
+        {
+          "channel": "YouTube",
+          "revenue": 32000,
+          "percentage": 11.3
+        }
+      ]
+    },
+    "activeGoals": [
+      {
+        "id": "g1",
+        "name": "Increase repeat WhatsApp checkout",
+        "target": 35,
+        "current": 28,
+        "metric": "% repeat rate"
+      },
+      {
+        "id": "g2",
+        "name": "Reduce first-response SLA",
+        "target": 5,
+        "current": 8.5,
+        "metric": "minutes"
+      }
+    ],
+    "knowledgeCoverage": {
+      "knownCount": 142,
+      "unknownCount": 18,
+      "staleCount": 4,
+      "conflictedCount": 1,
+      "coveragePercentage": 86.1,
+      "lastAuditedAt": "2026-08-16T17:28:31.982Z"
+    },
+    "topOpportunities": [
+      {
+        "title": "Recover high-intent abandoned carts",
+        "potentialRevenue": 34000,
+        "action": "Send personalized stock reservation via WhatsApp",
+        "confidence": 0.88
+      },
+      {
+        "title": "Scale Product X ad spend on Instagram",
+        "potentialRevenue": 52000,
+        "action": "High positive ROAS detected with 92% sentiment",
+        "confidence": 0.84
+      }
+    ],
+    "topRisks": [
+      {
+        "title": "Delivery delay complaints in Maharashtra region",
+        "severity": "high",
+        "impact": "Elevated return risk",
+        "recommendation": "Switch regional logistics carrier"
+      }
+    ],
+    "updatedAt": "2026-08-16T17:28:31.982Z"
+  },
+  "socialPosts": [],
+  "socialMediaAssets": [],
+  "socialScheduledJobs": [],
+  "socialMetrics": [],
+  "socialWebhooks": [],
+  "socialMessages": [],
+  "socialConversations": [],
+  "integrationErrors": [],
+  "creditAccount": {
+    "id": "cr_default",
+    "tenantId": "default",
+    "balance": 100,
+    "reservedBalance": 0,
+    "lifetimeGranted": 100,
+    "lifetimeUsed": 0,
+    "version": 1,
+    "updatedAt": "2026-08-18T06:17:36.164Z"
+  },
+  "creditLedger": [
+    {
+      "id": "tx_init_1787033856164",
+      "tenantId": "default",
+      "type": "SIGNUP_BONUS",
+      "amount": 100,
+      "balanceAfter": 100,
+      "referenceType": "SIGNUP_BONUS",
+      "idempotencyKey": "init_default",
+      "metadata": {
+        "note": "Welcome bonus credits"
+      },
+      "createdAt": "2026-08-18T06:17:36.164Z"
+    }
+  ],
+  "creditReservations": [],
+  "subscriptions": [],
+  "paymentTransactions": [],
+  "webhookEvents": [],
+  "telegramConnections": [],
+  "telegramChats": [],
+  "telegramContacts": [],
+  "telegramConversations": [],
+  "telegramMessages": [],
+  "telegramAutomations": [],
+  "telegramExecutions": [],
+  "telegramScheduledJobs": [],
+  "telegramEvents": [],
+  "telegramPayments": [],
+  "telegramCampaigns": [],
+  "telegramMiniApps": [],
+  "telegramVoiceOfCustomer": [],
+  "telegramSupportTickets": []
+}

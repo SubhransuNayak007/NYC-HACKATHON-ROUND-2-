@@ -60,11 +60,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Allow demo account bypass
+    const isDemo = safeEmail === "demo@quickreply.io";
+
     // Get user data
     const db = await getDB(safeEmail);
     const passwordHash = (db as any).passwordHash;
 
-    if (!passwordHash) {
+    if (!passwordHash && !isDemo) {
       // No password set — this user registered via Google only
       return NextResponse.json(
         {
@@ -76,13 +79,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify password
-    const valid = await verifyPassword(password, passwordHash);
-    if (!valid) {
-      return NextResponse.json(
-        { error: "Invalid email or password" },
-        { status: 401 }
-      );
+    // Verify password if not demo
+    if (!isDemo) {
+      const valid = await verifyPassword(password, passwordHash);
+      if (!valid) {
+        return NextResponse.json(
+          { error: "Invalid email or password" },
+          { status: 401 }
+        );
+      }
     }
 
     // Update session

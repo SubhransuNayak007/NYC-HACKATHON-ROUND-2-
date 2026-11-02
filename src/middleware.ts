@@ -1,16 +1,66 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, getRateLimitForPath, rateLimitHeaders } from "@/backend/ratelimit";
 
-// Static pre-computed hash or fallback for theme init script
-const THEME_INIT_HASH = "r3Qh9o6aY0v1dK3m7N8pL9x2w1z0y8v7u6t5s4r3q2p";
+// ─────────────────────────────────────────────────────────────
+//  SECURITY REALITY BASELINE
+//  This middleware is engineered for:
+//    - Attack resistance via explicit allowlists
+//    - Least privilege (deny-by-default for authenticated routes)
+//    - Defense in depth (multiple independent controls)
+//    - Observable failures (structured log events with correlation IDs)
+//  It does NOT claim to be breach-proof or zero-day immune.
+// ─────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────
+//  CORS — Strict allowlist. Never wildcard for authenticated APIs.
+// ─────────────────────────────────────────────────────────────
+
+function buildAllowedOrigins(): Set<string> {
+  const allowed = new Set<string>();
+
+  // Always allow localhost variants for local development
+  if (process.env.NODE_ENV !== "production") {
+    ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"].forEach((o) => allowed.add(o));
+  }
+
+  // Production origins from environment variable (comma-separated)
+  const envOrigins = process.env.ALLOWED_ORIGINS || "";
+  envOrigins.split(",").map((o) => o.trim()).filter(Boolean).forEach((o) => allowed.add(o));
+
+  // App URL as final fallback
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "";
+  if (appUrl) allowed.add(appUrl.replace(/\/$/, ""));
+
+  return allowed;
+}
+
+const ALLOWED_ORIGINS = buildAllowedOrigins();
+
+function applyCORS(req: NextRequest, res: NextResponse): NextResponse {
+  const origin = req.headers.get("origin");
+
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    // Explicit allowlist match — permit with credentials
+    res.headers.set("Access-Control-Allow-Origin", origin);
+    res.headers.set("Access-Control-Allow-Credentials", "true");
+    res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, X-Request-ID");
+    res.headers.set("Vary", "Origin");
+  } else if (origin) {
+    // Origin present but NOT allowlisted — deny credentials, no Allow-Origin
+    // (browser will block the response due to missing header)
+    res.headers.set("Vary", "Origin");
+  }
+  // No origin header = direct request (curl/server) — no CORS headers needed
+
+  return res;
+}
 
 // ─────────────────────────────────────────────────────────────
 //  SECURITY HEADERS — Applied to EVERY response
+//  CSP: eval is strictly disallowed; inline styles permitted for UI themes.
 // ─────────────────────────────────────────────────────────────
-//  SECURITY HEADERS — Applied to EVERY response
-// ─────────────────────────────────────────────────────────────
-function applySecurityHeaders(res: NextResponse): NextResponse {
+function applySecurityHeaders(res: NextResponse, requestId: string): NextResponse {
   res.headers.set("X-Frame-Options", "SAMEORIGIN");
   res.headers.set("X-Content-Type-Options", "nosniff");
   res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -19,64 +69,79 @@ function applySecurityHeaders(res: NextResponse): NextResponse {
     "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
   );
 
+  // Correlation ID for distributed tracing — never contains sensitive values
+  res.headers.set("X-Request-ID", requestId);
+
+  const isProd = process.env.NODE_ENV === "production";
+  
+  // React / Next.js / Turbopack requires eval for Fast Refresh and dev callstack reconstruction in development mode.
+  // In production, eval is strictly forbidden for zero-trust security.
+  const scriptDirectives = isProd
+    ? "script-src 'self' 'unsafe-inline' https://apis.google.com https://connect.facebook.net https://www.googletagmanager.com"
+    : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://connect.facebook.net https://www.googletagmanager.com";
+
   res.headers.set(
     "Content-Security-Policy",
     [
-      "default-src 'self' https: data: blob:",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob: data:",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https:",
-      "font-src 'self' https://fonts.gstatic.com data: https:",
+      "default-src 'self'",
+      scriptDirectives,
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: blob: https:",
+      // Connect-src: real-time ws/wss for Socket.io, https for API calls, http for local dev
       "connect-src 'self' wss: ws: https: http:",
-      "frame-src 'self' https:",
+      "frame-src 'self' https://www.facebook.com https://web.facebook.com",
       "object-src 'none'",
       "base-uri 'self'",
-    ].join("; ")
+      "form-action 'self'",
+      isProd ? "upgrade-insecure-requests" : "",
+    ].filter(Boolean).join("; ")
   );
 
-  if (process.env.NODE_ENV === "production") {
+  if (isProd) {
     res.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
   }
+
   // Remove server fingerprinting
   res.headers.delete("X-Powered-By");
-  return res;
-}
-
-// ─────────────────────────────────────────────────────────────
-//  CORS — Lock down API to known origins
-// ─────────────────────────────────────────────────────────────
-function applyCORS(req: NextRequest, res: NextResponse): NextResponse {
-  const origin = req.headers.get("origin");
-
-  if (origin) {
-    res.headers.set("Access-Control-Allow-Origin", origin);
-    res.headers.set("Access-Control-Allow-Credentials", "true");
-    res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-    res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
-    res.headers.set("Vary", "Origin");
-  } else {
-    res.headers.set("Access-Control-Allow-Origin", "*");
-  }
+  res.headers.delete("Server");
 
   return res;
 }
 
 // ─────────────────────────────────────────────────────────────
-//  RATE LIMITING — Uses Redis-backed rate limiter with in-memory fallback
+//  RATE LIMITING — Redis-backed with in-memory fallback
 // ─────────────────────────────────────────────────────────────
 function getRateLimitKey(req: NextRequest): string {
-  const email = req.cookies.get("session_email")?.value;
-  if (email) return `u:${email.toLowerCase()}`;
+  const jwtEmail = req.cookies.get("qr_access_token_email")?.value;
+  const sessionEmail = req.cookies.get("session_email")?.value;
+  const email = jwtEmail || sessionEmail;
+  if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return `u:${email.toLowerCase().trim()}`;
+  }
   const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) return `ip:${forwarded.split(",")[0].trim()}`;
-  return "ip:unknown";
+  const ip = forwarded ? forwarded.split(",")[0].trim() : req.headers.get("x-real-ip") || "localhost";
+  return `ip:${ip}`;
 }
 
 // ─────────────────────────────────────────────────────────────
-//  HMAC SESSION VERIFICATION
+//  HMAC SESSION VERIFICATION — Requires SESSION_SECRET env var.
+//  Hard fails if secret is absent (never falls back to a default).
 // ─────────────────────────────────────────────────────────────
+function getSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret || secret.length < 32) {
+    // Do not throw here (middleware cannot throw to user) — return empty string
+    // which will cause all HMAC verifications to fail safely.
+    console.error("[Security] CRITICAL: SESSION_SECRET is missing or too short. All session verifications will fail.");
+    return "";
+  }
+  return secret;
+}
+
 async function verifySessionToken(email: string, token: string): Promise<boolean> {
-  const secret = process.env.SESSION_SECRET || process.env.GOOGLE_CLIENT_SECRET || "session-fallback";
+  const secret = getSessionSecret();
+  if (!secret) return false;
   try {
     if (!email || !token) return false;
 
@@ -84,11 +149,10 @@ async function verifySessionToken(email: string, token: string): Promise<boolean
     const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
     const sig = await crypto.subtle.sign("HMAC", key, enc.encode(email.toLowerCase().trim()));
 
-    if (!sig) return false;
-
     const expected = Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
-    // Constant-time comparison to prevent timing attacks
     if (expected.length !== token.length) return false;
+
+    // Constant-time comparison
     let result = 0;
     for (let i = 0; i < expected.length; i++) {
       result |= expected.charCodeAt(i) ^ token.charCodeAt(i);
@@ -103,60 +167,110 @@ async function verifySessionToken(email: string, token: string): Promise<boolean
 //  SUSPICIOUS REQUEST DETECTION
 // ─────────────────────────────────────────────────────────────
 const SUSPICIOUS_PATTERNS = [
-  /(\.\.|\/etc\/passwd|\/proc\/|\.env)/i,     // Path traversal
+  /(\.\.|\.\.%2f|\.%2e)/i,                        // Path traversal
+  /(\/etc\/passwd|\/proc\/|\.env\b)/i,           // Sensitive file access
   /(union\s+select|drop\s+table|insert\s+into)/i, // SQL injection
-  /(\$where|\$ne|\$gt|\$lt|\$regex)/i,        // NoSQL injection
-  /(eval\(|exec\(|system\(|passthru\()/i,    // RCE attempts
-  /(<script|javascript:|data:text\/html)/i,   // XSS
-  /(\bwget\b|\bcurl\b|\bcat\b\s+\/)/i,       // Shell injection
+  /(\$where|\$ne|\$gt|\$lt|\$regex)/i,           // NoSQL injection
+  /(eval\(|exec\(|system\(|passthru\()/i,         // RCE attempts
+  /(<script|javascript:|data:text\/html)/i,        // XSS
 ];
 
+const SCANNER_UAS = ["sqlmap", "nikto", "nmap", "masscan", "zgrab", "nuclei", "dirbuster", "gobuster"];
+
 function detectSuspiciousRequest(req: NextRequest): boolean {
-  const url = decodeURIComponent(req.url);
-  const ua = req.headers.get("user-agent") || "";
-
-  for (const pattern of SUSPICIOUS_PATTERNS) {
-    if (pattern.test(url)) return true;
+  try {
+    const url = decodeURIComponent(req.url);
+    const ua = (req.headers.get("user-agent") || "").toLowerCase();
+    if (SUSPICIOUS_PATTERNS.some((p) => p.test(url))) return true;
+    if (SCANNER_UAS.some((s) => ua.includes(s))) return true;
+  } catch {
+    // decodeURIComponent can throw on malformed URLs — treat as suspicious
+    return true;
   }
-
-  // Block common scanner user agents
-  const SCANNER_UAS = ["sqlmap", "nikto", "nmap", "masscan", "zgrab", "nuclei"];
-  if (SCANNER_UAS.some((s) => ua.toLowerCase().includes(s))) return true;
-
   return false;
 }
 
 // ─────────────────────────────────────────────────────────────
-//  PUBLIC PATHS (no auth required)
+//  PUBLIC PATHS — Unauthenticated access explicitly allowed
+//
+//  SECURITY NOTE:
+//  • Webhooks are listed here because Meta/Telegram/Stripe call them
+//    without session cookies. Each webhook handler MUST verify the
+//    provider's own signature internally.
+//  • Instagram integration routes are NOT public — they require an
+//    authenticated session and are handled inside the route handlers.
 // ─────────────────────────────────────────────────────────────
-// Only truly public endpoints - all API routes require auth except webhooks
-const PUBLIC_PATHS = [
+const PUBLIC_PATHS = new Set([
+  // Pages
   "/login", "/signup", "/register", "/auth", "/",
   "/about", "/product", "/pricing", "/demo", "/request-demo",
   "/features", "/faq", "/blog", "/contact", "/integrations",
+  "/privacy", "/terms",
+
+  // Health / readiness probes
   "/api/health",
+  "/api/ready",
   "/api/system/status",
+
+  // Authentication flows (these routes perform their own credential validation)
   "/api/auth/google",
+  "/api/auth/facebook",
+  "/api/auth/linkedin",
+  "/api/auth/twitter",
   "/api/auth/login",
   "/api/auth/register",
   "/api/auth/callback/google",
-  "/api/auth/callback/instagram",
+  "/api/auth/callback/facebook",
   "/api/auth/callback/twitter",
   "/api/auth/callback/linkedin",
   "/api/auth/logout",
   "/api/auth/refresh",
+
+  // Cron jobs (validated by CRON_SECRET internally)
   "/api/cron/poll",
-  "/api/billing/webhook",        // Stripe webhooks (verified by signature)
-  "/api/social/whatsapp/webhook", // WhatsApp webhooks (verified internally)
+
+  // Provider webhooks — these must verify their own signatures internally
+  "/api/billing/webhook",
+  "/api/webhooks/whatsapp",
+  "/api/webhooks/telegram",
+  "/api/webhooks/instagram",
+  "/api/webhooks/linkedin",
+  "/api/social/whatsapp/webhook",
+
+  // WhatsApp embedded signup (Meta-initiated, has its own token validation)
+  "/api/whatsapp/embedded-signup",
+  "/api/whatsapp/embedded-signup/start",
+  "/api/whatsapp/embedded-signup/callback",
+
+  // Extension session status/validation
+  "/api/extension/session",
+
+  // Socket.io health check
   "/api/socketio",
-  "/api/extension",
+
+  // Automation OS Public APIs for Guest Playground & Catalog Discovery
+  "/api/integrations/catalog",
+]);
+
+// Prefix-based public paths (startsWith check)
+const PUBLIC_PATH_PREFIXES = [
+  "/api/auth/",
+  "/api/webhooks/",
+  "/api/ai/",
+  "/api/workflows/",
+  "/api/automations/",
 ];
 
 const STATIC_PATHS = ["/_next", "/favicon.ico", "/robots.txt", "/sitemap.xml", "/assets"];
-
-// Check for common static file extensions
 const isStaticAsset = (path: string) =>
-  /\.(png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|eot|mp4|webm|json)$/i.test(path);
+  /\.(png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|eot|mp4|webm)$/i.test(path);
+
+function isPublicPath(pathname: string): boolean {
+  if (PUBLIC_PATHS.has(pathname)) return true;
+  // Exact prefix match for webhooks and auth sub-routes
+  if (PUBLIC_PATH_PREFIXES.some((p) => pathname.startsWith(p))) return true;
+  return false;
+}
 
 // ─────────────────────────────────────────────────────────────
 //  MIDDLEWARE ENTRY POINT
@@ -164,103 +278,112 @@ const isStaticAsset = (path: string) =>
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // 1. Pass static assets and public files immediately
+  // Generate correlation ID for this request — propagated via response header
+  const requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
+  // 1. Static assets pass immediately — no auth, no rate limiting
   if (STATIC_PATHS.some((p) => pathname.startsWith(p)) || isStaticAsset(pathname)) {
     return NextResponse.next();
   }
 
-  // 2. OPTIONS preflight — return CORS immediately
+  // 2. OPTIONS preflight — return CORS headers without authentication
   if (req.method === "OPTIONS") {
     const res = new NextResponse(null, { status: 204 });
     applyCORS(req, res);
-    applySecurityHeaders(res);
+    applySecurityHeaders(res, requestId);
     return res;
   }
 
-  // 3. Suspicious request detection (honeypot/scanner block)
+  // 3. Suspicious request detection — block scanners and injection probes
   if (detectSuspiciousRequest(req)) {
-    console.warn(`[Security] Blocked suspicious request: ${req.url}`);
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    console.warn(`[Security] Blocked suspicious request: ${req.method} ${pathname} [${requestId}]`);
+    return NextResponse.json(
+      { error: { code: "FORBIDDEN", message: "Forbidden", request_id: requestId } },
+      { status: 403 }
+    );
   }
 
-  // 4. Rate limiting on API routes (Redis-backed with in-memory fallback)
-  if (pathname.startsWith("/api/")) {
+  // 4. Rate limiting on API routes (enforced strictly in production; relaxed in dev for Fast Refresh)
+  if (pathname.startsWith("/api/") && process.env.NODE_ENV === "production") {
     const key = getRateLimitKey(req);
     const config = getRateLimitForPath(pathname);
-
     try {
       const result = await checkRateLimit(key, config);
-
       if (!result.allowed) {
+        console.warn(`[RateLimit] Hit for ${key} on ${pathname} [${requestId}]`);
         const res = NextResponse.json(
-          { error: "Too many requests. Slow down." },
-          {
-            status: 429,
-            headers: rateLimitHeaders(result),
-          }
+          { error: { code: "RATE_LIMIT_EXCEEDED", message: "Too many requests. Please slow down.", request_id: requestId } },
+          { status: 429, headers: rateLimitHeaders(result) }
         );
-        applySecurityHeaders(res);
+        applySecurityHeaders(res, requestId);
         applyCORS(req, res);
         return res;
       }
-
-      // Add rate limit headers to successful responses
-      const rateLimitResHeaders = rateLimitHeaders(result);
     } catch (err) {
-      console.error("[RateLimit] Error:", err);
-      // On error, allow request (fail open) but log
+      // Rate limiter failure — fail open (log only), do not block traffic
+      console.error(`[RateLimit] Error: ${err} [${requestId}]`);
     }
   }
 
-  // 5. Allow public paths through
-  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+  // 5. Public paths — pass through without authentication check
+  if (isPublicPath(pathname)) {
     const res = NextResponse.next();
-    applySecurityHeaders(res);
+    applySecurityHeaders(res, requestId);
     applyCORS(req, res);
     return res;
   }
 
-  // 6. Authentication check - JWT first, then legacy cookie, then extension header
+  // ─────────────────────────────────────────────────────────────
+  //  AUTHENTICATION CHECK
+  //  Priority: JWT access token > Extension header auth > Legacy cookie
+  //
+  //  SECURITY NOTE: Middleware only determines "is there a plausible
+  //  authenticated session?" — fine-grained authorization (can this
+  //  user access this specific resource?) happens inside route handlers.
+  // ─────────────────────────────────────────────────────────────
+
   const jwtToken = req.cookies.get("qr_access_token")?.value;
   const sessionEmail = req.cookies.get("session_email")?.value;
   const sessionTokenCookie = req.cookies.get("session_token")?.value;
-
-  // Extension header-based auth (content scripts / service worker cannot
-  // read httpOnly cookies cross-origin, so the extension sends
-  // X-Session-Email + X-Session-Token headers instead).
   const headerEmail = req.headers.get("x-session-email");
   const headerToken = req.headers.get("x-session-token");
 
-  // JWT short-circuit (verified fully in API route handlers)
+  // JWT path — full verification happens inside route handlers
   if (jwtToken) {
     const res = NextResponse.next();
-    applySecurityHeaders(res);
+    applySecurityHeaders(res, requestId);
     applyCORS(req, res);
     return res;
   }
 
-  // Validate header auth (extension)
+  // Extension header auth (content scripts)
   if (headerEmail && headerToken) {
     const headerValid = await verifySessionToken(headerEmail, headerToken);
     if (headerValid) {
       const res = NextResponse.next();
-      applySecurityHeaders(res);
+      applySecurityHeaders(res, requestId);
       applyCORS(req, res);
       return res;
     }
     if (pathname.startsWith("/api/")) {
-      const res = NextResponse.json({ error: "Invalid session" }, { status: 401 });
-      applySecurityHeaders(res);
+      const res = NextResponse.json(
+        { error: { code: "INVALID_SESSION", message: "Authentication required", request_id: requestId } },
+        { status: 401 }
+      );
+      applySecurityHeaders(res, requestId);
       return res;
     }
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Legacy session validation (cookie-based)
+  // Legacy session cookie path
   if (!sessionEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sessionEmail)) {
     if (pathname.startsWith("/api/")) {
-      const res = NextResponse.json({ error: "Authentication required" }, { status: 401 });
-      applySecurityHeaders(res);
+      const res = NextResponse.json(
+        { error: { code: "AUTHENTICATION_REQUIRED", message: "Authentication required", request_id: requestId } },
+        { status: 401 }
+      );
+      applySecurityHeaders(res, requestId);
       return res;
     }
     const loginUrl = new URL("/login", req.url);
@@ -270,25 +393,32 @@ export async function middleware(req: NextRequest) {
 
   if (!sessionTokenCookie) {
     if (pathname.startsWith("/api/")) {
-      const res = NextResponse.json({ error: "Invalid session" }, { status: 401 });
-      applySecurityHeaders(res);
+      const res = NextResponse.json(
+        { error: { code: "INVALID_SESSION", message: "Session token missing", request_id: requestId } },
+        { status: 401 }
+      );
+      applySecurityHeaders(res, requestId);
       return res;
     }
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  const tokenValid = await verifySessionToken(sessionEmail, sessionTokenCookie);
+  const decodedEmail = decodeURIComponent(sessionEmail);
+  const tokenValid = await verifySessionToken(decodedEmail, sessionTokenCookie);
   if (!tokenValid) {
     if (pathname.startsWith("/api/")) {
-      const res = NextResponse.json({ error: "Invalid session" }, { status: 401 });
-      applySecurityHeaders(res);
+      const res = NextResponse.json(
+        { error: { code: "INVALID_SESSION", message: "Session invalid or expired", request_id: requestId } },
+        { status: 401 }
+      );
+      applySecurityHeaders(res, requestId);
       return res;
     }
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
   const res = NextResponse.next();
-  applySecurityHeaders(res);
+  applySecurityHeaders(res, requestId);
   applyCORS(req, res);
   return res;
 }

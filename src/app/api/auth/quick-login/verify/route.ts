@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
         const quickLogin = db.userSession.quickLogin;
 
         // Check secret code (6-digit)
-        if (trimmedCode.length === 6 && /^\d{6}$/.test(trimmedCode)) {
+        if (quickLogin.secretCodeHash && trimmedCode.length === 6 && /^\d{6}$/.test(trimmedCode)) {
           const isValidSecret = await bcrypt.compare(trimmedCode, quickLogin.secretCodeHash);
           if (isValidSecret) {
             // Set session cookie
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Check TOTP code (6-digit)
-        if (trimmedCode.length === 6 && /^\d{6}$/.test(trimmedCode)) {
+        if (quickLogin.totpSecret && trimmedCode.length === 6 && /^\d{6}$/.test(trimmedCode)) {
           const totp = new TOTP({
             issuer: "QuickReply",
             label: matchedEmail,

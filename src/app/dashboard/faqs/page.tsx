@@ -571,7 +571,7 @@ export default function FAQsPage() {
               {evalResult && (
                 <div className="mt-4 space-y-3 pt-3 border-t border-slate-100 text-xs">
                   {/* Triad Metrics Card */}
-                  <div className="grid grid-cols-4 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <div className="text-center">
                       <span className="block text-[10px] text-ink-500 uppercase font-semibold">Context Relevance</span>
                       <span className="text-sm font-bold text-purple-700">{evalResult.evaluationTriad?.contextRelevance || 0}%</span>

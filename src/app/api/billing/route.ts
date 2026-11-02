@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     checkChannelLimit(email),
   ]);
 
-  const tierConfig = PRICING_TIERS[replyLimit.tier];
+  const tierConfig = PRICING_TIERS[replyLimit.tier] || PRICING_TIERS.free;
 
   return NextResponse.json({
     tier: replyLimit.tier,
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
       replies: {
         used: replyLimit.used,
         limit: replyLimit.limit,
-        percentage: Math.round((replyLimit.used / replyLimit.limit) * 100),
+        percentage: Math.round((replyLimit.used / Math.max(1, replyLimit.limit)) * 100),
       },
       channels: {
         current: channelLimit.current,
@@ -52,11 +52,14 @@ export async function GET(req: NextRequest) {
     plans: Object.entries(PRICING_TIERS).map(([key, config]) => ({
       id: key,
       name: config.name,
-      monthlyReplyLimit: config.monthlyReplyLimit,
+      monthlyCredits: config.monthlyCredits,
+      bonusCredits: config.bonusCredits,
       channelLimit: config.channelLimit,
+      dailyReplyLimit: config.dailyReplyLimit,
       features: config.features,
-      price: key === "free" ? 0 : key === "premium" ? 1900 : 4900, // cents
-      priceFormatted: key === "free" ? "$0" : key === "premium" ? "$19/mo" : "$49/mo",
+      priceUsd: config.usdPriceMonthly,
+      priceInr: config.inrPriceMonthly,
+      priceFormatted: config.usdPriceMonthly === 0 ? "$0" : `$${config.usdPriceMonthly}/mo`,
     })),
   });
 }

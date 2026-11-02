@@ -18,8 +18,8 @@ import {
   Globe,
   Layers,
 } from "lucide-react";
-import { MySamparkHeader } from "@/frontend/components/landing/MySamparkHeader";
-import { MySamparkFooter } from "@/frontend/components/landing/MySamparkFooter";
+import { Navbar } from "@/frontend/components/landing/Navbar";
+import { Footer } from "@/frontend/components/landing/Footer";
 import {
   CommentToDMMockup,
   CatalogRAGMockup,
@@ -104,7 +104,7 @@ export default function FeaturesOverviewPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F6F0] text-[#161616] selection:bg-[#EE7D60]/20 font-sans">
-      <MySamparkHeader />
+      <Navbar />
 
       <main className="flex-1 pt-40 sm:pt-48 pb-24">
         {/* Top Hero Section */}
@@ -223,7 +223,7 @@ export default function FeaturesOverviewPage() {
         </section>
       </main>
 
-      <MySamparkFooter />
+      <Footer />
     </div>
   );
 }

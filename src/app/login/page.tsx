@@ -5,7 +5,7 @@ import { UnifiedAuthExperience } from "@/frontend/components/auth/UnifiedAuthExp
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f0f2f5]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#FAF8F5]" />}>
       <UnifiedAuthExperience initialMode="login" />
     </Suspense>
   );
