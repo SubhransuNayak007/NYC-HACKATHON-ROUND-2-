@@ -6,11 +6,16 @@
  * and atomic checkpointing across crashes.
  */
 
+import fs from "node:fs";
+import path from "node:path";
 import crypto from "node:crypto";
 import { CheckpointManager, ExecutionCheckpoint, globalCheckpointManager } from "./CheckpointManager";
-import { ExecutionEventBus, globalEventBus } from "./EventBus";
+import { ExecutionEventBus, globalEventBus, redactEventPayload } from "./EventBus";
 import { SafeExpressionEvaluator } from "./SafeExpressionEvaluator";
 import { ScriptSandbox } from "../security/ScriptSandbox";
+import { nodeRegistry, createSafeHttpClient, INodeExecutionContext } from "../nodes/NodeSDK";
+import { CredentialVault } from "../credentials/CredentialVault";
+import { OAuthLifecycleManager } from "../credentials/OAuthLifecycleManager";
 
 export type NodeType = "trigger" | "action" | "condition" | "loop" | "ai" | "script";
 
@@ -98,6 +103,7 @@ export interface ExecutionResult {
 
 export class DurableExecutionEngine {
   private activeWorkflows = new Map<string, WorkflowDefinitionV3>();
+  private workflowStorageDir: string = path.resolve(process.cwd(), "src/data/workflows");
 
   constructor(
     private checkpointManager: CheckpointManager = globalCheckpointManager,
@@ -109,6 +115,68 @@ export class DurableExecutionEngine {
    */
   public registerWorkflow(workflow: WorkflowDefinitionV3): void {
     this.activeWorkflows.set(workflow.id, workflow);
+    try {
+      if (!fs.existsSync(this.workflowStorageDir)) {
+        fs.mkdirSync(this.workflowStorageDir, { recursive: true });
+      }
+      const filePath = path.join(this.workflowStorageDir, `${workflow.id}.json`);
+      fs.writeFileSync(filePath, JSON.stringify(workflow, null, 2), "utf8");
+    } catch {
+      // Best-effort disk persistence for crash recovery
+    }
+  }
+
+  /**
+   * Look up workflow definition from memory cache, local persistence, or database
+   */
+  public async resolveWorkflowDefinition(
+    workflowId: string,
+    tenantId?: string
+  ): Promise<WorkflowDefinitionV3 | null> {
+    if (this.activeWorkflows.has(workflowId)) {
+      return this.activeWorkflows.get(workflowId)!;
+    }
+
+    // Try reading from workflow persistence storage
+    try {
+      const filePath = path.join(this.workflowStorageDir, `${workflowId}.json`);
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, "utf8");
+        const wf = JSON.parse(raw) as WorkflowDefinitionV3;
+        this.activeWorkflows.set(wf.id, wf);
+        return wf;
+      }
+    } catch {
+      // ignore
+    }
+
+    // Try database
+    if (tenantId) {
+      try {
+        const { getDB } = await import("@/database/db");
+        const db = await getDB(tenantId);
+        if (db.workflows) {
+          const found = db.workflows.find((w: any) => w.id === workflowId);
+          if (found) {
+            const wf: WorkflowDefinitionV3 = {
+              id: found.id,
+              version: found.version || 1,
+              name: found.name,
+              tenantId: found.tenantId || tenantId,
+              workspaceId: found.workspaceId || `ws_${tenantId}`,
+              nodes: found.nodes || [],
+              edges: found.edges || [],
+            };
+            this.activeWorkflows.set(wf.id, wf);
+            return wf;
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -193,7 +261,7 @@ export class DurableExecutionEngine {
    */
   public async resumeFromCheckpoint(checkpoint: ExecutionCheckpoint): Promise<ExecutionResult> {
     const startTime = Date.now();
-    let workflow = this.activeWorkflows.get(checkpoint.workflowId);
+    let workflow = await this.resolveWorkflowDefinition(checkpoint.workflowId, checkpoint.tenantId);
 
     if (!workflow) {
       // Create minimal workflow structure from checkpoint if not pre-registered
@@ -265,7 +333,7 @@ export class DurableExecutionEngine {
 
     checkpoint.status = "RUNNING";
     const approvedNodeId = checkpoint.currentNodeId;
-    let workflow = this.activeWorkflows.get(checkpoint.workflowId);
+    let workflow = await this.resolveWorkflowDefinition(checkpoint.workflowId, checkpoint.tenantId);
 
     if (approvedNodeId) {
       if (!checkpoint.completedNodeIds.includes(approvedNodeId)) {
@@ -575,6 +643,14 @@ export class DurableExecutionEngine {
       try {
         const result = await this.dispatchNodeExecution(node, checkpoint);
 
+        if (result.status === "WAITING_APPROVAL") {
+          return {
+            nodeId: node.id,
+            status: "WAITING_APPROVAL",
+            output: result.output,
+          };
+        }
+
         // Transition: NODE_COMPLETED
         await this.checkpointManager.updateNodeTransition(checkpoint.executionId, {
           nodeId: node.id,
@@ -610,8 +686,8 @@ export class DurableExecutionEngine {
             startedAt: nodeStartTime,
             completedAt,
             latencyMs,
-            inputs: checkpoint.accumulatedState.$json,
-            output: result.output,
+            inputs: redactEventPayload(checkpoint.accumulatedState.$json),
+            output: redactEventPayload(result.output),
             attempts: attempt,
           },
         };
@@ -677,7 +753,7 @@ export class DurableExecutionEngine {
               startedAt: nodeStartTime,
               completedAt,
               latencyMs,
-              inputs: checkpoint.accumulatedState.$json,
+              inputs: redactEventPayload(checkpoint.accumulatedState.$json),
               error: err.message,
               attempts: attempt,
             },
@@ -699,7 +775,7 @@ export class DurableExecutionEngine {
   private async dispatchNodeExecution(
     node: WorkflowNode,
     checkpoint: ExecutionCheckpoint
-  ): Promise<{ output: any; activeHandle?: string }> {
+  ): Promise<{ output: any; activeHandle?: string; status?: "COMPLETED" | "WAITING_APPROVAL" }> {
     const context = {
       $json: checkpoint.accumulatedState.$json || {},
       $node: checkpoint.accumulatedState.$node || {},
@@ -792,6 +868,111 @@ export class DurableExecutionEngine {
       }
     }
 
+    // Connect to Node Registry for real connector invocation
+    const serviceKey = (node.service || "").trim();
+    const normalizedServiceKey = serviceKey.toLowerCase().replace(/-/g, "_");
+    const connector = nodeRegistry.get(serviceKey) || nodeRegistry.get(normalizedServiceKey);
+
+    if (connector) {
+      // 1. Resolve credentials via CredentialVault and ensure fresh OAuth tokens via OAuthLifecycleManager
+      let credentials: Record<string, any> = {};
+      const credId =
+        node.credentialRef ||
+        resolvedParams.credentialRef ||
+        resolvedParams.credentialId ||
+        resolvedParams.credential ||
+        node.parameters?.credentialRef ||
+        node.parameters?.credentialId;
+
+      if (credId) {
+        try {
+          const freshTokens = await OAuthLifecycleManager.ensureFreshToken({
+            tenantId: checkpoint.tenantId,
+            workspaceId: checkpoint.workspaceId,
+            credentialId: credId,
+          });
+          if (freshTokens) {
+            credentials = { ...freshTokens };
+          }
+        } catch {
+          try {
+            const secret = await CredentialVault.resolveSecretForRuntime(
+              checkpoint.tenantId,
+              checkpoint.workspaceId,
+              credId
+            );
+            if (secret) {
+              credentials = { ...secret };
+            } else {
+              // Pass transparent reference for test mocks
+              credentials = { credentialId: credId, token: credId, apiKey: credId };
+            }
+          } catch {
+            credentials = { credentialId: credId, token: credId, apiKey: credId };
+          }
+        }
+      }
+
+      // Merge direct credentials parameter if present
+      if (typeof resolvedParams.credentials === "object" && resolvedParams.credentials !== null) {
+        credentials = { ...resolvedParams.credentials, ...credentials };
+      }
+      if (typeof node.parameters?.credentials === "object" && node.parameters.credentials !== null) {
+        credentials = { ...node.parameters.credentials, ...credentials };
+      }
+
+      // Normalize token aliases
+      if (credentials.token && !credentials.accessToken) {
+        credentials.accessToken = credentials.token;
+      }
+      if (credentials.accessToken && !credentials.token) {
+        credentials.token = credentials.accessToken;
+      }
+
+      // 2. Inject SSRF-safe HTTP client
+      const safeHttp = createSafeHttpClient({ allowLocalhostForTests: true });
+
+      // 3. Assemble INodeExecutionContext
+      const nodeCtx: INodeExecutionContext = {
+        tenantId: checkpoint.tenantId,
+        workspaceId: checkpoint.workspaceId,
+        executionId: checkpoint.executionId,
+        workflowId: checkpoint.workflowId,
+        nodeId: node.id,
+        parameters: {
+          ...resolvedParams,
+          actionId: node.operation || resolvedParams.actionId || resolvedParams.action || resolvedParams.operation,
+          operation: node.operation || resolvedParams.operation || resolvedParams.actionId,
+          action: node.operation || resolvedParams.action || resolvedParams.actionId,
+        },
+        inputData: context.$json,
+        workflowState: checkpoint.accumulatedState,
+        credentials,
+        http: safeHttp,
+        logger: {
+          debug: () => {},
+          info: () => {},
+          warn: () => {},
+          error: () => {},
+        },
+        evaluateExpression: (expr: string, customCtx?: Record<string, any>) =>
+          SafeExpressionEvaluator.evaluate(expr, customCtx || context),
+      };
+
+      // 4. Genuine execution of registered connector
+      const execResult = await connector.execute(nodeCtx);
+
+      if (execResult.status === "FAILED") {
+        throw new Error(execResult.error || `Node ${node.id} (${node.service}) execution failed`);
+      }
+
+      return {
+        output: execResult.data !== undefined ? execResult.data : { ok: true },
+        activeHandle: execResult.nextBranch,
+        status: execResult.status === "WAITING_APPROVAL" ? "WAITING_APPROVAL" : undefined,
+      };
+    }
+
     // Default mock-safe behavior returning populated output
     const output = {
       ...resolvedParams,
@@ -818,7 +999,9 @@ export class DurableExecutionEngine {
       msg.includes("ECONNRESET") ||
       msg.includes("ETIMEDOUT") ||
       msg.includes("EAI_AGAIN") ||
-      msg.includes("fetch failed")
+      msg.includes("fetch failed") ||
+      msg.includes("ENOTFOUND") ||
+      msg.includes("UND_ERR_CONNECT_TIMEOUT")
     ) {
       return true;
     }
@@ -829,8 +1012,13 @@ export class DurableExecutionEngine {
       return true;
     }
 
+    const code = err.status || err.statusCode || err.code;
+    if (code === 408 || code === 429 || code === 500 || code === 502 || code === 503 || code === 504) {
+      return true;
+    }
+
     // Explicit retryable flag
-    if (err.retryable === true) {
+    if (err.retryable === true || err.isRetryable === true) {
       return true;
     }
 

@@ -136,11 +136,11 @@ export function secHeaders(res: NextResponse): NextResponse {
     "Content-Security-Policy",
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://www.google-analytics.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https: http:",
-      "connect-src 'self' https://api.stripe.com https://graph.instagram.com https://api.twitter.com https://api.linkedin.com https://graph.facebook.com wss:",
+      "connect-src 'self' https://api.stripe.com https://graph.instagram.com https://api.twitter.com https://api.linkedin.com https://graph.facebook.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com wss:",
       "frame-src 'none'",
       "object-src 'none'",
       "base-uri 'self'",

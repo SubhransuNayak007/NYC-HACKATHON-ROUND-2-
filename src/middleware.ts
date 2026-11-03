@@ -77,8 +77,8 @@ function applySecurityHeaders(res: NextResponse, requestId: string): NextRespons
   // React / Next.js / Turbopack requires eval for Fast Refresh and dev callstack reconstruction in development mode.
   // In production, eval is strictly forbidden for zero-trust security.
   const scriptDirectives = isProd
-    ? "script-src 'self' 'unsafe-inline' https://apis.google.com https://connect.facebook.net https://www.googletagmanager.com"
-    : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://connect.facebook.net https://www.googletagmanager.com";
+    ? "script-src 'self' 'unsafe-inline' https://apis.google.com https://connect.facebook.net https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://www.google-analytics.com"
+    : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://connect.facebook.net https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://www.google-analytics.com";
 
   res.headers.set(
     "Content-Security-Policy",

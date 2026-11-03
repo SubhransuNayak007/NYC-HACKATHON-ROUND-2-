@@ -263,6 +263,86 @@ export class CheckpointManager {
   }
 
   /**
+   * Retrieve all checkpoints associated with a workflow ID (memory and disk)
+   */
+  public async getCheckpointsByWorkflow(workflowId: string): Promise<ExecutionCheckpoint[]> {
+    const list: ExecutionCheckpoint[] = [];
+    const seen = new Set<string>();
+
+    for (const cp of this.inMemoryCheckpoints.values()) {
+      if (cp.workflowId === workflowId) {
+        list.push(cp);
+        seen.add(cp.executionId);
+      }
+    }
+
+    try {
+      if (fs.existsSync(this.storageDir)) {
+        const files = fs.readdirSync(this.storageDir);
+        for (const file of files) {
+          if (!file.endsWith(".json")) continue;
+          const execId = file.replace(/\.json$/, "");
+          if (seen.has(execId)) continue;
+          try {
+            const raw = fs.readFileSync(path.join(this.storageDir, file), "utf8");
+            const cp = JSON.parse(raw) as ExecutionCheckpoint;
+            if (cp.workflowId === workflowId) {
+              list.push(cp);
+              seen.add(cp.executionId);
+            }
+          } catch {
+            // ignore
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  /**
+   * Retrieve all checkpoints for a tenant workspace
+   */
+  public async getCheckpointsByTenant(tenantId: string, workspaceId?: string): Promise<ExecutionCheckpoint[]> {
+    const list: ExecutionCheckpoint[] = [];
+    const seen = new Set<string>();
+
+    for (const cp of this.inMemoryCheckpoints.values()) {
+      if (cp.tenantId === tenantId && (!workspaceId || cp.workspaceId === workspaceId)) {
+        list.push(cp);
+        seen.add(cp.executionId);
+      }
+    }
+
+    try {
+      if (fs.existsSync(this.storageDir)) {
+        const files = fs.readdirSync(this.storageDir);
+        for (const file of files) {
+          if (!file.endsWith(".json")) continue;
+          const execId = file.replace(/\.json$/, "");
+          if (seen.has(execId)) continue;
+          try {
+            const raw = fs.readFileSync(path.join(this.storageDir, file), "utf8");
+            const cp = JSON.parse(raw) as ExecutionCheckpoint;
+            if (cp.tenantId === tenantId && (!workspaceId || cp.workspaceId === workspaceId)) {
+              list.push(cp);
+              seen.add(cp.executionId);
+            }
+          } catch {
+            // ignore
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  /**
    * Delete checkpoint record upon permanent cleanup
    */
   public async deleteCheckpoint(executionId: string): Promise<boolean> {
